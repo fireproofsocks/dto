@@ -1,0 +1,14 @@
+{
+  "name": "society6/dto",
+  "description": "Data Transfer Object",
+  "type": "project",
+  "license": "proprietary",
+  "minimum-stability": "stable",
+  "require": {
+  },
+  "autoload": {
+    "psr-4": {
+      "Dto\\": "src/"
+    }
+  }
+}

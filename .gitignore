@@ -1,0 +1,6 @@
+.env
+.idea
+.DS_Store
+phpunit.xml
+composer.phar
+/vendor/
