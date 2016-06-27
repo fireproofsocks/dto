@@ -6,7 +6,7 @@ use Dto\Exceptions\InvalidLocationException;
 use Dto\Exceptions\InvalidMetaKeyException;
 
 /**
- * Class Dto
+ * Class Dto (Data Transfer Object)
  *
  * See http://php.net/manual/en/class.arrayobject.php  ?
  * See https://symfony.com/doc/current/components/property_access/introduction.html#installation
@@ -91,51 +91,24 @@ class Dto extends \ArrayObject {
             $meta_key = $this->getNormalizedKey($index);
 
             if (!is_array($template[$index])){
-
                 if (is_bool($template[$index])) {
                     $meta[$meta_key]['type'] = 'boolean';
-                    $meta[$meta_key]['callback'] = function ($value) {
-                        return boolval($value);
-                    };
                 } elseif (is_int($template[$index])) {
-
                     $meta[$meta_key]['type'] = 'integer';
-                    $meta[$meta_key]['callback'] = function ($value) {
-                        return intval($value);
-                    };
                 } elseif (is_numeric($template[$index])) {
                     $meta[$meta_key]['type'] = 'float';
-                    $meta[$meta_key]['callback'] = function ($value) {
-                        return floatval($value);
-                    };
                 } elseif (is_scalar($template[$index])) {
                     $meta[$meta_key]['type'] = 'scalar';
-                    $meta[$meta_key]['callback'] = function ($value) {
-                        return strval($value);
-                    };
                 }
             }
             // Hashes
             elseif($this->isHash($template[$index])) {
                 // TODO
-                // print $index; exit;
             }
             // Arrays
             elseif(is_array($template[$index])) {
                 $meta[$meta_key]['type'] = 'array';
-                $meta[$meta_key]['callback'] = function ($value, $template, $meta) {
-                    if ($value instanceof \Dto\Dto) {
-                        // Re-index the array -- make this as close to a "real" array as possible in PHP.
-                        $value = array_values($value->toArray());
-                        $classname = get_called_class();
-                        return new $classname($value, $template, $meta);
-                    }
-                    else {
-                        throw new InvalidDataTypeException('Cannot write non-array to array location.');
-                    }
-                };
             }
-
         }
 
         return $meta;
@@ -420,20 +393,113 @@ class Dto extends \ArrayObject {
     {
         $normalized_key = $this->getNormalizedKey($index);
 
+        $type = $this->meta[$normalized_key]['type'];
+
         $mutator = $this->getMutatorFunctionName($index);
+        $typeMutator = $this->getTypeMutatorFunctionName($type);
+
         if (method_exists($this, $mutator)) {
             return $this->$mutator($value, $this->template, $this->meta);
         }
-        elseif (isset($this->meta[$normalized_key]['callback'])) {
-            return call_user_func($this->meta[$normalized_key]['callback'], $value, $this->template, $this->meta);
+        elseif (method_exists($this, $typeMutator)) {
+            return $this->$typeMutator($value, $this->template, $this->meta);
         }
+//        elseif (isset($this->meta[$normalized_key]['callback'])) {
+//            return call_user_func($this->meta[$normalized_key]['callback'], $value, $this->template, $this->meta);
+//        }
 
-        throw new \InvalidArgumentException('No callback or mutator found for index '.$index);
+        throw new \InvalidArgumentException('No mutator found for index '.$index. ' or type '. $type);
     }
 
     protected function getMutatorFunctionName($index)
     {
         return 'set'.$index;
+    }
+
+    /**
+     * @param $type string
+     * @return string
+     */
+    protected function getTypeMutatorFunctionName($type)
+    {
+        return 'setType'.$type;
+    }
+
+    /**
+     * @param $value mixed
+     * @return bool
+     */
+    protected function setTypeBoolean($value)
+    {
+        return boolval($value);
+    }
+
+    /**
+     * @param $value mixed
+     * @return integer
+     */
+    protected function setTypeInteger($value)
+    {
+        return intval($value);
+    }
+
+    /**
+     * @param $value mixed
+     * @return integer
+     */
+    protected function setTypeFloat($value)
+    {
+        return floatval($value);
+    }
+
+    /**
+     * @param $value mixed
+     * @return integer
+     */
+    protected function setTypeScalar($value)
+    {
+        return strval($value);
+    }
+
+    /**
+     * @param $value mixed
+     * @param $template
+     * @param $meta
+     * @return array
+     * @throws InvalidDataTypeException
+     */
+    protected function setTypeHash($value, $template, $meta)
+    {
+        // TODO
+//        if ($value instanceof \Dto\Dto) {
+//            // Re-index the array -- make this as close to a "real" array as possible in PHP.
+//            $value = array_values($value->toArray());
+//            $classname = get_called_class();
+//            return new $classname($value, $template, $meta);
+//        }
+//        else {
+//            throw new InvalidDataTypeException('Cannot write non-array to array location.');
+//        }
+    }
+
+    /**
+     * @param $value mixed
+     * @param $template
+     * @param $meta
+     * @return array
+     * @throws InvalidDataTypeException
+     */
+    protected function setTypeArray($value, $template, $meta)
+    {
+        if ($value instanceof Dto) {
+            // Re-index the array -- make this as close to a "real" array as possible in PHP.
+            $value = array_values($value->toArray());
+            $classname = get_called_class();
+            return new $classname($value, $template, $meta);
+        }
+        else {
+            throw new InvalidDataTypeException('Cannot write non-array to array location.');
+        }
     }
 
     /**
