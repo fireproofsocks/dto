@@ -44,25 +44,26 @@ class Dto extends \ArrayObject {
         $this->setFlags(0);
 
         // Filter values here?
-        foreach ($input as $key => $value) {
-//            $normalized_key = $this->getNormalizedKey($key);
-//            $meta = $this->meta[$normalized_key];
-//            print 'here:'; print_r($meta); exit;
-            $this->offsetSet($key, $value);
-
-        }
 //        foreach ($input as $key => $value) {
-//            //if (is_array($value) && !empty($value)) {
-//            if (is_array($value)) {
-//                //$this->offsetSet($key, new $class($value, $this->flags, $this->iteratorClass));
-//                $template_subset = (isset($this->template[$key])) ? $this->template[$key] : [];
-//                $classname = get_called_class();
-//                $this->offsetSet($key, new $classname($value, $template_subset, $this->getMetaSubset($key, $this->meta)));
-//            }
-//            else {
-//                $this->offsetSet($key, $value);
-//            }
+////            $normalized_key = $this->getNormalizedKey($key);
+////            $meta = $this->meta[$normalized_key];
+////            print 'here:'; print_r($meta); exit;
+//            $this->offsetSet($key, $value);
+//
 //        }
+
+        foreach ($input as $key => $value) {
+            //if (is_array($value) && !empty($value)) {
+            if (is_array($value)) {
+                //$this->offsetSet($key, new $class($value, $this->flags, $this->iteratorClass));
+                $template_subset = (isset($this->template[$key])) ? $this->template[$key] : [];
+                $classname = get_called_class();
+                $this->offsetSet($key, new $classname($value, $template_subset, $this->getMetaSubset($key, $this->meta)));
+            }
+            else {
+                $this->offsetSet($key, $value);
+            }
+        }
 
         $this->log(sprintf("%s(%s) completed", __FUNCTION__, implode(", ", func_get_args())));
 
@@ -77,6 +78,9 @@ class Dto extends \ArrayObject {
      *
      * Modifies class-level $this->meta.
      *
+     * @param array $template
+     * @param array $meta (normalized)
+     * @return array
      * @throws InvalidDataTypeException
      */
     protected function autoDetectTypes($template, $meta)
@@ -85,11 +89,6 @@ class Dto extends \ArrayObject {
         foreach ($template as $index => $v) {
 
             $meta_key = $this->getNormalizedKey($index);
-
-//            if (isset($meta[$meta_key])) {
-//                print 'Auto-detection not necessary for '.$meta_key; exit;
-//                continue; // Auto-detection not necessary
-//            }
 
             if (!is_array($template[$index])){
 
@@ -411,7 +410,7 @@ class Dto extends \ArrayObject {
     }
 
     /**
-     * TODO: this needs to use the callbacks!
+     * Filter the incoming variable at the $index location specified
      * @param $value
      * @param $index
      * @return mixed
@@ -419,78 +418,23 @@ class Dto extends \ArrayObject {
      */
     protected function filter($value, $index) 
     {
-        print 'FILTERING!!!'; exit;
         $normalized_key = $this->getNormalizedKey($index);
 
-        // Is the type explicitly defined?
-        if (isset($this->meta[$normalized_key]['type'])) {
-
-            switch ($this->meta[$normalized_key]['type']) {
-                case 'integer':
-                case 'int':
-                    $value = intval($value);
-                    break;
-                case 'bool':
-                case 'boolean':
-                    $value = boolval($value);
-                    break;
-                case 'float':
-                case 'number':
-                    $value = floatval($value);
-                    break;
-                case 'scalar':
-                case 'string':
-                    $value = strval($value);
-                    break;
-                case 'array':
-                    if ($value instanceof \Dto\Dto) {
-                        // Re-index the array -- make this as close to a "real" array as possible in PHP.
-                        $value = array_values($value->toArray());
-                        $classname = get_called_class();
-                        $value = new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index,$this->meta));
-                    }
-                    else {
-                        throw new InvalidDataTypeException('Cannot write non-array to $template at index "'.$index.'"');
-                    }
-                    break;
-                case 'hash':
-                    break;
-            }
+        $mutator = $this->getMutatorFunctionName($index);
+        if (method_exists($this, $mutator)) {
+            return $this->$mutator($value, $this->template, $this->meta);
         }
-        // Can we auto-detect the data type from the template?
-        // Single values here
-        elseif (isset($this->template[$index]) && !is_array($this->template[$index])){
-            if (is_bool($this->template[$index])) {
-                $value = boolval($value);
-            } elseif (is_int($this->template[$index])) {
-                $value = intval($value);
-            } elseif (is_numeric($this->template[$index])) {
-                $value = floatval($value);
-            } elseif (is_scalar($this->template[$index])) {
-                $value = strval($value);
-            }
-        }
-        // Hashes
-        elseif($this->isHash($this->template[$index])) {
-
-        }
-        // Arrays
-        elseif(is_array($this->template[$index])) {
-
-            if ($value instanceof \Dto\Dto) {
-                // Re-index the array -- make this as close to a "real" array as possible in PHP.
-                $value = array_values($value->toArray());
-                $classname = get_called_class();
-                $value = new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index,$this->meta));
-            }
-            else {
-                throw new InvalidDataTypeException('Cannot write non-array to $template at index "'.$index.'"');
-            }
+        elseif (isset($this->meta[$normalized_key]['callback'])) {
+            return call_user_func($this->meta[$normalized_key]['callback'], $value, $this->template, $this->meta);
         }
 
-        return $value;
+        throw new \InvalidArgumentException('No callback or mutator found for index '.$index);
     }
 
+    protected function getMutatorFunctionName($index)
+    {
+        return 'set'.$index;
+    }
 
     /**
      * @param Dto|null $arrayObj

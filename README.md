@@ -59,3 +59,8 @@ Ambiguous Hash
  Gotchas:
  
  `print_r()` -- although DTOs implement PHP's `ArrayObject` storage, they are not strictly simple value arrays. 
+ 
+ 
+ ## Mutators
+ 
+ Each field can define its own callback for filtering input data, something similar to Laravel's mutators: https://laravel.com/docs/5.1/eloquent-mutators

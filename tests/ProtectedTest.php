@@ -69,7 +69,7 @@ class ProtectedTest extends PHPUnit_Framework_Testcase
         $this->assertEquals($normalized, $method->invokeArgs($dto, [$meta]));
     }
     
-    public function testAutoDetectTypes()
+    public function testAutoDetectTypes1()
     {
         $template = [
             'integer' => 0,
@@ -94,33 +94,69 @@ class ProtectedTest extends PHPUnit_Framework_Testcase
         $this->assertEquals('array', $meta['.array']['type']);
     }
 
-    /*public function testAutoDetectTypes()
+    public function testAutoDetectTypes2()
     {
         $template = [
-            'integer' => 0,
-            'float' => 0.00, // i.e. number
-            'boolean' => false,
-            'string' => '', // strval - true/false converts to 1/0, arrays to "Array"
-            'array' => [],
+            'x' => 0,
+        ];
+        $meta = [
+            '.x' => [
+                'type' => 'integer'
+            ]
         ];
 
-        $dto = new \Dto\Dto([], $template);
+        $dto = new \Dto\Dto();
         $reflection = new ReflectionClass(get_class($dto));
         $method = $reflection->getMethod('autoDetectTypes');
         $method->setAccessible(true);
-        // $dto->meta routes through the ArrayObject storage, so we have to come in the secret way
-        $property = $reflection->getProperty('meta');
-        $property->setAccessible(true);
 
-        $method->invokeArgs($dto, []);
 
-        $meta = $property->getValue($dto);
+        $meta = $method->invokeArgs($dto, [$template, $meta]);
 
-        $this->assertEquals('integer', $meta['.integer']['type']);
-        $this->assertEquals('float', $meta['.float']['type']);
-        $this->assertEquals('boolean', $meta['.boolean']['type']);
-        $this->assertEquals('scalar', $meta['.string']['type']);
-        $this->assertEquals('array', $meta['.array']['type']);
-    }*/
 
+        $this->assertFalse(isset($meta['x']));
+        $this->assertTrue(isset($meta['.x']));
+        $this->assertTrue(isset($meta['.x']['callback']));
+        $this->assertTrue(is_callable($meta['.x']['callback']));
+    }
+
+    public function testFilter()
+    {
+        $dto = new TestFilterDto();
+        $reflection = new ReflectionClass(get_class($dto));
+        $method = $reflection->getMethod('filter');
+        $method->setAccessible(true);
+
+        // $dto->integer = '123a0'; // should come out as 123
+        $value = $method->invokeArgs($dto, ['123a4', 'x']);
+        $this->assertEquals(123, $value);
+
+        $value = $method->invokeArgs($dto, ['456b7', 'y']);
+        $this->assertEquals(456, $value);
+    }
+
+}
+
+class TestFilterDto extends \Dto\Dto {
+    protected $template = [
+        'x' => null
+    ];
+
+    protected $meta = [
+        'x' => [
+            'type' => 'integer',
+            'callback' => 'TestFilterDto::toInt',
+        ],
+        'y' => [
+            'type' => 'integer'
+        ]
+    ];
+
+    public static function toInt($value) {
+        return intval($value);
+    }
+
+    public function setY($value) {
+        return intval($value);
+    }
 }
