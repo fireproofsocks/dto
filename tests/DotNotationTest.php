@@ -51,15 +51,15 @@ class DotNotationTest extends PHPUnit_Framework_Testcase
     }
 
     /**
-     * @expectedException Dto\Exceptions\InvalidLocationException
+     *
      */
     public function testRegularSet()
     {
         $D = new TestDotNotationTestDto2();
 
         $D->firstname = ['x','y','z'];
-        //print_r($D->toArray()); exit;
-        //$this->assertEquals('Abby', $D->firstname, 'You should not be able to set a scalar value to an array without forcing it');
+
+        $this->assertEquals('Array', $D->firstname);
 
     }
 

@@ -116,8 +116,6 @@ class ProtectedTest extends PHPUnit_Framework_Testcase
 
         $this->assertFalse(isset($meta['x']));
         $this->assertTrue(isset($meta['.x']));
-        $this->assertTrue(isset($meta['.x']['callback']));
-        $this->assertTrue(is_callable($meta['.x']['callback']));
     }
 
     public function testFilter()

@@ -109,8 +109,6 @@ class Dto extends \ArrayObject {
             }
             // Hashes
             elseif($this->isHash($template[$index])) {
-                // TODO
-                // print 'Is hash!!!'; exit;
                 $meta[$meta_key]['type'] = 'hash';
             }
             // Arrays
@@ -154,7 +152,7 @@ class Dto extends \ArrayObject {
     
     /**
      * Returns the part of the supplied $meta array whose keys begin with the $prefix and re-index the array with the 
-     * prefix removed.
+     * prefix removed.  This is used to get a subset of the meta data when instantiating a child class.
      * 
      * @param $prefix string
      * @param $meta array
@@ -164,7 +162,7 @@ class Dto extends \ArrayObject {
     {
         $trimmed = [];
         $prefix = $this->getNormalizedKey($prefix);
-        //print '-->'. $prefix; exit;
+
         foreach ($meta as $dotted_key => $value) {
             
             if (substr($dotted_key, 0, strlen($prefix)) == $prefix) {
@@ -235,19 +233,20 @@ class Dto extends \ArrayObject {
      * @throws InvalidLocationException
      */
     public function __set($name, $value) {
+        return $this->offsetSet($name, $value);
         // For arrays/non-scalar values, we create a child object at the location indicated
         //if (is_array($value)) {
-        if ($this->isHash($value)) {
-        //if (is_array($value) && !empty($value)) { // causes segmentation fault
-            $this->log(sprintf("New DTO: %s(%s)", __FUNCTION__, implode(", ", func_get_args())));
-            $classname = get_called_class();
-            $this->offsetSet($name, new $classname($value, $this->getTemplateSubset($name, $this->template), $this->getMetaSubset($name, $this->meta)));
-            //$this->offsetSet($name, new \Dto\Dto($value, $this->getTemplateSubset($name, $this->template), $this->getMetaSubset($name, $this->meta)));
-        }
-        else {
-            $this->log(sprintf("Boring %s(%s)", __FUNCTION__, implode(", ", func_get_args())));
-            $this[$name] = $value; // routes to offsetSet?
-        }
+//        if ($this->isHash($value)) {
+//        //if (is_array($value) && !empty($value)) { // causes segmentation fault
+//            $this->log(sprintf("New DTO: %s(%s)", __FUNCTION__, implode(", ", func_get_args())));
+//            $classname = get_called_class();
+//            $this->offsetSet($name, new $classname($value, $this->getTemplateSubset($name, $this->template), $this->getMetaSubset($name, $this->meta)));
+//            //$this->offsetSet($name, new \Dto\Dto($value, $this->getTemplateSubset($name, $this->template), $this->getMetaSubset($name, $this->meta)));
+//        }
+//        else {
+//            $this->log(sprintf("Boring %s(%s)", __FUNCTION__, implode(", ", func_get_args())));
+//            $this[$name] = $value; // routes to offsetSet?
+//        }
     }
 
     /**
@@ -442,18 +441,27 @@ class Dto extends \ArrayObject {
 
         if (method_exists($this, $mutator)) {
             return $this->$mutator($value, $index);
-        //    return $this->$mutator($value, $this->template, $this->meta);
         }
         elseif (method_exists($this, $typeMutator)) {
             return $this->$typeMutator($value, $index);
-          //  return $this->$typeMutator($value, $this->template, $this->meta);
         }
-//        elseif (isset($this->meta[$normalized_key]['callback'])) {
-//            return call_user_func($this->meta[$normalized_key]['callback'], $value, $this->template, $this->meta);
-//        }
-        //print $index ."\n"; print_r($this->meta); exit;
-        return $value; // ????
-        throw new \InvalidArgumentException('No mutator found for index "'.$index. '" or type '. $type);
+
+        throw new \InvalidArgumentException('No mutator found for index "'.$index. '" or type "'. $type.'"');
+    }
+
+    /**
+     * Get the meta definition for the given index
+     * @param $index
+     * @return array
+     * @throws InvalidMetaKeyException
+     */
+    protected function getMeta($index)
+    {
+        $normalized_key = $this->getNormalizedKey($index);
+        if (!isset($this->meta[$normalized_key])) {
+            throw new InvalidMetaKeyException('No meta data defined for index "'.$normalized_key.'"');
+        }
+        return $this->meta[$normalized_key];
     }
 
     protected function getMutatorFunctionName($index)
@@ -503,6 +511,7 @@ class Dto extends \ArrayObject {
      */
     protected function setTypeScalar($value)
     {
+        // TODO? throw Exception for non-scalar types?
         return strval($value);
     }
 
