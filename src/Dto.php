@@ -25,17 +25,51 @@ class Dto extends \ArrayObject {
      */
     public function __construct(array $input = [], array $template = [], array $meta = [])
     {
-        $this->template = ($this->template) ? $this->template : $template;
-        $this->meta = $this->normalizeMeta(($this->meta) ? $this->meta : $meta);
+        $arg_list = func_get_args();
+        //print_r($arg_list); exit;
+//        print "-----------------------\n";
+//        print __FUNCTION__.':'.__LINE__."\n";
+//        print_r($input); print "\n";
+//        print_r($template); print "\n";
+//        print_r($meta); print "\n";
+//        print "-----------------------\n";
+        //$this->template = ($this->template) ? $this->template : $template;
+        // We need to be able to override the class variables, esp. if the input variables are empty
+        $this->template = (isset($arg_list[1])) ? $arg_list[1] : $this->template;
+        $this->meta = (isset($arg_list[2])) ? $arg_list[2] : $this->meta;
+        $this->meta = $this->normalizeMeta($this->meta);
         $this->meta = $this->autoDetectTypes($this->template, $this->meta);
 
         $input = ($input) ? $input : $this->template;
 
+        print "-----------------------\n";
+        print __FUNCTION__.':'.__LINE__."\n";
+        print_r($input); print "\n";
+        print_r($this->template); print "\n";
+        print_r($this->meta); print "\n";
+        print "-----------------------\n";
+
         $this->setFlags(0);
 
         foreach ($input as $key => $value) {
+            print '    ----> key: '.$key."\n";
             $this->offsetSet($key, $value);
         }
+
+        //print_r($this->meta); exit;
+    }
+    
+    protected function getInput($input, $template)
+    {
+        
+    }
+
+    /**
+     * See http://php.net/manual/en/arrayobject.append.php
+     * @param mixed $v
+     */
+    public function append($v) {
+        return $this->offsetSet(null, $v);
     }
 
     /**
@@ -53,6 +87,7 @@ class Dto extends \ArrayObject {
      */
     protected function autoDetectTypes($template, $meta)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
 
         foreach ($template as $index => $v) {
 
@@ -90,6 +125,7 @@ class Dto extends \ArrayObject {
      */
     protected function getNormalizedKey($key)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         return '.'.trim($key,'.');
     }
     
@@ -99,6 +135,7 @@ class Dto extends \ArrayObject {
      */
     protected function isValidMetaKey($key)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         if (!is_scalar($key)) {
             return false;
         }
@@ -122,6 +159,7 @@ class Dto extends \ArrayObject {
      */
     protected function getMetaSubset($prefix, array $meta)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         $trimmed = [];
         $prefix = $this->getNormalizedKey($prefix);
 
@@ -145,6 +183,7 @@ class Dto extends \ArrayObject {
      */
     protected function getTemplateSubset($index, array $template)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         if (isset($template[$index]) && is_array($template[$index])) {
             return $template[$index];
         }
@@ -161,6 +200,7 @@ class Dto extends \ArrayObject {
      */
     protected function normalizeMeta($meta) 
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         $normalized = [];
         foreach ($meta as $key => $value) {
             $key = $this->getNormalizedKey($key);
@@ -180,6 +220,7 @@ class Dto extends \ArrayObject {
      */
     public function __toString()
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         return 'Array';
     }
 
@@ -195,6 +236,7 @@ class Dto extends \ArrayObject {
      * @throws InvalidLocationException
      */
     public function __set($name, $value) {
+        print __FUNCTION__.':'.__LINE__."\n";
         return $this->offsetSet($name, $value);
     }
 
@@ -203,6 +245,10 @@ class Dto extends \ArrayObject {
      * @return mixed
      */
     public function __get($name) {
+        //print __FUNCTION__.':'.__LINE__.' '.print $name."\n";
+        print __FUNCTION__.':'.__LINE__."\n";
+        print_r($this[$name]);
+        print "\n";
         return $this[$name];
     }
 
@@ -216,6 +262,7 @@ class Dto extends \ArrayObject {
      */
     public function get($dotted_key)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         $parts = explode('.', trim($dotted_key,'.'));
 
         $location = $this->{array_shift($parts)}; // prime the pump with the first location
@@ -237,6 +284,7 @@ class Dto extends \ArrayObject {
      */
     public function set($index, $value, $force = false)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         $this->offsetSet($index, $value, $force);
     }
 
@@ -249,6 +297,7 @@ class Dto extends \ArrayObject {
      */
     public function isHash($arr)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         if (!is_array($arr) || empty($arr)) {
             return false;
         }
@@ -263,7 +312,9 @@ class Dto extends \ArrayObject {
      */
     public function offsetGet($index)
     {
-        if (empty($this->template) || isset($this->template[$index])) {
+        print __FUNCTION__.':'.__LINE__.' '.$index."\n";
+        //  Remember: isset() returns false if the value is null
+        if (empty($this->template) || array_key_exists($index, $this->template)) {
             // This bit allows us to dynamically deepen the object structure
             if (!isset($this[$index])) {
                 $classname = get_called_class();
@@ -287,6 +338,7 @@ class Dto extends \ArrayObject {
      */
     public function offsetSet($index, $value, $force = false)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         // Bypasses filters
         if ($force || empty($this->template)) {
             if ($this->isHash($value)) {
@@ -300,7 +352,7 @@ class Dto extends \ArrayObject {
 
         // Filter the value
         $value = $this->filter($value, $index);
-        return parent::offsetSet($index, $value);
+        parent::offsetSet($index, $value);
 
     }
 
@@ -313,6 +365,7 @@ class Dto extends \ArrayObject {
      */
     protected function filter($value, $index) 
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         $normalized_key = $this->getNormalizedKey($index);
 
         $type = $this->meta[$normalized_key]['type'];
@@ -327,7 +380,7 @@ class Dto extends \ArrayObject {
             return $this->$typeMutator($value, $index);
         }
 
-        throw new \InvalidArgumentException('No mutator found for index "'.$index. '" or type "'. $type.'"');
+        throw new \InvalidArgumentException('No mutator found for index "'.$index. '" ('.$mutator.'?) or type "'. $type.'" ('.$typeMutator.'?)');
     }
 
     /**
@@ -338,6 +391,7 @@ class Dto extends \ArrayObject {
      */
     protected function getMeta($index)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         $normalized_key = $this->getNormalizedKey($index);
         if (!isset($this->meta[$normalized_key])) {
             throw new InvalidMetaKeyException('No meta data defined for index "'.$normalized_key.'"');
@@ -347,7 +401,8 @@ class Dto extends \ArrayObject {
 
     protected function getMutatorFunctionName($index)
     {
-        return 'set'.$index;
+        print __FUNCTION__.':'.__LINE__."\n";
+        return 'set'.ucfirst($index);
     }
 
     /**
@@ -356,7 +411,8 @@ class Dto extends \ArrayObject {
      */
     protected function getTypeMutatorFunctionName($type)
     {
-        return 'setType'.$type;
+        print __FUNCTION__.':'.__LINE__."\n";
+        return 'setType'.ucfirst($type);
     }
 
     /**
@@ -365,6 +421,7 @@ class Dto extends \ArrayObject {
      */
     protected function setTypeBoolean($value)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         return boolval($value);
     }
 
@@ -374,6 +431,7 @@ class Dto extends \ArrayObject {
      */
     protected function setTypeInteger($value)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         return intval($value);
     }
 
@@ -383,6 +441,7 @@ class Dto extends \ArrayObject {
      */
     protected function setTypeFloat($value)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         return floatval($value);
     }
 
@@ -392,6 +451,7 @@ class Dto extends \ArrayObject {
      */
     protected function setTypeScalar($value)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         // TODO? throw Exception for non-scalar types?
         return strval($value);
     }
@@ -405,12 +465,46 @@ class Dto extends \ArrayObject {
     {
         $classname = get_called_class();
 
-        if ($value instanceof Dto) {
-            return new $classname($value->toArray(), $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+        if (is_null($value)) {
+            print __FUNCTION__.':'.__LINE__.' (null)'."\n";
+            //return [];
+            //print __FUNCTION__.':'.__LINE__.' null '."\n";
+            // This sends stuff into a loop
+            return new $classname([], $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
         }
-        else {
+
+        if ($value instanceof Dto) {
+            print __FUNCTION__.':'.__LINE__.' (dto)'."\n";
+            //return $value;
             return new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
         }
+        elseif (is_array($value)) {
+            print __FUNCTION__.':'.__LINE__.' (array)'."\n";
+            //return $value;
+            return new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+        }
+        else {
+            print __FUNCTION__.':'.__LINE__.' (other)'."\n";
+            //return (array) $value;
+            return new $classname((array) $value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+            // Why must the array's value be a DTO?
+            //throw new InvalidDataTypeException('Cannot write non-array to array location.');
+        }
+
+//        print __FUNCTION__.':'.__LINE__."\n";
+//        if (is_null($value)) {
+//            return [];
+//        }
+//
+//        $classname = get_called_class();
+//
+//        if ($value instanceof Dto) {
+//            return new $classname($value->toArray(), $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+//        }
+//        else {
+//            return new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+//            //return new $classname((array) $value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+//        }
     }
 
     /**
@@ -421,15 +515,36 @@ class Dto extends \ArrayObject {
      */
     protected function setTypeArray($value, $index)
     {
+
+        $classname = get_called_class();
+
+        if (is_null($value)) {
+            print __FUNCTION__.':'.__LINE__.' (null)'."\n";
+            //return [];
+            //print __FUNCTION__.':'.__LINE__.' null '."\n";
+            // This sends stuff into a loop
+            return new $classname([], $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+        }
+
         if ($value instanceof Dto) {
+            print __FUNCTION__.':'.__LINE__.' (dto)'."\n";
             // Re-index the array -- make this as close to a "real" array as possible in PHP.
             $value = array_values($value->toArray());
-            $classname = get_called_class();
+            //return $value;
+            return new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+        }
+        elseif (is_array($value)) {
+            print __FUNCTION__.':'.__LINE__.' (array)'."\n";
+            $value = array_values($value);
+            //return $value;
             return new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
         }
         else {
+            print __FUNCTION__.':'.__LINE__.' (other)'."\n";
+            //return (array) $value;
+            return new $classname((array) $value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
             // Why must the array's value be a DTO?
-            throw new InvalidDataTypeException('Cannot write non-array to array location.');
+            //throw new InvalidDataTypeException('Cannot write non-array to array location.');
         }
     }
 
@@ -439,6 +554,7 @@ class Dto extends \ArrayObject {
      */
     public function toArray(Dto $arrayObj = null)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         $arrayObj = ($arrayObj) ? $arrayObj : $this;
         $output = [];
         foreach ($arrayObj as $k => $v) {

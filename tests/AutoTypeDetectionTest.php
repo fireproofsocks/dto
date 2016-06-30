@@ -2,7 +2,7 @@
 class AutoTypeDetectionTest extends PHPUnit_Framework_Testcase
 {
     /**
-     * @expectedException \Dto\Exceptions\InvalidLocationException
+     * @ expectedException \Dto\Exceptions\InvalidLocationException
      */
     public function testInvalidExeption()
     {
