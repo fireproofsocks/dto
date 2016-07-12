@@ -4,7 +4,7 @@ class HashTest extends PHPUnit_Framework_Testcase
 
 }
 
-class TestDeclareTypeTesttDto extends \Dto\Dto
+class TestHashTestDto extends \Dto\Dto
 {
     protected $template = [
         'hash' => null,

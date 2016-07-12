@@ -2,7 +2,7 @@
 class AutoTypeDetectionTest extends PHPUnit_Framework_Testcase
 {
     /**
-     * @ expectedException \Dto\Exceptions\InvalidLocationException
+     * @expectedException \Dto\Exceptions\InvalidLocationException
      */
     public function testInvalidExeption()
     {
@@ -93,7 +93,7 @@ class AutoTypeDetectionTest extends PHPUnit_Framework_Testcase
     /**
      * @expectedException \Dto\Exceptions\InvalidDataTypeException
      */
-    public function testStingAtArrayLocation()
+    public function testStringAtArrayLocation()
     {
         $D = new TestAutoTypeDetectionTestDto();
         $D->array = 'Not an Array';

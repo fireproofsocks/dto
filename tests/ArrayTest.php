@@ -4,13 +4,15 @@ class ArrayTest extends PHPUnit_Framework_Testcase
 
     public function testArray()
     {
-        $D = new TestDeclareTypeTesttDto();
+        $D = new TestArrayTestDto();
         $D->array = ['x','y','z'];
-        $this->assertEquals(['x','y','z'], $D->array);
+        $this->assertEquals(['x','y','z'], $D->array->toArray());
+        $this->assertEquals(['x','y','z'], (array) $D->array);
 
         $D->array = ['x','y'];
         $D->array[] = 'z';
-        $this->assertEquals(['x','y','z'], $D->array);
+        $this->assertEquals(['x','y','z'], $D->array->toArray());
+        $this->assertEquals(['x','y','z'], (array) $D->array);
 
         $erratic_index = [
             'a' => 'apple',
@@ -19,12 +21,13 @@ class ArrayTest extends PHPUnit_Framework_Testcase
         ];
 
         $D->array = $erratic_index;
-        $this->assertEquals(['apple','banana','cherry'], $D->array);
+        $this->assertEquals(['apple','banana','cherry'], $D->array->toArray());
+        $this->assertEquals(['apple','banana','cherry'], (array) $D->array);
     }
 
     public function testArrayOfString()
     {
-        $D = new TestDeclareTypeTesttDto();
+        $D = new TestArrayTestDto();
 //        $D->array = ['a','b','c'];
 //        $this->assertEquals(['a','b','c'], $D->array);
     }
@@ -35,7 +38,7 @@ class ArrayTest extends PHPUnit_Framework_Testcase
     }
 }
 
-class TestDeclareTypeTesttDto extends \Dto\Dto
+class TestArrayTestDto extends \Dto\Dto
 {
     protected $template = [
         'array' => [],

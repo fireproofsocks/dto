@@ -8,8 +8,11 @@ use Dto\Exceptions\InvalidMetaKeyException;
 /**
  * Class Dto (Data Transfer Object)
  *
- * See http://php.net/manual/en/class.arrayobject.php  ?
- * See https://symfony.com/doc/current/components/property_access/introduction.html#installation
+ * Allows object schemas to be defined and helps to normalize object access.
+ *
+ * See http://php.net/manual/en/class.arrayobject.php
+ * Some ideas from https://symfony.com/doc/current/components/property_access/introduction.html#installation
+ * And others from http://json-schema.org/
  */
 class Dto extends \ArrayObject {
 
@@ -33,8 +36,14 @@ class Dto extends \ArrayObject {
 //        print_r($template); print "\n";
 //        print_r($meta); print "\n";
 //        print "-----------------------\n";
-        //$this->template = ($this->template) ? $this->template : $template;
-        // We need to be able to override the class variables, esp. if the input variables are empty
+
+        // We need to be able to override the class variables, especially when the input variables are empty.
+        // This pattern won't work:
+        //      $this->template = ($template) ? $template : $this->template;
+        // It doesn't work because it triggers a loop condition:  $this->template will always be used as a fallback
+        // when the input $template is empty.  Instead, we use func_get_args to detect if the input was set, and if set,
+        // that input overrides any pre-defined class level variable.  It's necessary to force the class level variables
+        // to empty values before we dive into auto-detection and offsetSet.
         $this->template = (isset($arg_list[1])) ? $arg_list[1] : $this->template;
         $this->meta = (isset($arg_list[2])) ? $arg_list[2] : $this->meta;
         $this->meta = $this->normalizeMeta($this->meta);
@@ -65,11 +74,12 @@ class Dto extends \ArrayObject {
     }
 
     /**
+     * Append a value to the end of an array.  Defers to offsetSet to determine if location is valid for appending.
      * See http://php.net/manual/en/arrayobject.append.php
-     * @param mixed $v
+     * @param mixed $val
      */
-    public function append($v) {
-        return $this->offsetSet(null, $v);
+    public function append($val) {
+        return $this->offsetSet(null, $val);
     }
 
     /**
@@ -350,6 +360,11 @@ class Dto extends \ArrayObject {
             }
         }
 
+        // Index exists in template?
+        if (!array_key_exists($index, $this->template)) {
+            throw new InvalidLocationException('Index not defined in template: '.$index);
+        }
+
         // Filter the value
         $value = $this->filter($value, $index);
         parent::offsetSet($index, $value);
@@ -384,7 +399,7 @@ class Dto extends \ArrayObject {
     }
 
     /**
-     * Get the meta definition for the given index
+     * Get the meta definition data for the given index.
      * @param $index
      * @return array
      * @throws InvalidMetaKeyException
@@ -399,23 +414,34 @@ class Dto extends \ArrayObject {
         return $this->meta[$normalized_key];
     }
 
+    /**
+     * Returns the function name used to mutate values being set at the given $index.  The filter() method will look for
+     * a function of this name when modifying values during set operations for the given index (i.e. field).  This takes
+     * precedence over the generic fallback functions identified by the getTypeMutatorFunctionName() method.
+     * @param $index
+     * @return string
+     */
     protected function getMutatorFunctionName($index)
     {
-        print __FUNCTION__.':'.__LINE__."\n";
+        print __FUNCTION__.':'.__LINE__. ' set'.ucfirst($index)."\n";
         return 'set'.ucfirst($index);
     }
 
     /**
+     * Returns the function name used to mutate all fields of the given $type.  The filter() method will look for a
+     * function of this name when modifying values during set operations.  Type-based mutation only is used if a field does
+     * not have a specific mutator function defined (see getMutatorFunctionName()).
      * @param $type string
      * @return string
      */
     protected function getTypeMutatorFunctionName($type)
     {
-        print __FUNCTION__.':'.__LINE__."\n";
+        print __FUNCTION__.':'.__LINE__.' setType'.ucfirst($type)."\n";
         return 'setType'.ucfirst($type);
     }
 
     /**
+     * Called internally by the filter() method.
      * @param $value mixed
      * @return bool
      */
@@ -426,6 +452,7 @@ class Dto extends \ArrayObject {
     }
 
     /**
+     * Called internally by the filter() method.
      * @param $value mixed
      * @return integer
      */
@@ -436,6 +463,7 @@ class Dto extends \ArrayObject {
     }
 
     /**
+     * Called internally by the filter() method.
      * @param $value mixed
      * @return integer
      */
@@ -446,6 +474,7 @@ class Dto extends \ArrayObject {
     }
 
     /**
+     * Called internally by the filter() method.
      * @param $value mixed
      * @return integer
      */
@@ -457,14 +486,17 @@ class Dto extends \ArrayObject {
     }
 
     /**
+     * Called internally by the filter() method.
      * @param $value
      * @param $index
      * @return mixed
+     * @throws InvalidDataTypeException
      */
     protected function setTypeHash($value, $index)
     {
         $classname = get_called_class();
 
+        // TODO: is_nullable?
         if (is_null($value)) {
             print __FUNCTION__.':'.__LINE__.' (null)'."\n";
             //return [];
@@ -483,31 +515,13 @@ class Dto extends \ArrayObject {
             //return $value;
             return new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
         }
-        else {
-            print __FUNCTION__.':'.__LINE__.' (other)'."\n";
-            //return (array) $value;
-            return new $classname((array) $value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
-            // Why must the array's value be a DTO?
-            //throw new InvalidDataTypeException('Cannot write non-array to array location.');
-        }
 
-//        print __FUNCTION__.':'.__LINE__."\n";
-//        if (is_null($value)) {
-//            return [];
-//        }
-//
-//        $classname = get_called_class();
-//
-//        if ($value instanceof Dto) {
-//            return new $classname($value->toArray(), $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
-//        }
-//        else {
-//            return new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
-//            //return new $classname((array) $value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
-//        }
+        throw new InvalidDataTypeException('Cannot write non-array to array location.');
+
     }
 
     /**
+     * Called internally by the filter() method.
      * @param $value
      * @param $index
      * @return mixed
@@ -515,40 +529,17 @@ class Dto extends \ArrayObject {
      */
     protected function setTypeArray($value, $index)
     {
-
-        $classname = get_called_class();
-
-        if (is_null($value)) {
-            print __FUNCTION__.':'.__LINE__.' (null)'."\n";
-            //return [];
-            //print __FUNCTION__.':'.__LINE__.' null '."\n";
-            // This sends stuff into a loop
-            return new $classname([], $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
-        }
-
-        if ($value instanceof Dto) {
-            print __FUNCTION__.':'.__LINE__.' (dto)'."\n";
-            // Re-index the array -- make this as close to a "real" array as possible in PHP.
-            $value = array_values($value->toArray());
-            //return $value;
-            return new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
-        }
-        elseif (is_array($value)) {
-            print __FUNCTION__.':'.__LINE__.' (array)'."\n";
+        if (is_array($value)) {
             $value = array_values($value);
-            //return $value;
-            return new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
         }
-        else {
-            print __FUNCTION__.':'.__LINE__.' (other)'."\n";
-            //return (array) $value;
-            return new $classname((array) $value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
-            // Why must the array's value be a DTO?
-            //throw new InvalidDataTypeException('Cannot write non-array to array location.');
+        elseif ($value instanceof Dto) {
+            $value = array_values($value->toArray());
         }
+        return $this->setTypeHash($value, $index);
     }
 
     /**
+     * The input allows the injection of a foreign Dto $arrayObj for recursive resolving of children DTOs.
      * @param Dto|null $arrayObj
      * @return array
      */
@@ -570,7 +561,7 @@ class Dto extends \ArrayObject {
     }
 
     /**
-     * Convert the specified arrayObj to JSON
+     * Convert the specified arrayObj to JSON.  Ultimately, this is a decorator around the toArray() method.
      * @param boolean $pretty
      * @param Dto $arrayObj
      * @return string
@@ -584,7 +575,7 @@ class Dto extends \ArrayObject {
     }
 
     /**
-     * Convert the specified arrayObj to a StdClass object
+     * Convert the specified arrayObj to a StdClass object.  Ultimately, this is a decorator around the toJson() method.
      * @param Dto $arrayObj
      * @return object
      */
