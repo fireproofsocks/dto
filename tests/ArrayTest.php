@@ -32,9 +32,34 @@ class ArrayTest extends PHPUnit_Framework_Testcase
 //        $this->assertEquals(['a','b','c'], $D->array);
     }
 
-    public function testEnsureMetaDataGetsAllDefaults()
+    public function testArrayOfInteger()
     {
-        // if we define "type", the meta data should get the default values for "callback" as well
+        $D = new TestArrayTestDto();
+        $D->array_integer = ['1', '2a3', '3something'];
+        $this->assertEquals([1, 2, 3], $D->array_integer->toArray());
+    }
+
+
+    public function testArrayOfFloat()
+    {
+        $D = new TestArrayTestDto();
+        $D->array_float = ['1.1', '2.2a3', '3something'];
+        $this->assertEquals([1.1, 2.2, 3], $D->array_float->toArray());
+    }
+
+
+    public function testArrayOfBoolean()
+    {
+        $D = new TestArrayTestDto();
+        $D->array_boolean = ['something', 1, 0];
+        $this->assertEquals([true, true, false], $D->array_boolean->toArray());
+    }
+
+    public function testArrayOfArray()
+    {
+        $D = new TestArrayTestDto();
+        $D->array_array = [['a', 'b', 'c'], ['a' => 'a', 'b' => 'b', 'c' => 'c']];
+        $this->assertEquals([['a', 'b', 'c'], ['a', 'b', 'c']], $D->array_array->toArray());
     }
 }
 
@@ -42,11 +67,10 @@ class TestArrayTestDto extends \Dto\Dto
 {
     protected $template = [
         'array' => [],
-//        'array_integer' => [],
-//        'array_float' => [],
-//        'array_boolean' => [],
-//        'array_string' => [],
-//        'array_array' => [],
+        'array_integer' => [],
+        'array_float' => [],
+        'array_boolean' => [],
+        'array_array' => [],
     ];
 
     protected $meta = [
@@ -54,25 +78,21 @@ class TestArrayTestDto extends \Dto\Dto
             'type' => 'array',
             'values' => 'string'
         ],
-//        'array_integer' => [
-//            'type' => 'array',
-//            'values' => 'integer'
-//        ],
-//        'array_float' => [
-//            'type' => 'array',
-//            'values' => 'float'
-//        ],
-//        'array_boolean' => [
-//            'type' => 'array',
-//            'values' => 'boolean'
-//        ],
-//        'array_string' => [
-//            'type' => 'array',
-//            'values' => 'string'
-//        ],
-//        'array_array' => [
-//            'type' => 'array',
-//            'values' => 'array'
-//        ]
+        'array_integer' => [
+            'type' => 'array',
+            'values' => 'integer'
+        ],
+        'array_float' => [
+            'type' => 'array',
+            'values' => 'float'
+        ],
+        'array_boolean' => [
+            'type' => 'array',
+            'values' => 'boolean'
+        ],
+        'array_array' => [
+            'type' => 'array',
+            'values' => 'array'
+        ]
     ];
 }
