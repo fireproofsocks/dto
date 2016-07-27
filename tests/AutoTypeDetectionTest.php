@@ -127,10 +127,10 @@ class AutoTypeDetectionTest extends PHPUnit_Framework_Testcase
 class TestAutoTypeDetectionTestDto extends \Dto\Dto
 {
     protected $template = [
-//        'integer' => 0,
-//        'float' => 0.00, // i.e. number
-//        'boolean' => false,
-//        'string' => '', // strval - true/false converts to 1/0, arrays to "Array"
+        'integer' => 0,
+        'float' => 0.00, // i.e. number
+        'boolean' => false,
+        'string' => '', // strval - true/false converts to 1/0, arrays to "Array"
         'array' => [],
     ];
 }

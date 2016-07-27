@@ -7,13 +7,13 @@ class ValidTargetLocationTest extends PHPUnit_Framework_Testcase
     public function test1()
     {
         $D = new TestValidTargetLocationTestDto();
-        $D->invalid = 'bork';
+        $D->invalid1 = 'bork';
     }
 
-    public function test2()
+    public function testInvalid()
     {
         $D = new TestValidTargetLocationTestDto();
-        $D->myhash->invalid = 'ok';
+        $D->myhash->invalid2 = 'ok';
     }
 }
 
@@ -26,14 +26,21 @@ class TestValidTargetLocationTestDto extends \Dto\Dto
     protected $meta = [
         'myhash' => [
             'type' => 'hash',
-            'keys' => '/A-Z/', // ???
+            'keys_regex' => '/A-Z/', // ???
+            'keys_allowed' => [], // ???
         ]
     ];
 
     // As a named function?
     // What if the index has spaces or dashes?
-    public function myhashKeys($index)
+    // How about a function that accepts the parent node (e.g. "myhash") and the proposed target $index
+    protected function isValidTargetLocation($index)
     {
-
+        if (!$result = parent::isValidTargetLocation($index)) {
+            print 'false.... ??? @->'.$index; exit;
+            return false;
+        }
+        
+        return true;
     }
 }

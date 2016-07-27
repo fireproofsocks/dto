@@ -411,7 +411,7 @@ class Dto extends \ArrayObject {
     {
         //$meta = $this->getMeta($index);
 
-        $type = $this->getMutatorType($index);
+        $type = $this->getMutatorType($index); // TODO: this function's logic could be moved into getTypeMutatorFunctionName
         print __FUNCTION__.':'.__LINE__.' getMutatorType '.print_r($type,true)."\n";
         $mutator = $this->getMutatorFunctionName($index);
         $typeMutator = $this->getTypeMutatorFunctionName($type);
@@ -459,21 +459,7 @@ class Dto extends \ArrayObject {
         }
         
         return $this->meta[$normalized_key]['type'];
-
-        // ... OLD ...
-        // $meta data for a given index should always have "type" set
-        $type = $meta['type'];
-        // Array and Hash types can use an alternate mutator for their members
-//        if (in_array($type, ['array', 'hash'])) {
-//        //if (in_array($type, ['hash'])) {
-//            if (isset($meta['values'])) {
-//                $type = $meta['values'];
-//            }
-//            else {
-//                $type = 'unknown';
-//            }
-//        }
-        return $type;
+        
     }
 
     /**
