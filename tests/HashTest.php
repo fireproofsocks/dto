@@ -4,15 +4,15 @@ class HashTest extends PHPUnit_Framework_Testcase
     public function test1()
     {
         $D = new TestHashTestDto();
-        $D->myhash->x = 'y';
-//        print_r($D->toArray());
+        $D->x = 'y';
+        $this->assertEquals(['x' => true], $D->toArray());
     }
 }
 
 class TestHashTestDto extends \Dto\Dto
 {
     protected $template = [
-        'myhash' => null,
+//        'myhash' => null,
 //        'hash_integer' => null,
 //        'hash_float' => null,
 //        'hash_boolean' => null,
@@ -24,10 +24,15 @@ class TestHashTestDto extends \Dto\Dto
     ];
 
     protected $meta = [
-        'myhash' => [
+        //'*' => [ // wildcard or dot?  Only makes sense for hashes or arrays
+        '.' => [
             'type' => 'hash',
             'values' => 'boolean'
         ],
+//        'myhash' => [
+//            'type' => 'hash',
+//            'values' => 'boolean'
+//        ],
 //        'hash_integer' => [
 //            'type' => 'hash',
 //            'values' => 'integer'

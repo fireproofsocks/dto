@@ -25,9 +25,10 @@ class DotNotationTest extends PHPUnit_Framework_Testcase
     public function testSet()
     {
         $D = new TestDotNotationTestDto();
+        //exit;
         $D->set('firstname', 'Snoopy');
         $this->assertEquals('Snoopy', $D->firstname);
-
+//print_r($D->mother); exit;
         $D->mother->set('firstname', 'Margaret');
         $this->assertEquals('Margaret', $D->mother->firstname);
     }

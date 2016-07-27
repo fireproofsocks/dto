@@ -21,13 +21,13 @@ class ProtectedTest extends PHPUnit_Framework_Testcase
         $method->setAccessible(true);
 
         $this->assertFalse($method->invokeArgs($dto, ['']));
-        $this->assertFalse($method->invokeArgs($dto, ['.']));
+        $this->assertTrue($method->invokeArgs($dto, ['.']));
         $this->assertFalse($method->invokeArgs($dto, ['cat..dog']));
         $this->assertFalse($method->invokeArgs($dto, ['..catdog']));
         $this->assertTrue($method->invokeArgs($dto, ['mother.father.dog']));
     }
 
-    public function testGetMetaSubset()
+    public function testGetMetaSubset1()
     {
         $dto = new \Dto\Dto();
         $reflection = new ReflectionClass(get_class($dto));
@@ -46,6 +46,59 @@ class ProtectedTest extends PHPUnit_Framework_Testcase
             '.lastname' => 'b',
         ];
         $this->assertEquals($trimmed, $method->invokeArgs($dto, ['mother', $meta]));
+
+    }
+
+    /**
+     * Meta Subset of an existing prefix should resolve to a "." (i.e. global) subset
+     */
+    public function testGetMetaSubset2()
+    {
+        $dto = new \Dto\Dto();
+        $reflection = new ReflectionClass(get_class($dto));
+        $method = $reflection->getMethod('getMetaSubset');
+        $method->setAccessible(true);
+
+        // Assume a normalized meta key format w leading dots
+        $meta = [
+            '.somehash' => [
+                'type' => 'hash',
+                'values' => 'boolean'
+            ],
+        ];
+
+        $trimmed = [
+            '.' => [
+                'type' => 'hash',
+                'values' => 'boolean'
+            ],
+        ];
+
+        $this->assertEquals($trimmed, $method->invokeArgs($dto, ['somehash', $meta]));
+
+    }
+
+    /**
+     * Meta subset of a non-existing prefix should come back empty
+     */
+    public function testGetMetaSubset3()
+    {
+        $dto = new \Dto\Dto();
+        $reflection = new ReflectionClass(get_class($dto));
+        $method = $reflection->getMethod('getMetaSubset');
+        $method->setAccessible(true);
+
+        // Assume a normalized meta key format w leading dots
+        $meta = [
+            '.somehash' => [
+                'type' => 'hash',
+                'values' => 'boolean'
+            ],
+        ];
+
+        $trimmed = [];
+
+        $this->assertEquals($trimmed, $method->invokeArgs($dto, ['non_existant', $meta]));
 
     }
 

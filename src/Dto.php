@@ -61,7 +61,8 @@ class Dto extends \ArrayObject {
         $this->setFlags(0);
 
         foreach ($input as $key => $value) {
-            print '    ----> key: '.$key."\n";
+            //print '    ----> key: '.$key."\n";
+            print '    ----> key: '.$key.' '.print_r($value,true)."\n";
             $this->offsetSet($key, $value);
         }
 
@@ -140,11 +141,12 @@ class Dto extends \ArrayObject {
      */
     protected function isValidMetaKey($key)
     {
-        print __FUNCTION__.':'.__LINE__."\n";
+        //print __FUNCTION__.':'.__LINE__."\n";
         if (!is_scalar($key)) {
             return false;
         }
-        if ($key == '.' || $key == '') {
+        //if ($key == '.' || $key == '') {
+        if (empty($key)) {
             return false;
         }
         if (strpos($key, '..') !== false) {
@@ -156,7 +158,9 @@ class Dto extends \ArrayObject {
     
     /**
      * Returns the part of the supplied $meta array whose keys begin with the $prefix and re-index the array with the 
-     * prefix removed.  This is used to get a subset of the meta data when instantiating a child class.
+     * prefix removed. E.g. if a prefix of "foo" (or ".foo") is supplied, any meta keys beginning with ".foo" will be
+     * returned and re-indexed to remove the prefix, e.g. ".foo.bar" --> ".bar", or ".foo" --> "."
+     * This is used to get a subset of the meta data when instantiating a child class.
      * 
      * @param $prefix string
      * @param $meta array
@@ -169,10 +173,14 @@ class Dto extends \ArrayObject {
         $prefix = $this->getNormalizedKey($prefix);
 
         foreach ($meta as $dotted_key => $value) {
-            
             if (substr($dotted_key, 0, strlen($prefix)) == $prefix) {
+                // shift something like ".foo.bar" to ".bar"
                 if ($new_key = substr($dotted_key, strlen($prefix))) {
                     $trimmed[$new_key] = $value;
+                }
+                // shift something like ".foo" to "."
+                else {
+                    $trimmed['.'] = $value;
                 }
             }
         }
@@ -345,8 +353,9 @@ class Dto extends \ArrayObject {
     {
 
         // Bypasses filters
-        if ($force || empty($this->template)) {
-            print __FUNCTION__.':'.__LINE__.' (forced or empty template)'."\n";
+        //if ($force || empty($this->template)) {
+        if ($force || empty($this->meta)) {
+            print __FUNCTION__.':'.__LINE__.' (forced or empty meta)'."\n";
             //print_r($this->meta); print "\n";
             if ($this->isHash($value)) {
                 $classname = get_called_class();
@@ -356,7 +365,7 @@ class Dto extends \ArrayObject {
                 return parent::offsetSet($index, $value);
             }
         }
-        print __FUNCTION__.':'.__LINE__.' (regular)'."\n";
+        print __FUNCTION__.':'.__LINE__.' (unforced, filtered)'."\n";
         // Index exists in template?
         if (!$this->isValidTargetLocation($index)) {
             throw new InvalidLocationException('Index not valid for writing: '.$index);
@@ -400,13 +409,14 @@ class Dto extends \ArrayObject {
      */
     protected function filter($value, $index) 
     {
-        $meta = $this->getMeta($index);
+        //$meta = $this->getMeta($index);
 
-        $type = $meta['type'];
-
+        $type = $this->getMutatorType($index);
+        print __FUNCTION__.':'.__LINE__.' getMutatorType '.print_r($type,true)."\n";
         $mutator = $this->getMutatorFunctionName($index);
         $typeMutator = $this->getTypeMutatorFunctionName($type);
 
+        // Which function should be used to mutate the $value onto the target $index? 
         if (method_exists($this, $mutator)) {
             print __FUNCTION__.':'.__LINE__.' mutate using '.$mutator."\n";
             return $this->$mutator($value, $index);
@@ -420,6 +430,53 @@ class Dto extends \ArrayObject {
     }
 
     /**
+     * @param $meta array meta data for a single field
+     * @return mixed
+     */
+    // protected function getMutatorType(array $meta)
+    protected function getMutatorType($index)
+    {
+        print __FUNCTION__.':'.__LINE__.' for index "'.$index."\"\n";
+        $normalized_key = $this->getNormalizedKey($index);
+        // No explicit meta data defined for the given index
+        if (!isset($this->meta[$normalized_key])) {
+            // If there is a global meta definition, use that
+            if (isset($this->meta['.']['values'])) {
+                return $this->meta['.']['values'];
+            }
+            // End of the line: no meta data
+            return 'unknown';
+        }
+        
+        // Index is null for appending to arrays
+        if (is_null($index)) {
+            if (isset($this->meta[$normalized_key]['values'])) {
+                return $this->meta[$normalized_key]['values'];
+            }
+            else {
+                return 'unknown';
+            }
+        }
+        
+        return $this->meta[$normalized_key]['type'];
+
+        // ... OLD ...
+        // $meta data for a given index should always have "type" set
+        $type = $meta['type'];
+        // Array and Hash types can use an alternate mutator for their members
+//        if (in_array($type, ['array', 'hash'])) {
+//        //if (in_array($type, ['hash'])) {
+//            if (isset($meta['values'])) {
+//                $type = $meta['values'];
+//            }
+//            else {
+//                $type = 'unknown';
+//            }
+//        }
+        return $type;
+    }
+
+    /**
      * Get the meta definition data for the given index (normalized or not)
      * @param $index
      * @return array
@@ -428,8 +485,14 @@ class Dto extends \ArrayObject {
     {
         // print __FUNCTION__.':'.__LINE__."\n";
         $normalized_key = $this->getNormalizedKey($index);
+        // No explicit meta data defined for the given index
         if (!isset($this->meta[$normalized_key])) {
-            return []; // no meta data defined
+            // If there is a global meta definition, use that
+            if (isset($this->meta['.'])) {
+                return $this->meta['.'];
+            }
+            // End of the line: no meta data
+            return [];
         }
         return $this->meta[$normalized_key];
     }
@@ -443,8 +506,8 @@ class Dto extends \ArrayObject {
      */
     protected function getMutatorFunctionName($index)
     {
-        // print __FUNCTION__.':'.__LINE__. ' set'.ucfirst($index)."\n";
-        return 'set'.ucfirst($index);
+        // Append operations will use an index of null, which would output "set"
+        return ($index) ? 'set'.ucfirst($index) : null;
     }
 
     /**
@@ -485,7 +548,7 @@ class Dto extends \ArrayObject {
     /**
      * Called internally by the filter() method.
      * @param $value mixed
-     * @return integer
+     * @return float
      */
     protected function setTypeFloat($value)
     {
@@ -496,7 +559,7 @@ class Dto extends \ArrayObject {
     /**
      * Called internally by the filter() method.
      * @param $value mixed
-     * @return integer
+     * @return string
      */
     protected function setTypeScalar($value)
     {
@@ -504,7 +567,16 @@ class Dto extends \ArrayObject {
         // TODO? throw Exception for non-scalar types?
         return strval($value);
     }
-
+    
+    /**
+     * Convenience function (because really, we have better things to do than argue about whether strings are scalars)
+     * @param $value
+     * @return string
+     */
+    protected function setTypeString($value) {
+        return $this->setTypeScalar($value);
+    }
+    
     /**
      * Called internally by the filter() method.
      * @param $value
@@ -521,7 +593,7 @@ class Dto extends \ArrayObject {
             print __FUNCTION__.':'.__LINE__.' (null)'."\n";
             //return [];
             //print __FUNCTION__.':'.__LINE__.' null '."\n";
-            // This sends stuff into a loop
+            // I.e. an empty hash
             return new $classname([], $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
         }
 
@@ -547,7 +619,9 @@ class Dto extends \ArrayObject {
             return new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
         }
 
-        throw new InvalidDataTypeException('Cannot write non-array to array location.');
+        
+        throw new InvalidDataTypeException('Cannot write non-array ('.print_r($value,true).') to array location @->'.$index);
+        // throw new InvalidDataTypeException('Cannot write non-array to array location.');
 
     }
 
@@ -560,6 +634,7 @@ class Dto extends \ArrayObject {
      */
     protected function setTypeArray($value, $index)
     {
+        print __FUNCTION__.':'.__LINE__."\n";
         if (is_array($value)) {
             $value = array_values($value);
         }
@@ -567,6 +642,42 @@ class Dto extends \ArrayObject {
             $value = array_values($value->toArray());
         }
         return $this->setTypeHash($value, $index);
+    }
+
+    /**
+     * Called internally by the filter() method.
+     * Type "unknown" is used in cases where:
+     *  1. a non-populated index is declared as an array or hash, but without use of the "values" qualifier. (aka ambiguous hash)
+     *  2. a template contains nested hashes but it does not have explicit meta data (i.e. the inferred meta data does
+     *      not include the "values" quantifier.
+     *
+     * @param $value mixed
+     * @param $index string
+     * @return mixed
+     * @throws InvalidDataTypeException
+     */
+    protected function setTypeUnknown($value, $index) {
+
+        print __FUNCTION__.':'.__LINE__.' for index '.$index."\n";
+        $meta = $this->getMeta($index); // double-check this? getMutatorType already directed us here
+        $classname = get_called_class();
+
+        if ($value instanceof Dto) {
+            $value = $value->toArray();
+        }
+        // Ensure child arrays are converted to Dto
+        if (is_array($value)) {
+            if ($meta['type'] == 'array') {
+                $value = array_values($value);
+            }
+            return new $classname($value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+        }
+        elseif ($meta['type'] == 'array') {
+            // throw new InvalidDataTypeException('Cannot write non-array to array location.');
+        }
+
+        return $value;
+
     }
 
     /**

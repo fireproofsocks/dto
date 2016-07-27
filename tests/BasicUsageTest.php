@@ -7,6 +7,14 @@ class BasicUsageTest extends PHPUnit_Framework_Testcase
         $this->assertInstanceOf('Dto\Dto', $D);
     }
 
+    public function testWhoAmI()
+    {
+        $D = new \Dto\Dto();
+        $this->assertFalse(is_array($D), 'I am not an array');
+        $this->assertTrue(is_object($D), 'I am an object');
+        $this->assertTrue(is_array((array)$D), 'But I can be type-cast as an array');
+    }
+
     public function testSimpleSetGet()
     {
         $D = new \Dto\Dto();
