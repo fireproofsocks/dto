@@ -8,7 +8,7 @@ DTOs offer a great way of enforcing a "contract" of sorts between layers of your
 
 ### Accessor
 
-Out of the box, you can use an instance of the `Dto` class to normalize an object or array for uniform access. 
+Out of the box, you can use an instance of the `Dto` class to normalize an object or array for "agnostic" access. 
 
 ```
 $D = new \Dto\Dto();
@@ -16,14 +16,14 @@ $D['cousin']['firstname'] = 'Lurch'; // Set as an array
 $Lurch = $D->cousin->firstname; // Get as an object
 ```
 
-Data normalization makes it easier to set and get your data without worrying about whether some nodes were arrays or objects.  In practice, this means it's easier to serialize and unserialze your data (e.g. for caching operations), and you can use `json_encode` and `json_decode` since you do not need to be concerned about the specific object types.
+Data normalization makes it easier to set and get your data without worrying about whether some nodes were arrays or objects.  In practice, this means it's easier to serialize and unserialze your data (e.g. for caching operations) since you can always use `json_encode` and `json_decode` when you do not need to be concerned about the specific object types.
  
 ### Defining your Own DTO Templates
  
 Loosely typed (just like PHP and JSON):
  
 - boolean
-- sclar (i.e. any string value)
+- scalar (i.e. any string value)
 - integer
 - numeric (i.e. floats, or any number with a decimal)
  
@@ -58,9 +58,21 @@ Ambiguous Hash
  
  Gotchas:
  
- `print_r()` -- although DTOs implement PHP's `ArrayObject` storage, they are not strictly simple value arrays. 
+ `print_r()` -- although DTOs implement PHP's `ArrayObject` storage, they are not strictly simple value arrays.  You have to type-cast the DTO objects to arrays, or use their `toArray()` method:
+ 
+ ```
+ $D = new \Dto\Dto();
+ $D->myarray = ['a', 'b', 'c'];
+ print_r($D->myarray->toArray()); 
+ print_r((array) $D->myarray);
+ ```
  
  
  ## Mutators
  
  Each field can define its own callback for filtering input data, something similar to Laravel's mutators: https://laravel.com/docs/5.1/eloquent-mutators
+ 
+ 
+ ## TODO
+ 
+ - Nested DTOs... how to handle them on demand so that instantiating one doesn't create an infinite hydration loop?

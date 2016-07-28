@@ -519,7 +519,38 @@ class Dto extends \ArrayObject {
         print __FUNCTION__.':'.__LINE__."\n";
         return boolval($value);
     }
-
+    
+    /**
+     * Called internally by the filter() method.
+     * @param $value mixed
+     * @param $index string
+     * @return int
+     * @throws InvalidDataTypeException
+     */
+    protected function setTypeDto($value, $index)
+    {
+        print __FUNCTION__.':'.__LINE__."\n";
+    
+        $meta = $this->getMeta($index);
+    
+        if (!isset($meta['class'])) {
+            throw new \InvalidArgumentException('Meta information for DTO at index ' . $index . ' requires "class" parameter.');
+        }
+    
+        $classname = $meta['class'];
+        
+        if (is_null($value)) {
+            return new $classname();
+        }
+        
+        if ($value instanceof $classname) {
+            return $value;
+        }
+        
+        // TODO: other data types?  array? Hash?
+        throw new InvalidDataTypeException($index.' value must be instance of '.$classname);
+    }
+    
     /**
      * Called internally by the filter() method.
      * @param $value mixed
