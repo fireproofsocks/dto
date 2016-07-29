@@ -140,6 +140,26 @@ class DeclareTypeTest extends PHPUnit_Framework_Testcase
         $this->assertEquals('aa', $D['hash']['z']);
     }
 
+    public function testTemplateDoesNotOverrideDeclaredType()
+    {
+        $template = [
+            'x' => false,
+        ];
+        $meta = [
+            'x' => [
+                'type' => 'string'
+            ]
+        ];
+        $dto = new \Dto\Dto([], $template, $meta);
+        $reflection = new ReflectionClass(get_class($dto));
+        $method = $reflection->getMethod('getMeta');
+        $method->setAccessible(true);
+    
+        
+        $result = $method->invokeArgs($dto, ['x']);
+        
+        $this->assertEquals('string', $result['type']);
+    }
 }
 
 class TestDeclareTypeTesttDto extends \Dto\Dto

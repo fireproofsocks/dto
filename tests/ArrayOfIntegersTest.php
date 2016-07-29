@@ -45,6 +45,38 @@ class ArrayOfIntegersTest extends PHPUnit_Framework_Testcase
         $this->assertEquals([1, 2, 3], $D->array->toArray());
         $this->assertEquals([1, 2, 3], (array) $D->array);
     }
+    
+    
+    /*
+     * Things are more interesting when we really treat the ArrayObject as an array primitive
+     */
+    public function testPrimitiveArraySet1()
+    {
+        $D = new TestArrayOfIntegersTestDto2([1, 2, 3]);
+        $this->assertEquals([1, 2, 3], $D->toArray());
+        $this->assertEquals([1, 2, 3], (array)$D);
+    }
+    
+    public function testPrimitiveArraySet2()
+    {
+        $D = new TestArrayOfIntegersTestDto2(['1a', '2b', 3.3]);
+        $this->assertEquals([1, 2, 3], $D->toArray());
+        $this->assertEquals([1, 2, 3], (array)$D);
+        
+        $D[] = '4d';
+        $this->assertEquals([1, 2, 3, 4], $D->toArray());
+    }
+    
+    // What about other ways to achieve this behavior?
+//    public function testPrimitiveArraySet3()
+//    {
+//        $this->markTestIncomplete();
+//        $D = new TestArrayOfIntegersTestDto2();
+//        $D->set(null, [1, 2, 3]);
+//        // print_r($D->toArray()); exit;
+//        $this->assertEquals([1, 2, 3], $D->toArray());
+//        $this->assertEquals([1, 2, 3], (array)$D);
+//    }
 }
 
 class TestArrayOfIntegersTestDto extends \Dto\Dto
@@ -55,6 +87,19 @@ class TestArrayOfIntegersTestDto extends \Dto\Dto
 
     protected $meta = [
         'array' => [
+            'type' => 'array',
+            'values' => 'integer'
+        ],
+    ];
+}
+
+class TestArrayOfIntegersTestDto2 extends \Dto\Dto
+{
+    protected $template = [
+    ];
+    
+    protected $meta = [
+        '.' => [
             'type' => 'array',
             'values' => 'integer'
         ],

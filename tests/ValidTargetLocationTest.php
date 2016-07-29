@@ -34,13 +34,13 @@ class TestValidTargetLocationTestDto extends \Dto\Dto
     // As a named function?
     // What if the index has spaces or dashes?
     // How about a function that accepts the parent node (e.g. "myhash") and the proposed target $index
-    protected function isValidTargetLocation($index)
-    {
-        if (!$result = parent::isValidTargetLocation($index)) {
-            print 'false.... ??? @->'.$index; exit;
-            return false;
-        }
-        
-        return true;
-    }
+//    protected function isValidTargetLocation($index)
+//    {
+//        if (!$result = parent::isValidTargetLocation($index)) {
+//            print 'false.... ??? @->'.$index; exit;
+//            return false;
+//        }
+//
+//        return true;
+//    }
 }

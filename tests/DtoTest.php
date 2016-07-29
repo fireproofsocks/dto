@@ -45,16 +45,29 @@ class DtoTest extends PHPUnit_Framework_Testcase
         $C = new TestParentDto();
         $P->mydto = $C;
     }
+    
+    public function testNullableIndexIsNull()
+    {
+        $P = new TestParentDto();
+        $this->assertNotNull($P->mydto);
+        $this->assertNull($P->mydto_nullable);
+    }
 }
 
 class TestParentDto extends \Dto\Dto {
     protected $template = [
         'mydto' => null,
+        'mydto_nullable' => null,
     ];
     protected $meta = [
         'mydto' => [
             'type' => 'dto',
             'class' => 'TestChildDto'
+        ],
+        'mydto_nullable' => [
+            'type' => 'dto',
+            'class' => 'TestChildDto',
+            'nullable' => true
         ]
     ];
 }
