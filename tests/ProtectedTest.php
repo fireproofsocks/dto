@@ -141,10 +141,16 @@ class ProtectedTest extends PHPUnit_Framework_Testcase
         $meta = $method->invokeArgs($dto, [$template, []]);
 
         $this->assertEquals('integer', $meta['.integer']['type']);
+        $this->assertTrue(array_key_exists('nullable', $meta['.integer']));
+        $this->assertFalse($meta['.integer']['nullable']);
         $this->assertEquals('float', $meta['.float']['type']);
+        $this->assertFalse($meta['.float']['nullable']);
         $this->assertEquals('boolean', $meta['.boolean']['type']);
+        $this->assertFalse($meta['.boolean']['nullable']);
         $this->assertEquals('scalar', $meta['.string']['type']);
+        $this->assertFalse($meta['.string']['nullable']);
         $this->assertEquals('array', $meta['.array']['type']);
+        $this->assertFalse($meta['.array']['nullable']);
     }
 
     public function testAutoDetectTypes2()
