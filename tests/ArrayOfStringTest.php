@@ -22,7 +22,7 @@ class ArrayOfStringTest extends PHPUnit_Framework_Testcase
 
     }
     
-    public function testArrayErraticIndex()
+    public function testKeysStrippedFromArray()
     {
         $D = new TestArrayOfStringTestDto();
         

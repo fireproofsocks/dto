@@ -116,4 +116,19 @@ class BasicUsageTest extends PHPUnit_Framework_Testcase
         $this->assertEquals($obj, $D->toObject());
         $this->assertEquals($obj2, $D->mother->toObject());
     }
+    
+    public function testAlterHashValuesByReference()
+    {
+        $D = new \Dto\Dto();
+        
+        $D->a = 'apple';
+        $D->b = 'banana';
+        $D->c = 'cherry';
+        
+        foreach($D as $k => &$v) {
+            $v = $v . '1';
+        }
+        
+        $this->assertEquals(['a'=>'apple1', 'b'=>'banana1', 'c'=>'cherry1'], $D->toArray());
+    }
 }

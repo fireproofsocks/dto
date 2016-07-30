@@ -2,47 +2,33 @@
 class ArrayOfArrayTest extends PHPUnit_Framework_Testcase
 {
     
-    public function testArray1()
+    /**
+     * @ expectedException Dto\Exceptions\InvalidDataTypeException
+     */
+//    public function testCannotWriteScalarToArrayLocation()
+//    {
+//        $D = new TestArrayOfArrayTestDto();
+//        $D->array = 'not an array';
+//    }
+    
+    public function testWriteArrays()
     {
-        $D = new TestArrayOfArrayTestDto();
-        $D->array = ['x','y','z'];
-        $this->assertEquals(['x','y','z'], $D->array->toArray());
-        $this->assertEquals(['x','y','z'], (array) $D->array);
+        //$D = new TestArrayOfArrayTestDto();
+        $D = new TestArrayOfArrayTestDto([[1,2,3]]);
         
-        $D->array = ['x','y'];
-        $D->array[] = 'z';
-        $this->assertEquals(['x','y','z'], $D->array->toArray());
-        $this->assertEquals(['x','y','z'], (array) $D->array);
-        
-        $erratic_index = [
-            'a' => 'apple',
-            'b' => 'banana',
-            'c' => 'cherry'
-        ];
-        
-        $D->array = $erratic_index;
-        $this->assertEquals(['apple','banana','cherry'], $D->array->toArray());
-        $this->assertEquals(['apple','banana','cherry'], (array) $D->array);
-    }
-    
-    
-    
-    public function testArrayOfArray()
-    {
-        $D = new TestArrayOfArrayTestDto();
-        $D->array = [['a', 'b', 'c'], ['a' => 'a', 'b' => 'b', 'c' => 'c']];
-        $this->assertEquals([['a', 'b', 'c'], ['a', 'b', 'c']], $D->array->toArray());
+        //$D[] = [1,2,3];
+        //$D->array[] = ['x', 'y', 'z'];
+        //$D->array[] = ['a' => 'apple']; // TODO: should arrays filter out hashes?
     }
 }
 
 class TestArrayOfArrayTestDto extends \Dto\Dto
 {
     protected $template = [
-        'array' => [],
     ];
     
     protected $meta = [
-        'array' => [
+        '.' => [
             'type' => 'array',
             'values' => 'array'
         ]

@@ -30,14 +30,7 @@ class Dto extends \ArrayObject
     public function __construct(array $input = [], array $template = [], array $meta = [])
     {
         $arg_list = func_get_args();
-        //print_r($arg_list); exit;
-//        print "-----------------------\n";
-//        print __FUNCTION__.':'.__LINE__."\n";
-//        print_r($input); print "\n";
-//        print_r($template); print "\n";
-//        print_r($meta); print "\n";
-//        print "-----------------------\n";
-        
+
         // We need to be able to override the class variables, especially when the input variables are empty.
         // This pattern won't work:
         //      $this->template = ($template) ? $template : $this->template;
@@ -63,6 +56,13 @@ class Dto extends \ArrayObject
         print "-----------------------\n";
         
         $this->setFlags(0);
+        
+//        if ($this->meta['.']['type'] == 'array') {
+//            foreach ($input as $value) {
+//                $this->offsetSet(null, $value);
+//            }
+//            return;
+//        }
         
         foreach ($input as $key => $value) {
             //print '    ----> key: '.$key."\n";
@@ -674,6 +674,7 @@ class Dto extends \ArrayObject
             $meta = $this->getMeta($index);
             if (isset($meta['values'])) {
                 $typeMutator = $this->getTypeMutatorFunctionName($meta['values']);
+                print __LINE__.':'.$typeMutator.' @ index '. $index.' ' .print_r($value, true)."\n";
                 foreach ($value as $k => $v) {
                     if (method_exists($this, $typeMutator)) {
                         $value[$k] = $this->$typeMutator($v, $k);
