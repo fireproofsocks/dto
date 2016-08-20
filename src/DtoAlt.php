@@ -14,7 +14,7 @@ use Dto\Exceptions\InvalidMetaKeyException;
  * Some ideas from https://symfony.com/doc/current/components/property_access/introduction.html#installation
  * And others from http://json-schema.org/
  */
-class Dto extends \ArrayObject
+class DtoAlt extends \ArrayObject
 {
     
     protected $template = [];
@@ -30,51 +30,13 @@ class Dto extends \ArrayObject
     public function __construct(array $input = [], array $template = [], array $meta = [])
     {
         $this->setFlags(0);
-        
         $arg_list = func_get_args();
-
-        // We need to be able to override the class variables, especially when the input variables are empty.
-        // This pattern won't work:
-        //      $this->template = ($template) ? $template : $this->template;
-        // It doesn't work because it triggers a loop condition:  $this->template will always be used as a fallback
-        // when the input $template is empty.  Instead, we use func_get_args to detect if the input was set, and if set,
-        // that input overrides any pre-defined class level variable.  It's necessary to force the class level variables
-        // to empty values before we dive into auto-detection and offsetSet.
+        
+        // We need to be able to override the class variables when the input variables are empty.
         $this->template = (isset($arg_list[1])) ? $arg_list[1] : $this->template;
         $this->meta = (isset($arg_list[2])) ? $arg_list[2] : $this->meta;
-    
-        $this->setRootNode($input);
         
-//        $input = ($input) ? $input : $this->template; // You cannot override $this->template with an empty input
-//
-//        $this->meta = $this->normalizeMeta($this->meta);
-//        $this->meta = $this->autoDetectTypes($this->template, $this->meta);
-//
-//
-//        print "-----------------------\n";
-//        print __FUNCTION__ . ':' . __LINE__ . "\n";
-//        print_r($input);
-//        print "\n";
-//        print_r($this->template);
-//        print "\n";
-//        print_r($this->meta);
-//        print "\n";
-//        print "-----------------------\n";
-//
-//
-//
-////        if ($this->meta['.']['type'] == 'array') {
-////            foreach ($input as $value) {
-////                $this->offsetSet(null, $value);
-////            }
-////            return;
-////        }
-//
-//        foreach ($input as $key => $value) {
-//            //print '    ----> key: '.$key."\n";
-//            print '    ----> key: ' . $key . ' values: ' . print_r($value, true) . "\n";
-//            $this->offsetSet($key, $value);
-//        }
+        $this->setRootNode($input);
     }
     
     /**
@@ -313,7 +275,13 @@ class Dto extends \ArrayObject
     public function set($index, $value, $force = false)
     {
         print __FUNCTION__ . ':' . __LINE__ . "\n";
-        $this->offsetSet($index, $value, $force);
+        // Specal case for the root node: then we're talking about THIS ArrayObject
+        if ($index == '.') {
+            $this->setRootNode($value, $force);
+        }
+        else {
+            $this->offsetSet($index, $value, $force);
+        }
     }
     
     /**
@@ -443,7 +411,7 @@ class Dto extends \ArrayObject
         $mutator = $this->getMutatorFunctionName($index);
         $typeMutator = $this->getTypeMutatorFunctionName($index);
         
-        // Which function should be used to mutate the $value onto the target $index? 
+        // Which function should be used to mutate the $value onto the target $index?
         if (method_exists($this, $mutator)) {
             print __FUNCTION__ . ':' . __LINE__ . ' mutate using ' . $mutator . "\n";
             return $this->$mutator($value, $index);
@@ -501,9 +469,6 @@ class Dto extends \ArrayObject
         $normalized_key = $this->getNormalizedKey($index);
         print __FUNCTION__ . ':' . __LINE__ . ' for index "' . $index . '" ('. $normalized_key.")\n";
         
-        if ($normalized_key == '.') {
-            return 'setRootNode';
-        }
         // No explicit meta data defined for the given index
         if (!isset($this->meta[$normalized_key])) {
             // If there is a global meta definition, use that
@@ -513,31 +478,33 @@ class Dto extends \ArrayObject
             // End of the line: no meta data
             return 'setTypeUnknown';
         }
-    
-        // Index is null for appending to arrays
-        if (is_null($index)) {
+        
+        // Index is null when appending to arrays
+        // if (is_null($index)) {
+        if ($normalized_key == '.') {
             if (isset($this->meta[$normalized_key]['values']['type'])) {
-                return $this->meta[$normalized_key]['values']['type'];
+                return 'setType' . ucfirst($this->meta[$normalized_key]['values']['type']);
             } else {
                 return 'setTypeUnknown';
             }
         }
-    
+        
         return 'setType' . ucfirst($this->meta[$normalized_key]['type']);
     }
     
     /**
      * Special case setter used when setting the root node (i.e. the base ArrayObject), used by the constructor
      * @param $input array
+     * @param $force boolean
      */
-    protected function setRootNode(array $input)
+    protected function setRootNode(array $input, $force = false)
     {
         $input = ($input) ? $input : $this->template; // You cannot override $this->template with an empty input
-    
+        
         $this->meta = $this->normalizeMeta($this->meta);
         $this->meta = $this->autoDetectTypes($this->template, $this->meta);
-    
-    
+        
+        
         print "-----------------------\n";
         print __FUNCTION__ . ':' . __LINE__ . "\n";
         print_r($input);
@@ -556,11 +523,21 @@ class Dto extends \ArrayObject
 //            }
 //            return;
 //        }
-    
-        foreach ($input as $key => $value) {
-            //print '    ----> key: '.$key."\n";
-            print '    ----> key: ' . $key . ' values: ' . print_r($value, true) . "\n";
-            $this->offsetSet($key, $value);
+        //$isHash = $this->isHash($input);
+            
+        if ($this->isHash($input)) {
+            foreach ($input as $key => $value) {
+                //print '    ----> key: '.$key."\n";
+                print '    ----> key: ' . $key . ' values: ' . print_r($value, true) . "\n";
+        
+                $this->offsetSet($key, $value, $force);
+            }
+        }
+        else {
+            print __FUNCTION__ . ':' . __LINE__ . " input is array \n";
+            foreach ($input as $value) {
+                $this->offsetSet(null, $value, $force); // i.e. append
+            }
         }
     }
     

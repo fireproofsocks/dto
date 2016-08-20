@@ -62,23 +62,23 @@ class ArrayOfIntegersTest extends PHPUnit_Framework_Testcase
         $D = new TestArrayOfIntegersTestDto2(['1a', '2b', 3.3]);
         $this->assertEquals([1, 2, 3], $D->toArray());
         $this->assertEquals([1, 2, 3], (array)$D);
-        
+
         $D[] = '4d';
         $this->assertEquals([1, 2, 3, 4], $D->toArray());
     }
     
     // What about other ways to achieve this behavior?
-    public function testThatWeCanSetTheRootIndexAndAchieveTheSameResultAsPassingToTheConstructor()
-    {
-        $D = new TestArrayOfIntegersTestDto2();
-        $D->set('.', [1, 2, 3]);
-        //print_r($D->toArray()); exit;
-        $this->assertEquals([1, 2, 3], $D->toArray());
-        $this->assertEquals([1, 2, 3], (array)$D);
-    }
+//    public function testThatWeCanSetTheRootIndexAndAchieveTheSameResultAsPassingToTheConstructor()
+//    {
+//        $D = new TestArrayOfIntegersTestDto2();
+//        $D->set('.', [1, 2, 3]);
+//        print_r($D->toArray()); exit;
+//        $this->assertEquals([1, 2, 3], $D->toArray());
+//        $this->assertEquals([1, 2, 3], (array)$D);
+//    }
 }
 
-class TestArrayOfIntegersTestDto extends \Dto\Dto
+class TestArrayOfIntegersTestDto extends \Dto\DtoAlt
 {
     protected $template = [
         'array' => [],
@@ -94,7 +94,7 @@ class TestArrayOfIntegersTestDto extends \Dto\Dto
     ];
 }
 
-class TestArrayOfIntegersTestDto2 extends \Dto\Dto
+class TestArrayOfIntegersTestDto2 extends \Dto\DtoAlt
 {
     protected $template = [
     ];
