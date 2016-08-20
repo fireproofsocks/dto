@@ -49,7 +49,9 @@ class TestArrayOfFloatTestDto extends \Dto\Dto
     protected $meta = [
         'array' => [
             'type' => 'array',
-            'values' => 'float'
+            'values' => [
+                'type' => 'float'
+            ]
         ]
     ];
 }

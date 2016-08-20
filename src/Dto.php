@@ -29,6 +29,8 @@ class Dto extends \ArrayObject
      */
     public function __construct(array $input = [], array $template = [], array $meta = [])
     {
+        $this->setFlags(0);
+        
         $arg_list = func_get_args();
 
         // We need to be able to override the class variables, especially when the input variables are empty.
@@ -40,37 +42,39 @@ class Dto extends \ArrayObject
         // to empty values before we dive into auto-detection and offsetSet.
         $this->template = (isset($arg_list[1])) ? $arg_list[1] : $this->template;
         $this->meta = (isset($arg_list[2])) ? $arg_list[2] : $this->meta;
-        $this->meta = $this->normalizeMeta($this->meta);
-        $this->meta = $this->autoDetectTypes($this->template, $this->meta);
+    
+        $this->setRootNode($input);
         
-        $input = ($input) ? $input : $this->template; // You cannot override $this->template with an empty input
-        
-        print "-----------------------\n";
-        print __FUNCTION__ . ':' . __LINE__ . "\n";
-        print_r($input);
-        print "\n";
-        print_r($this->template);
-        print "\n";
-        print_r($this->meta);
-        print "\n";
-        print "-----------------------\n";
-        
-        $this->setFlags(0);
-        
-//        if ($this->meta['.']['type'] == 'array') {
-//            foreach ($input as $value) {
-//                $this->offsetSet(null, $value);
-//            }
-//            return;
+//        $input = ($input) ? $input : $this->template; // You cannot override $this->template with an empty input
+//
+//        $this->meta = $this->normalizeMeta($this->meta);
+//        $this->meta = $this->autoDetectTypes($this->template, $this->meta);
+//
+//
+//        print "-----------------------\n";
+//        print __FUNCTION__ . ':' . __LINE__ . "\n";
+//        print_r($input);
+//        print "\n";
+//        print_r($this->template);
+//        print "\n";
+//        print_r($this->meta);
+//        print "\n";
+//        print "-----------------------\n";
+//
+//
+//
+////        if ($this->meta['.']['type'] == 'array') {
+////            foreach ($input as $value) {
+////                $this->offsetSet(null, $value);
+////            }
+////            return;
+////        }
+//
+//        foreach ($input as $key => $value) {
+//            //print '    ----> key: '.$key."\n";
+//            print '    ----> key: ' . $key . ' values: ' . print_r($value, true) . "\n";
+//            $this->offsetSet($key, $value);
 //        }
-        
-        foreach ($input as $key => $value) {
-            //print '    ----> key: '.$key."\n";
-            print '    ----> key: ' . $key . ' ' . print_r($value, true) . "\n";
-            $this->offsetSet($key, $value);
-        }
-        
-        //print_r($this->meta); exit;
     }
     
     /**
@@ -434,12 +438,8 @@ class Dto extends \ArrayObject
      */
     protected function filter($value, $index)
     {
-        //$meta = $this->getMeta($index);
-        
-        $type = $this->getMutatorType($index); // TODO: this function's logic could be moved into getTypeMutatorFunctionName
-        print __FUNCTION__ . ':' . __LINE__ . ' getMutatorType ' . print_r($type, true) . "\n";
         $mutator = $this->getMutatorFunctionName($index);
-        $typeMutator = $this->getTypeMutatorFunctionName($type);
+        $typeMutator = $this->getTypeMutatorFunctionName($index);
         
         // Which function should be used to mutate the $value onto the target $index? 
         if (method_exists($this, $mutator)) {
@@ -450,38 +450,7 @@ class Dto extends \ArrayObject
             return $this->$typeMutator($value, $index);
         }
         
-        throw new \InvalidArgumentException('No mutator found for index "' . $index . '" (' . $mutator . '?) or type "' . $type . '" (' . $typeMutator . '?)');
-    }
-    
-    /**
-     * @param $index string
-     * @return mixed
-     */
-    protected function getMutatorType($index)
-    {
-        print __FUNCTION__ . ':' . __LINE__ . ' for index "' . $index . "\"\n";
-        $normalized_key = $this->getNormalizedKey($index);
-        // No explicit meta data defined for the given index
-        if (!isset($this->meta[$normalized_key])) {
-            // If there is a global meta definition, use that
-            if (isset($this->meta['.']['values'])) {
-                return $this->meta['.']['values'];
-            }
-            // End of the line: no meta data
-            return 'unknown';
-        }
-        
-        // Index is null for appending to arrays
-        if (is_null($index)) {
-            if (isset($this->meta[$normalized_key]['values'])) {
-                return $this->meta[$normalized_key]['values'];
-            } else {
-                return 'unknown';
-            }
-        }
-        
-        return $this->meta[$normalized_key]['type'];
-        
+        throw new \InvalidArgumentException('No mutator found for index "' . $index . '" (' . $mutator . '? or '.$typeMutator.'?)');
     }
     
     /**
@@ -522,13 +491,75 @@ class Dto extends \ArrayObject
      * Returns the function name used to mutate all fields of the given $type.  The filter() method will look for a
      * function of this name when modifying values during set operations.  Type-based mutation only is used if a field does
      * not have a specific mutator function defined (see getMutatorFunctionName()).
-     * @param $type string
+     * @param $index string
      * @return string
      */
-    protected function getTypeMutatorFunctionName($type)
+    protected function getTypeMutatorFunctionName($index)
     {
-        // print __FUNCTION__.':'.__LINE__.' setType'.ucfirst($type)."\n";
-        return 'setType' . ucfirst($type);
+        $normalized_key = $this->getNormalizedKey($index);
+        print __FUNCTION__ . ':' . __LINE__ . ' for index "' . $index . '" ('. $normalized_key.")\n";
+        
+        if ($normalized_key == '.') {
+            return 'setRootNode';
+        }
+        // No explicit meta data defined for the given index
+        if (!isset($this->meta[$normalized_key])) {
+            // If there is a global meta definition, use that
+            if (isset($this->meta['.']['values']['type'])) {
+                return 'setType' . ucfirst($this->meta['.']['values']['type']);
+            }
+            // End of the line: no meta data
+            return 'setTypeUnknown';
+        }
+    
+        // Index is null for appending to arrays
+        if (is_null($index)) {
+            if (isset($this->meta[$normalized_key]['values']['type'])) {
+                return $this->meta[$normalized_key]['values']['type'];
+            } else {
+                return 'setTypeUnknown';
+            }
+        }
+    
+        return 'setType' . ucfirst($this->meta[$normalized_key]['type']);
+    }
+    
+    /**
+     * Special case setter used when setting the root node (i.e. the base ArrayObject), used by the constructor
+     * @param $input array
+     */
+    protected function setRootNode(array $input)
+    {
+        $input = ($input) ? $input : $this->template; // You cannot override $this->template with an empty input
+    
+        $this->meta = $this->normalizeMeta($this->meta);
+        $this->meta = $this->autoDetectTypes($this->template, $this->meta);
+    
+    
+        print "-----------------------\n";
+        print __FUNCTION__ . ':' . __LINE__ . "\n";
+        print_r($input);
+        print "\n";
+        print_r($this->template);
+        print "\n";
+        print_r($this->meta);
+        print "\n";
+        print "-----------------------\n";
+
+
+
+//        if ($this->meta['.']['type'] == 'array') {
+//            foreach ($input as $value) {
+//                $this->offsetSet(null, $value);
+//            }
+//            return;
+//        }
+    
+        foreach ($input as $key => $value) {
+            //print '    ----> key: '.$key."\n";
+            print '    ----> key: ' . $key . ' values: ' . print_r($value, true) . "\n";
+            $this->offsetSet($key, $value);
+        }
     }
     
     /**
@@ -540,8 +571,7 @@ class Dto extends \ArrayObject
     protected function setTypeBoolean($value, $index)
     {
         print __FUNCTION__ . ':' . __LINE__ . "\n";
-        $meta = $this->getMeta($index);
-        return boolval($value);
+        return (is_null($value) && $this->isNullable($index)) ? null : boolval($value);
     }
     
     /**
@@ -673,7 +703,7 @@ class Dto extends \ArrayObject
             print __FUNCTION__ . ':' . __LINE__ . ' (array)' . "\n";
             $meta = $this->getMeta($index);
             if (isset($meta['values'])) {
-                $typeMutator = $this->getTypeMutatorFunctionName($meta['values']);
+                $typeMutator = $this->getTypeMutatorFunctionName($meta['values']['type']);
                 print __LINE__.':'.$typeMutator.' @ index '. $index.' ' .print_r($value, true)."\n";
                 foreach ($value as $k => $v) {
                     if (method_exists($this, $typeMutator)) {
@@ -700,7 +730,7 @@ class Dto extends \ArrayObject
      */
     protected function setTypeArray($value, $index)
     {
-        print __FUNCTION__ . ':' . __LINE__ . "\n";
+        print __FUNCTION__ . ':' . __LINE__ . ' index='.$index."\n";
         if (is_array($value)) {
             $value = array_values($value);
         } elseif ($value instanceof Dto) {
@@ -752,7 +782,6 @@ class Dto extends \ArrayObject
      */
     public function toArray(Dto $arrayObj = null)
     {
-        //print __FUNCTION__.':'.__LINE__."\n";
         $arrayObj = ($arrayObj) ? $arrayObj : $this;
         $output = [];
         foreach ($arrayObj as $k => $v) {
@@ -781,9 +810,9 @@ class Dto extends \ArrayObject
     }
     
     /**
-     * Convert the specified arrayObj to a StdClass object.  Ultimately, this is a decorator around the toJson() method.
+     * Convert the specified arrayObj to a stdClass object.  Ultimately, this is a decorator around the toJson() method.
      * @param Dto $arrayObj
-     * @return object
+     * @return object stdClass
      */
     public function toObject(Dto $arrayObj = null)
     {

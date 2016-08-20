@@ -48,7 +48,9 @@ class TestArrayOfStringTestDto extends \Dto\Dto
     protected $meta = [
         'array' => [
             'type' => 'array',
-            'values' => 'scalar'
+            'values' => [
+                'type' => 'scalar'
+            ]
         ]
     ];
 }

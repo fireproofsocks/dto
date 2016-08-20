@@ -57,7 +57,9 @@ class TestArrayOfBooleanTestDto extends \Dto\Dto
     protected $meta = [
         'array' => [
             'type' => 'array',
-            'values' => 'boolean'
+            'values' => [
+                'type' => 'boolean'
+            ]
         ],
     ];
 }
