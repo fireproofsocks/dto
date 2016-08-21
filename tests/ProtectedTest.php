@@ -63,14 +63,14 @@ class ProtectedTest extends PHPUnit_Framework_Testcase
         $meta = [
             '.somehash' => [
                 'type' => 'hash',
-                'values' => 'boolean'
+                'values' => ['type' =>'boolean']
             ],
         ];
 
         $trimmed = [
             '.' => [
                 'type' => 'hash',
-                'values' => 'boolean'
+                'values' => ['type' =>'boolean']
             ],
         ];
 
@@ -92,7 +92,7 @@ class ProtectedTest extends PHPUnit_Framework_Testcase
         $meta = [
             '.somehash' => [
                 'type' => 'hash',
-                'values' => 'boolean'
+                'values' => ['type' =>'boolean']
             ],
         ];
 
@@ -100,6 +100,32 @@ class ProtectedTest extends PHPUnit_Framework_Testcase
 
         $this->assertEquals($trimmed, $method->invokeArgs($dto, ['non_existant', $meta]));
 
+    }
+    
+    public function testGetMetaSubsetTrimsTheRootNodeDefinition()
+    {
+        $dto = new \Dto\Dto();
+        $reflection = new ReflectionClass(get_class($dto));
+        $method = $reflection->getMethod('getMetaSubset');
+        $method->setAccessible(true);
+    
+        // Assume a normalized meta key format w leading dots
+        $meta = [
+            '.' => [
+                'type' => 'array',
+                'values' => [
+                    'type' => 'array'
+                ]
+            ]
+        ];
+    
+        $trimmed = [
+            '.' => [
+                'type' => 'array',
+            ],
+        ];
+    
+        $this->assertEquals($trimmed, $method->invokeArgs($dto, [null, $meta]));
     }
 
     public function testNormalizeMeta()
@@ -192,6 +218,18 @@ class ProtectedTest extends PHPUnit_Framework_Testcase
         $this->assertEquals(456, $value);
     }
 
+    
+    public function testGetTypeMutatorFunctionName()
+    {
+        $dto = new TestFilterDto();
+        $reflection = new ReflectionClass(get_class($dto));
+        $method = $reflection->getMethod('getTypeMutatorFunctionName');
+        $method->setAccessible(true);
+    
+        $value = $method->invokeArgs($dto, ['z']);
+        
+        $this->assertEquals('setTypeArray', $value);
+    }
 }
 
 class TestFilterDto extends \Dto\Dto {
@@ -202,10 +240,15 @@ class TestFilterDto extends \Dto\Dto {
     protected $meta = [
         'x' => [
             'type' => 'integer',
-            'callback' => 'TestFilterDto::toInt',
         ],
         'y' => [
             'type' => 'integer'
+        ],
+        'z' => [
+            'type' => 'array',
+            'values' => [
+                'type' => 'integer'
+            ]
         ]
     ];
 

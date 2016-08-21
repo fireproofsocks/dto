@@ -1,7 +1,6 @@
 <?php
 
-// TODO: flip this back once ready...
-use Dto\DtoAlt as Dto;
+use Dto\Dto as Dto;
 
 class AltTest extends PHPUnit_Framework_Testcase
 {
@@ -32,28 +31,26 @@ class AltTest extends PHPUnit_Framework_Testcase
         $D->set('.', ['x','y','z']);
         $this->assertEquals(['x','y','z'], $D->toArray());
     }
+    
     public function testPrimitiveArraySet2()
     {
         $D = new TestArrayOfIntegersTestDto2(['1a', '2b', 3.3]);
-        //$this->assertEquals([1, 2, 3], $D->toArray());
-        //$this->assertEquals([1, 2, 3], (array)$D);
         
         $D[] = '4d';
         $this->assertEquals([1, 2, 3, 4], $D->toArray());
     }
     
-    // What about other ways to achieve this behavior?
-//    public function testThatWeCanSetTheRootIndexAndAchieveTheSameResultAsPassingToTheConstructor()
-//    {
-//        $D = new TestArrayOfIntegersTestDto2();
-//        $D->set('.', [1, 2, 3]);
-//        print_r($D->toArray()); exit;
-//        $this->assertEquals([1, 2, 3], $D->toArray());
-//        $this->assertEquals([1, 2, 3], (array)$D);
-//    }
+    public function testThatWeCanSetTheRootIndexAndAchieveTheSameResultAsPassingToTheConstructor()
+    {
+        $D = new TestArrayOfIntegersTestDto2();
+        $D->set('.', [1, 2, 3]);
+        
+        $this->assertEquals([1, 2, 3], $D->toArray());
+        $this->assertEquals([1, 2, 3], (array)$D);
+    }
 }
 
-class TestArrayOfIntegersTestDto2 extends \Dto\DtoAlt
+class TestArrayOfIntegersTestDto2 extends \Dto\Dto
 {
     protected $template = [
     ];

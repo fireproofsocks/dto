@@ -29,14 +29,15 @@ class ArrayOfArrayTest extends PHPUnit_Framework_Testcase
         $a = ['ape', 'apple', 'africa'];
         $b = ['bear', 'bun', 'boise'];
         $c = ['cat', 'chunk', 'chile'];
-        $D = new TestArrayOfArrayTestDto([[$a,$b,$c]]);
+        $D = new TestArrayOfArrayTestDto([$a,$b,$c]);
+        //print_r($D->toArray()); exit;
+        $this->assertEquals([$a, $b, $c], $D->toArray());
     }
 }
 
 class TestArrayOfArrayTestDto extends \Dto\Dto
 {
-    protected $template = [
-    ];
+    protected $template = [];
     
     protected $meta = [
         '.' => [

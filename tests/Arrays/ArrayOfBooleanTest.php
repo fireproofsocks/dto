@@ -2,7 +2,7 @@
 class ArrayOfBooleanTest extends PHPUnit_Framework_Testcase
 {
     
-    public function testArraySet1()
+    public function testSettingOfArrayNodeWithActualBooleans()
     {
         $D = new TestArrayOfBooleanTestDto();
         $D->array = [true, true, false];
@@ -11,7 +11,7 @@ class ArrayOfBooleanTest extends PHPUnit_Framework_Testcase
         
     }
     
-    public function testArraySet2()
+    public function testSettingOfArrayNodeWithValuesThatShouldBeConvertedToBooleans()
     {
         $D = new TestArrayOfBooleanTestDto();
         $D->array = [1, 1, 0];
@@ -20,7 +20,7 @@ class ArrayOfBooleanTest extends PHPUnit_Framework_Testcase
         
     }
     
-    public function testArrayAppend()
+    public function testAppendingBooleanOntoArrayNode()
     {
         $D = new TestArrayOfBooleanTestDto();
         $D->array = [true, false];
@@ -31,7 +31,7 @@ class ArrayOfBooleanTest extends PHPUnit_Framework_Testcase
         
     }
     
-    public function testArrayErraticIndex()
+    public function testThatHashWithBooleanValuesIsConvertedIntoArray()
     {
         $D = new TestArrayOfBooleanTestDto();
         
@@ -45,7 +45,21 @@ class ArrayOfBooleanTest extends PHPUnit_Framework_Testcase
         $this->assertEquals([true, false, true], $D->array->toArray());
         $this->assertEquals([true, false, true], (array) $D->array);
     }
-
+    
+    public function testPassingInputToConstructor()
+    {
+        $D = new TestArrayOfBooleanTestDto2([true, false, true]);
+        $this->assertEquals([true, false, true], $D->toArray());
+        $this->assertEquals([true, false, true], (array) $D);
+    }
+    
+    public function testSettingRootNode()
+    {
+        $D = new TestArrayOfBooleanTestDto2();
+        $D->set('.', [true, false, true]);
+        $this->assertEquals([true, false, true], $D->toArray());
+        $this->assertEquals([true, false, true], (array) $D);
+    }
 }
 
 class TestArrayOfBooleanTestDto extends \Dto\Dto
@@ -57,6 +71,20 @@ class TestArrayOfBooleanTestDto extends \Dto\Dto
     protected $meta = [
         'array' => [
             'type' => 'array',
+            'values' => [
+                'type' => 'boolean'
+            ]
+        ],
+    ];
+}
+
+class TestArrayOfBooleanTestDto2 extends \Dto\Dto
+{
+    protected $template = [];
+    
+    protected $meta = [
+        '.' => [
+            //'type' => 'array',
             'values' => [
                 'type' => 'boolean'
             ]

@@ -78,7 +78,7 @@ class ArrayOfIntegersTest extends PHPUnit_Framework_Testcase
 //    }
 }
 
-class TestArrayOfIntegersTestDto extends \Dto\DtoAlt
+class TestArrayOfIntegersTestDto extends \Dto\Dto
 {
     protected $template = [
         'array' => [],
@@ -94,7 +94,7 @@ class TestArrayOfIntegersTestDto extends \Dto\DtoAlt
     ];
 }
 
-class TestArrayOfIntegersTestDto2 extends \Dto\DtoAlt
+class TestArrayOfIntegersTestDto2 extends \Dto\Dto
 {
     protected $template = [
     ];
