@@ -160,7 +160,11 @@ class Dto extends \ArrayObject
             throw new InvalidLocationException('Index "'.$normalized_key.'" not valid for writing');
         }
         
-        if (is_scalar($value)) {
+        // Unknown can be either/or -- it changes depending on the value type
+        if ($meta['type'] == 'unknown') {
+            $mutatorFunction = (is_scalar($value)) ? $this->getValueMutator($index) : $this->getCompositeMutator($index);
+        }
+        elseif (is_scalar($value)) {
             if (!$this->isScalarType($meta['type'])) {
                 throw new InvalidLocationException('Cannot write scalar value to a non-scalar location: index "'.$normalized_key.'" expects data of type "'.$meta['type'].'"');
             }
