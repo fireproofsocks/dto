@@ -7,6 +7,12 @@ class HashTest extends PHPUnit_Framework_Testcase
         $D->x = 'y';
         $this->assertEquals(['x' => true], $D->toArray());
     }
+    public function test1()
+    {
+        $D = new \Dto\Dto();
+        $D->x(['x' => 'y']);
+        print_r($D->toArray()); exit;
+    }
 }
 
 class TestHashTestDto extends \Dto\Dto

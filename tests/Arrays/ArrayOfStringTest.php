@@ -2,7 +2,7 @@
 class ArrayOfStringTest extends PHPUnit_Framework_Testcase
 {
     
-    public function testArraySet()
+    public function testArrayNodeSet()
     {
         $D = new TestArrayOfStringTestDto();
         $D->array = ['x', 'y', 'z'];
@@ -11,7 +11,7 @@ class ArrayOfStringTest extends PHPUnit_Framework_Testcase
     
     }
     
-    public function testArrayAppend()
+    public function testArrayNodeAppend()
     {
         $D = new TestArrayOfStringTestDto();
         $D->array = ['x','y'];
@@ -22,7 +22,7 @@ class ArrayOfStringTest extends PHPUnit_Framework_Testcase
 
     }
     
-    public function testKeysStrippedFromArray()
+    public function testThatKeysStrippedFromArray()
     {
         $D = new TestArrayOfStringTestDto();
         

@@ -2,20 +2,20 @@
 
 use Dto\Dto as Dto;
 
-class AltTest extends PHPUnit_Framework_Testcase
+class RootNodeTest extends PHPUnit_Framework_Testcase
 {
-    public function test1()
+    public function testAppendMethodCreatesArray()
     {
         $D = new Dto();
         $D->append('x');
         $D->append('y');
         $D->append('z');
-    
+
         $this->assertEquals(['x','y','z'], $D->toArray());
 
     }
     
-    public function test2()
+    public function testAppendOnObjectCreatesArray()
     {
         $D = new Dto();
         $D[] = 'x';
@@ -25,7 +25,7 @@ class AltTest extends PHPUnit_Framework_Testcase
         $this->assertEquals(['x','y','z'], $D->toArray());
     }
     
-    public function test3()
+    public function testSetRootNodeCreatesArray()
     {
         $D = new Dto();
         $D->set('.', ['x','y','z']);
