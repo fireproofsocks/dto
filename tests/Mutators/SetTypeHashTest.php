@@ -1,5 +1,5 @@
 <?php
-class SetTypeHashTest extends PHPUnit_Framework_Testcase
+class SetTypeHashTest extends DtoTest\TestCase
 {
     protected function getMethod($dto)
     {
@@ -11,53 +11,35 @@ class SetTypeHashTest extends PHPUnit_Framework_Testcase
     
     public function testNullableLocationReturnsNullWhenSetToNull()
     {
-        $dto = new SetTypeHashTestDto();
-        $method = $this->getMethod($dto);
-        
-        $value = $method->invokeArgs($dto, [null, 'x']);
+        $value = $this->callProtectedMethod(new SetTypeHashTestDto(), 'setTypeHash', [null, 'x']);
         $this->assertNull($value);
     }
     
     public function testNotNullableLocationReturnsInstanceOfDtoWhenSetToNull()
     {
         $dto = new SetTypeHashTestDto();
-        $method = $this->getMethod($dto);
-    
-        $value = $method->invokeArgs($dto, [null, 'y']);
+        $value = $this->callProtectedMethod($dto, 'setTypeHash', [null, 'y']);
         $this->assertInstanceOf(get_class($dto), $value);
     }
     
     public function testSettingWithHash()
     {
-        $dto = new SetTypeHashTestDto();
-        $method = $this->getMethod($dto);
-    
         $hash = ['a' => 'xray', 'b' => 'yak'];
-        $value = $method->invokeArgs($dto, [$hash, 'x']);
-        //print_r($value->toArray()); exit;
+        $value = $this->callProtectedMethod(new SetTypeHashTestDto(), 'setTypeHash', [$hash, 'x']);
         $this->assertEquals($hash, $value->toArray());
     }
     
     public function testSettingWithHashThruValueMutators()
     {
-        $dto = new SetTypeHashTestDto();
-        $method = $this->getMethod($dto);
-        
         $hash = ['a' => '12a', 'b' => '13.1'];
-        $value = $method->invokeArgs($dto, [$hash, 'y']);
-        //print_r($value); exit;
+        $value = $this->callProtectedMethod(new SetTypeHashTestDto(), 'setTypeHash', [$hash, 'y']);
         $this->assertEquals(['a' => 12, 'b' => 13], $value->toArray());
     }
     
     public function testSettingWithDtoThruValueMutators()
     {
-        $dto = new SetTypeHashTestDto();
-        $method = $this->getMethod($dto);
-        
         $valueDto = new \Dto\Dto(['a' => '12a', 'b' => '13.1']);
-        
-        $value = $method->invokeArgs($dto, [$valueDto, 'y']);
-        //print_r($value); exit;
+        $value = $this->callProtectedMethod(new SetTypeHashTestDto(), 'setTypeHash', [$valueDto, 'y']);
         $this->assertEquals(['a' => 12, 'b' => 13], $value->toArray());
     }
 }

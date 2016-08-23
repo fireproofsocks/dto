@@ -1,31 +1,19 @@
 <?php
-class SetTypeBooleanTest extends PHPUnit_Framework_Testcase
+class SetTypeBooleanTest extends DtoTest\TestCase
 {
-    protected function getMethod($dto)
-    {
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('setTypeBoolean');
-        $method->setAccessible(true);
-        return $method;
-    }
-    
     public function testStringsConvertToBoolean()
     {
-        $dto = new SetTypeBooleanTestDto();
-        $method = $this->getMethod($dto);
-        $value = $method->invokeArgs($dto, ['my-string', 'x']);
+        $value = $this->callProtectedMethod(new SetTypeBooleanTestDto(), 'setTypeBoolean', ['my-string', 'x']);
         $this->assertEquals(true, $value);
-        $value = $method->invokeArgs($dto, ['', 'x']);
+        $value = $this->callProtectedMethod(new SetTypeBooleanTestDto(), 'setTypeBoolean', ['', 'x']);
         $this->assertEquals(false, $value);
     }
     
     public function testIntegersConvertToBoolean()
     {
-        $dto = new SetTypeBooleanTestDto();
-        $method = $this->getMethod($dto);
-        $value = $method->invokeArgs($dto, [123, 'x']);
+        $value = $this->callProtectedMethod(new SetTypeBooleanTestDto(), 'setTypeBoolean', [123, 'x']);
         $this->assertEquals(true, $value);
-        $value = $method->invokeArgs($dto, [0, 'x']);
+        $value = $this->callProtectedMethod(new SetTypeBooleanTestDto(), 'setTypeBoolean', [0, 'x']);
         $this->assertEquals(false, $value);
     }
 }

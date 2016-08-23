@@ -136,48 +136,39 @@ class Dto extends \ArrayObject
     }
     
     /**
-     * Filter the incoming variable at the $index location specified
+     * Filter the incoming variable at the $index location specified.  This is the main event.
+     *
      * @param $value mixed
      * @param $index string
      * @param $bypass boolean - skip any filtering
      * @return mixed
+     * @throws InvalidDataTypeException
      * @throws InvalidLocationException
      */
     protected function filter($value, $index, $bypass = false)
     {
-        //if ($bypass || empty($value)) {
-        // We don't want to enter into a filtering loop for that special case when we are running filters on a newly instantiated object
-        // Alternative approach might be to have the setTypeHash return a hash (not a DTO)
-        // or, have the root node use a special type, which would be like setTypeHash, except return a hash
+        // This is the odd counterpart to the end of the setTypeHash where it instantiates a new (empty) child
+        // DTO (which is a condition equivalent ot $bypass = true below). Together, they avoid a loop condition.
         if ($bypass || (empty($value) && $index == '.')) {
             return $value;
         }
-    
-        $meta = $this->getMeta($index);
+        
         $normalized_key = $this->getNormalizedKey($index);
         
-        if (!$this->isValidTargetLocation($index, $this->template)) {
+        if (!$this->isValidTargetLocation($value, $index, $this->template)) {
             throw new InvalidLocationException('Index "'.$normalized_key.'" not valid for writing');
         }
+
+        $mutatorFunction = $this->getMutator($value, $index);
         
-        // Unknown can be either/or -- it changes depending on the value type
-        if ($meta['type'] == 'unknown') {
-            $mutatorFunction = (is_scalar($value)) ? $this->getValueMutator($index) : $this->getCompositeMutator($index);
-        }
-        elseif (is_scalar($value)) {
-            if (!$this->isScalarType($meta['type'])) {
-                throw new InvalidLocationException('Cannot write scalar value to a non-scalar location: index "'.$normalized_key.'" expects data of type "'.$meta['type'].'"');
-            }
-            $mutatorFunction = $this->getValueMutator($index);
-        }
-        else {
-            if ($this->isScalarType($meta['type'])) {
-                throw new InvalidLocationException('Cannot write non-scalar value to a scalar location: index "'.$normalized_key.'" expects data of type "'.$meta['type'].'"');
-            }
-            $mutatorFunction = $this->getCompositeMutator($index);
+        // Final gatekeeping
+        $value = $this->{$mutatorFunction}($value, $index);
+        
+        if (!$this->isValidValue($value)) {
+            throw new InvalidDataTypeException('Invalid data type cannot be written at location "'.$normalized_key.'"');
         }
         
-        return $this->{$mutatorFunction}($value, $index);
+        return $value;
     }
     
     /**
@@ -198,111 +189,6 @@ class Dto extends \ArrayObject
         }
         
         return $location;
-    }
-    
-    /**
-     * Gets the official "normalized" fully-qualified version of the dotted-key, which begin with a leading dot
-     *
-     * @param $key
-     * @return bool|string
-     */
-    protected function getNormalizedKey($key)
-    {
-        return '.' . trim($key, '.');
-    }
-    
-    /**
-     * Returns the part of the supplied $meta array whose keys begin with the $prefix and re-index the array with the
-     * prefix removed. E.g. if a prefix of "foo" (or ".foo") is supplied, any meta keys beginning with ".foo" will be
-     * returned and re-indexed to remove the prefix, e.g. ".foo.bar" --> ".bar", or ".foo" --> "."
-     * This is used to get a subset of the meta data when instantiating a child class.
-     *
-     * @param $prefix string
-     * @param $meta array
-     * @return array
-     */
-    protected function getMetaSubset($prefix, array $meta)
-    {
-        $trimmed = [];
-        $prefix = $this->getNormalizedKey($prefix);
-        
-        foreach ($meta as $dotted_key => $value) {
-            if (substr($dotted_key, 0, strlen($prefix)) == $prefix) {
-                // shift something like ".foo.bar" to ".bar"
-                if ($new_key = substr($dotted_key, strlen($prefix))) {
-                    $trimmed[$new_key] = $value;
-                } // shift something like ".foo" to "."
-                elseif ($prefix != '.') {
-                    $trimmed['.'] = $value;
-                }
-            }
-        }
-        //print '???'; print_r($trimmed); exit;
-        //if (isset($meta['.']['values']) && !isset($trimmed['.'])) {
-//        if (isset($meta['.']['values'])) {
-//            $trimmed['.'] = $meta['.']['values'];
-//        }
-        if (isset($trimmed['.']['values'])) {
-            $trimmed['.'] = $trimmed['.']['values'];
-        }
-        
-        return $trimmed;
-    }
-    
-    /**
-     * Get the meta definition data for the given index (normalized or not)
-     * @param $index string
-     * @return array (associative) guaranteed to have keys for "type" and "values"
-     */
-    protected function getMeta($index)
-    {
-        $normalized_key = $this->getNormalizedKey($index);
-        
-        if (!isset($this->meta[$normalized_key])) {
-            return ['type' => 'unknown']; // TODO: throw exception?
-        }
-        return $this->meta[$normalized_key];
-    }
-    
-    /**
-     * Returns the function name used to mutate scalar values being set at the given $index.  This looks for definitions
-     * in different places than the getCompositeMutatorFunctionName() method.
-     * Type-mutator-methods are named using a prefix of "setType"; field-mutators use the prefix of "set".
-     * @param $index (non-normalized)
-     * @return string function name
-     * @throws InvalidMutatorException
-     */
-    protected function getValueMutator($index)
-    {
-        $normalized_key = $this->getNormalizedKey($index);
-        //print __FUNCTION__ . ':' . __LINE__ . ' for index "' . $normalized_key . "\n";
-        
-        // Field-level mutator
-        if ($normalized_key != '.') {
-            $functionName = $this->getFunctionName('set', $index);
-            if (method_exists($this, $functionName)) {
-                return $functionName;
-            }
-        }
-        // Value-Level Mutator (look to the parent)
-        $parent_index = $this->getParentIndex($normalized_key);
-        //print __FUNCTION__ . ':' . __LINE__ . ' for parent index "' . $parent_index . "\n";
-        if (isset($this->meta[$parent_index]['values']['type'])) {
-            $functionName = $this->getFunctionName('setType', $this->meta[$parent_index]['values']['type']);
-            if (!method_exists($this, $functionName)) {
-                throw new InvalidMutatorException('Mutator method "'.$functionName.'"does not exist. Type defined for values meta at index "'.$parent_index.'"');
-            }
-            return $functionName;
-        }
-        // Type-level Mutator
-//        if (isset($this->meta[$normalized_key]['type'])) {
-//            $functionName = $this->getFunctionName('setType', $this->meta[$normalized_key]['type']);
-//            if (!method_exists($this, $functionName)) {
-//                throw new InvalidMutatorException('Mutator method "'.$functionName.'"does not exist. Type defined in meta at index "'.$normalized_key.'"');
-//            }
-//            return $functionName;
-//        }
-        return 'setTypeUnknown';
     }
     
     /**
@@ -356,6 +242,86 @@ class Dto extends \ArrayObject
     }
     
     /**
+     * Get the meta definition data for the given index (normalized or not)
+     * @param $index string
+     * @return array (associative) guaranteed to have keys for "type" and "values"
+     */
+    protected function getMeta($index)
+    {
+        $normalized_key = $this->getNormalizedKey($index);
+        
+        if (!isset($this->meta[$normalized_key])) {
+            return ['type' => 'unknown']; // TODO: throw exception?
+        }
+        return $this->meta[$normalized_key];
+    }
+    
+    /**
+     * Returns the part of the supplied $meta array whose keys begin with the $prefix and re-index the array with the
+     * prefix removed. E.g. if a prefix of "foo" (or ".foo") is supplied, any meta keys beginning with ".foo" will be
+     * returned and re-indexed to remove the prefix, e.g. ".foo.bar" --> ".bar", or ".foo" --> "."
+     * This is used to get a subset of the meta data when instantiating a child class.
+     *
+     * @param $prefix string
+     * @param $meta array
+     * @return array
+     */
+    protected function getMetaSubset($prefix, array $meta)
+    {
+        $trimmed = [];
+        $prefix = $this->getNormalizedKey($prefix);
+        
+        foreach ($meta as $dotted_key => $value) {
+            if (substr($dotted_key, 0, strlen($prefix)) == $prefix) {
+                // shift something like ".foo.bar" to ".bar"
+                if ($new_key = substr($dotted_key, strlen($prefix))) {
+                    $trimmed[$new_key] = $value;
+                } // shift something like ".foo" to "."
+                elseif ($prefix != '.') {
+                    $trimmed['.'] = $value;
+                }
+            }
+        }
+
+        if (isset($trimmed['.']['values'])) {
+            $trimmed['.'] = $trimmed['.']['values'];
+        }
+        
+        return $trimmed;
+    }
+    
+    /**
+     * Logic for resolving which mutator function to use.  It can be a bit tricky when data is not explicitly defined.
+     * This does not try to determine the validity of mutating a scalar value onto a composite location or a composite
+     * value onto a scalar location (SRP).  See isValidTargetLocation for that.
+     * @param $value mixed
+     * @param $index string
+     * @return string
+     */
+    protected function getMutator($value, $index)
+    {
+        $meta = $this->getMeta($index);
+        
+        // Unknown can be either/or -- it changes depending on the value type
+        if ($meta['type'] == 'unknown') {
+            return (is_scalar($value) || is_null($value)) ? $this->getValueMutator($index) : $this->getCompositeMutator($index);
+        }
+        
+        return ($this->isScalarType($meta['type'])) ? $this->getValueMutator($index) : $this->getCompositeMutator($index);
+    }
+    
+    /**
+     * Gets the official "normalized" fully-qualified version of the dotted-key, which begin with a leading dot
+     *
+     * @param $key
+     * @return bool|string
+     */
+    protected function getNormalizedKey($key)
+    {
+        return '.' . trim($key, '.');
+    }
+    
+    /**
      * Find the parent index from the given index, e.g. find ".foo" from ".foo.bar"
      * @param $normalized_key
      * @return $normalized_key
@@ -376,7 +342,48 @@ class Dto extends \ArrayObject
     {
         return (isset($template[$index]) && is_array($template[$index])) ? $template[$index] : [];
     }
-
+    
+    /**
+     * Returns the function name used to mutate scalar values being set at the given $index.  This looks for definitions
+     * in different places than the getCompositeMutatorFunctionName() method.
+     * Type-mutator-methods are named using a prefix of "setType"; field-mutators use the prefix of "set".
+     * @param $index (non-normalized)
+     * @return string function name
+     * @throws InvalidMutatorException
+     */
+    protected function getValueMutator($index)
+    {
+        $normalized_key = $this->getNormalizedKey($index);
+        //print __FUNCTION__ . ':' . __LINE__ . ' for index "' . $normalized_key . "\n";
+        
+        // Field-level mutator
+        if ($normalized_key != '.') {
+            $functionName = $this->getFunctionName('set', $index);
+            if (method_exists($this, $functionName)) {
+                return $functionName;
+            }
+        }
+        // Value-Level Mutator (look to the parent)
+        $parent_index = $this->getParentIndex($normalized_key);
+        //print __FUNCTION__ . ':' . __LINE__ . ' for parent index "' . $parent_index . "\n";
+        if (isset($this->meta[$parent_index]['values']['type'])) {
+            $functionName = $this->getFunctionName('setType', $this->meta[$parent_index]['values']['type']);
+            if (!method_exists($this, $functionName)) {
+                throw new InvalidMutatorException('Mutator method "'.$functionName.'"does not exist. Type defined for values meta at index "'.$parent_index.'"');
+            }
+            return $functionName;
+        }
+        // Type-level Mutator
+//        if (isset($this->meta[$normalized_key]['type'])) {
+//            $functionName = $this->getFunctionName('setType', $this->meta[$normalized_key]['type']);
+//            if (!method_exists($this, $functionName)) {
+//                throw new InvalidMutatorException('Mutator method "'.$functionName.'"does not exist. Type defined in meta at index "'.$normalized_key.'"');
+//            }
+//            return $functionName;
+//        }
+        return 'setTypeUnknown';
+    }
+    
     /**
      * Is the given var a hash (associative array)?
      *
@@ -434,21 +441,61 @@ class Dto extends \ArrayObject
     }
     
     /**
-     * Make sure that the given non-normalized $index is an Ok 1st-level location for writing to given the current $template
-     * @param $index mixed (non-normalized string or null for root location)
+     * Ensure that it's legit to write the given $value to the given $index (1st level location).  Nulls are allowed as
+     * values at this point:
+     * @param $value mixed
+     * @param $index string (non-normalized string or null for root location)
      * @param $template array
-     * @throws InvalidLocationException
+     * @throws InvalidDataTypeException
      * @return boolean
      */
-    protected function isValidTargetLocation($index, array $template)
+    protected function isValidTargetLocation($value, $index, array $template)
     {
         if (empty($template) || empty($index) || $index == '.') {
             return true;
         }
         
         // TODO: Special rules defined for keys? Override function? Regex?
+        // Make sure the target location exists
+        if (!array_key_exists(trim($index,'.'), $template)) {
+            return false;
+        }
         
-        return array_key_exists(trim($index,'.'), $template);
+        // Check for compatible value/target
+        $normalized_key = $this->getNormalizedKey($index);
+        $meta = $this->getMeta($index);
+        if ($meta['type'] == 'unknown') {
+            return true;
+        }
+        // Scalar Types
+        elseif ($this->isScalarType($meta['type'])) {
+            if (is_scalar($value) || is_null($value)) {
+                return true;
+            }
+            throw new InvalidDataTypeException('Cannot write non-scalar value to scalar location "'.$normalized_key.'"');
+        }
+        // Composite Types
+        else {
+            if (!is_scalar($value) || is_null($value)) {
+                return true;
+            }
+            throw new InvalidDataTypeException('Cannot write scalar value to non-scalar location "'.$normalized_key.'"');
+        }
+    }
+    
+    /**
+     * This determines what types of data is valid in our internal DTO storage.
+     * @param $value
+     * @return mixed
+     * @throws InvalidDataTypeException
+     */
+    protected function isValidValue($value)
+    {
+        if (is_null($value) || is_scalar($value) || is_array($value) || $value instanceof Dto || $value instanceof \stdClass) {
+            return true;
+        }
+        
+        return false;
     }
     
     /**
@@ -531,10 +578,7 @@ class Dto extends \ArrayObject
     protected function setTypeArray($value, $index)
     {
         print __FUNCTION__ . ':' . __LINE__ . ' index="'.$index.'"'."\n";
-        if (is_array($value)) {
-            $value = array_values($value);
-        }
-
+        $value = (is_array($value)) ? array_values($value) : $value;
         return $this->setTypeHash($value, $index);
     }
     
@@ -595,7 +639,7 @@ class Dto extends \ArrayObject
     }
     
     /**
-     * Called internally by the filter() method.
+     * Called internally by the filter() method.  This is the powerhouse mapping function.
      * @param $value mixed
      * @param $index string
      * @return mixed
@@ -618,8 +662,13 @@ class Dto extends \ArrayObject
         
         // Arrays or Hashes
         foreach ($value as $k => $v) {
-            $child_index = $normalized_key .'.'.$k;
-            $value[$k] = $this->filter($v, $child_index);
+            $child_index = $normalized_key .$k;
+            if ($this->isValidTargetLocation($v, $child_index, $this->template)) {
+                $value[$k] = $this->filter($v, $child_index);
+            }
+            else {
+                unset($value[$k]);
+            }
         }
         
         // This would trigger filter() again, re-run all this again --> loop
@@ -629,8 +678,6 @@ class Dto extends \ArrayObject
         $child = new $classname([], $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
         $child->set('.', $value, true);
         return $child;
-        
-        return $value;
     }
     
     /**
@@ -659,9 +706,6 @@ class Dto extends \ArrayObject
     
     /**
      * Convenience function (because really, we have better things to do than argue about whether strings are scalars)
-     * @param $value
-     * @param $index
-     * @return string
      */
     protected function setTypeString($value, $index)
     {

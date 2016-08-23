@@ -1,22 +1,14 @@
 <?php
-class SetTypeArrayTest extends PHPUnit_Framework_Testcase
+class SetTypeArrayTest extends DtoTest\TestCase
 {
-    protected function getMethod($dto)
-    {
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('setTypeArray');
-        $method->setAccessible(true);
-        return $method;
-    }
-    
     public function testThatArrayKeysAreStripped()
     {
         $dto = new SetTypeArrayTestDto();
-        $method = $this->getMethod($dto);
         $array = [
             'a' => 'ape', 'b' => 'balloon'
         ];
-        $value = $method->invokeArgs($dto, [$array, 'x']);
+        $value = $this->callProtectedMethod($dto, 'setTypeArray', [$array, 'x']);
+
         $this->assertEquals(['ape', 'balloon'], $value);
         $this->assertEquals(1, $dto->tickle_me);
     }
