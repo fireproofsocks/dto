@@ -17,8 +17,8 @@ class NormalizeMetaTest extends DtoTest\TestCase
             '.firstname' => 'x',
             '.lastname' => 'y',
             '.mother.firstname' => 'a',
-            '.' => ['type' => 'hash', 'values' => ['type' => 'unknown']]
         ];
+
         $this->assertEquals($normalized, $method->invokeArgs($dto, [$meta]));
     }
 }

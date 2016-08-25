@@ -3,12 +3,7 @@ class GetValueMutatorTest extends DtoTest\TestCase
 {
     public function testDefaultValueReturned()
     {
-        $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getValueMutator');
-        $method->setAccessible(true);
-        
-        $value = $method->invokeArgs($dto, ['']);
+        $value = $this->callProtectedMethod(new \Dto\Dto(), 'getValueMutator', ['']);
         $this->assertEquals('setTypeUnknown', $value);
     }
     

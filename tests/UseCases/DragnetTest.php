@@ -11,8 +11,12 @@ class DragnetTest extends \DtoTest\TestCase
         ];
         
         $dto = new DragnetTestDto($values);
-        unset($values['d']);
-        $this->assertEquals($values, $dto->toArray());
+        // We only want to keep items a, b, c
+        $this->assertEquals([
+            'a' => 'ape',
+            'b' => 'boy',
+            'c' => 'cat',
+        ], $dto->toArray());
     }
     
     /**

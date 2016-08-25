@@ -1,6 +1,7 @@
 <?php
 namespace Dto;
 
+use Dto\Exceptions\AppendException;
 use Dto\Exceptions\InvalidDataTypeException;
 use Dto\Exceptions\InvalidLocationException;
 use Dto\Exceptions\InvalidMetaKeyException;
@@ -66,7 +67,7 @@ class Dto extends \ArrayObject
     public function __set($name, $value)
     {
         //return $this->offsetSet($name, $value);
-        return parent::offsetSet($name, $this->filter($value, $name));
+        return $this->offsetSet($name, $this->filter($value, $name));
     }
     
     /**
@@ -132,6 +133,32 @@ class Dto extends \ArrayObject
             
         }
         
+        // Detect the basic object type of the root node (i.e. THIS ArrayObject)
+        if ($this->isHash($template)) {
+            if (!isset($meta['.']['type'])) {
+                $meta['.']['type'] = 'hash';
+            }
+            if (!isset($meta['.']['values']['type'])) {
+                $meta['.']['values']['type'] = 'unknown';
+            }
+        }
+        elseif (empty($template)) {
+            if (!isset($meta['.']['type'])) {
+                $meta['.']['type'] = 'unknown';
+            }
+            if (!isset($meta['.']['values']['type'])) {
+                $meta['.']['values']['type'] = 'unknown';
+            }
+        }
+        else {
+            if (!isset($meta['.']['type'])) {
+                $meta['.']['type'] = 'array';
+            }
+            if (!isset($meta['.']['values']['type'])) {
+                $meta['.']['values']['type'] = 'unknown';
+            }
+        }
+        
         return $meta;
     }
     
@@ -152,15 +179,17 @@ class Dto extends \ArrayObject
         if ($bypass || (empty($value) && $index == '.')) {
             return $value;
         }
-        
+        // Test for root-level arrays and index is null?
+        //print '???'; exit;
         $normalized_key = $this->getNormalizedKey($index);
         
         if (!$this->isValidTargetLocation($value, $index, $this->template)) {
             throw new InvalidLocationException('Index "'.$normalized_key.'" not valid for writing');
         }
-
-        $mutatorFunction = $this->getMutator($value, $index);
         
+        //$mutatorFunction = $this->getMutator($value, $normalized_key);
+        $mutatorFunction = $this->getMutator($value, $index);
+        //print $mutatorFunction; exit;
         // Final gatekeeping
         $value = $this->{$mutatorFunction}($value, $index);
         
@@ -300,13 +329,20 @@ class Dto extends \ArrayObject
      */
     protected function getMutator($value, $index)
     {
+        if ($index == null) {
+            return $this->getValueMutator($index);
+        }
+        
         $meta = $this->getMeta($index);
         
         // Unknown can be either/or -- it changes depending on the value type
         if ($meta['type'] == 'unknown') {
             return (is_scalar($value) || is_null($value)) ? $this->getValueMutator($index) : $this->getCompositeMutator($index);
         }
-        
+        if ($this->isScalarType($meta['type'])) {
+            print $index . ' is of scalar type: '. $meta['type'] ."\n";
+        }
+        //print __FUNCTION__ . ':' . __LINE__ . ' meta: '.print_r($meta,true).")\n";
         return ($this->isScalarType($meta['type'])) ? $this->getValueMutator($index) : $this->getCompositeMutator($index);
     }
     
@@ -354,8 +390,6 @@ class Dto extends \ArrayObject
     protected function getValueMutator($index)
     {
         $normalized_key = $this->getNormalizedKey($index);
-        //print __FUNCTION__ . ':' . __LINE__ . ' for index "' . $normalized_key . "\n";
-        
         // Field-level mutator
         if ($normalized_key != '.') {
             $functionName = $this->getFunctionName('set', $index);
@@ -363,9 +397,16 @@ class Dto extends \ArrayObject
                 return $functionName;
             }
         }
+        // Type-level Mutator
+        if (isset($this->meta[$normalized_key]['type']) && $this->isScalarType($this->meta[$normalized_key]['type'])) {
+            $functionName = $this->getFunctionName('setType', $this->meta[$normalized_key]['type']);
+            if (!method_exists($this, $functionName)) {
+                throw new InvalidMutatorException('Mutator method "'.$functionName.'"does not exist. Type defined in meta at index "'.$normalized_key.'"');
+            }
+            return $functionName;
+        }
         // Value-Level Mutator (look to the parent)
         $parent_index = $this->getParentIndex($normalized_key);
-        //print __FUNCTION__ . ':' . __LINE__ . ' for parent index "' . $parent_index . "\n";
         if (isset($this->meta[$parent_index]['values']['type'])) {
             $functionName = $this->getFunctionName('setType', $this->meta[$parent_index]['values']['type']);
             if (!method_exists($this, $functionName)) {
@@ -373,15 +414,17 @@ class Dto extends \ArrayObject
             }
             return $functionName;
         }
-        // Type-level Mutator
-//        if (isset($this->meta[$normalized_key]['type'])) {
-//            $functionName = $this->getFunctionName('setType', $this->meta[$normalized_key]['type']);
-//            if (!method_exists($this, $functionName)) {
-//                throw new InvalidMutatorException('Mutator method "'.$functionName.'"does not exist. Type defined in meta at index "'.$normalized_key.'"');
-//            }
-//            return $functionName;
-//        }
+        
         return 'setTypeUnknown';
+    }
+    
+    /**
+     * Determine if the given location can be appended to.
+     * @param $index
+     * @return boolean
+     */
+    public function isAppendable($index) {
+        return in_array($this->getMeta($index)['type'], ['array', 'unknown']);
     }
     
     /**
@@ -516,16 +559,12 @@ class Dto extends \ArrayObject
             
             $normalized[$key] = $value;
         }
-        if (!isset($normalized['.']['type'])) {
-            $normalized['.']['type'] = 'hash';
-        }
-        if (!isset($normalized['.']['values']['type'])) {
-            $normalized['.']['values']['type'] = 'unknown';
-        }
+        
         return $normalized;
     }
     
     /**
+     * TODO: make final?
      * @param mixed $index
      * @return mixed
      * @throws InvalidLocationException
@@ -548,22 +587,38 @@ class Dto extends \ArrayObject
     }
     
     /**
+     * TODO: make final?
+     * @param mixed $index
+     * @param mixed $newval
+     * @param boolean $force bypass filters if true
+     * @throws AppendException
+     */
+    public function offsetSet($index, $newval, $force = false) {
+        if ($index == null && !$this->isAppendable($index)) {
+            throw new AppendException('Append operations at location "'.$this->getNormalizedKey($index).'" are not allowed.');
+        }
+        // TODO: try/catch?
+        $newval = $this->filter($newval, $index, $force);
+        parent::offsetSet($index, $newval);
+    }
+    
+    /**
      * Alternative setter: Expose the $force flag.
      * This can only be used to set values of the immediate children. Dot-notation to reference deeper data is NOT supported.
      *
-     * @param $index
-     * @param $value
+     * @param $index mixed
+     * @param $value mixed
      * @param bool $force
      */
     public function set($index, $value, $force = false)
     {
-        // Specal case for the root node: then we're talking about THIS ArrayObject
+        // Special case for the root node: a dot means we're talking about THIS ArrayObject
         if ($index == '.') {
             parent::__construct($this->filter($value, '.', $force));
         }
         else {
-            //$this->offsetSet($index, $value, $force);
-            parent::offsetSet($index, $this->filter($value, $index, $force));
+            $this->offsetSet($index, $value, $force);
+            //$this->offsetSet($index, $this->filter($value, $index, $force));
         }
     }
     
@@ -656,13 +711,15 @@ class Dto extends \ArrayObject
         
         $normalized_key = $this->getNormalizedKey($index);
         
-        // DTOs?
+        // DTOs? I feel like this should work:
         //return new $classname((array) $value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+        
+        // Or do it the long way
         $value = ($value instanceof Dto) ? $value->toArray() : $value;
         
         // Arrays or Hashes
         foreach ($value as $k => $v) {
-            $child_index = $normalized_key .$k;
+            $child_index = $normalized_key . '.' . $k;
             if ($this->isValidTargetLocation($v, $child_index, $this->template)) {
                 $value[$k] = $this->filter($v, $child_index);
             }

@@ -45,7 +45,7 @@ class TestNullableTestDto extends \Dto\Dto
             'nullable' => true
         ],
         'my_not_nullable' => [
-            'type' => 'string',
+            'type' => 'scalar',
             'nullable' => false
         ],
     ];

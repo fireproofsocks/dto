@@ -25,7 +25,7 @@ class FilterTest extends DtoTest\TestCase
         $hash = ['x' => '12a', 'y' => '13.1'];
         
         $value = $method->invokeArgs($dto, [$hash, '.']);
-        
+        //print_r($value); exit;
         $this->assertEquals(['x'=>12, 'y'=>true], $value->toArray());
         
     }
