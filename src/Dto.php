@@ -31,6 +31,7 @@ class Dto extends \ArrayObject
      */
     public function __construct(array $input = [], array $template = [], array $meta = [])
     {
+        print "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n";
         $this->setFlags(0);
         $arg_list = func_get_args();
         
@@ -40,11 +41,13 @@ class Dto extends \ArrayObject
         
         $this->meta = $this->normalizeMeta($this->meta);
         $this->meta = $this->autoDetectTypes($this->template, $this->meta);
-        //print_r($input); exit;
-        //$this->setRootNode($input);
-        //$result = $this->filter($input, '.');
-        //print_r($result); exit;
+
         $input = ($input) ? $input : $this->template; // You cannot override $this->template with an empty input
+        
+        print_r($input);
+        print_r($this->meta);
+        print_r($this->template);
+        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n";
         parent::__construct($this->filter($input, '.'));
     }
     
@@ -54,6 +57,7 @@ class Dto extends \ArrayObject
      */
     public function __get($name)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ .' name: '.$name."\n";
         return $this[$name];
     }
     
@@ -66,6 +70,7 @@ class Dto extends \ArrayObject
      */
     public function __set($name, $value)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ .' name: '.$name."\n";
         //return $this->offsetSet($name, $value);
         return $this->offsetSet($name, $this->filter($value, $name));
     }
@@ -87,6 +92,7 @@ class Dto extends \ArrayObject
      */
     public function append($val)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         return $this->offsetSet(null, $val);
     }
     
@@ -105,6 +111,7 @@ class Dto extends \ArrayObject
      */
     protected function autoDetectTypes($template, $meta)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         foreach ($template as $index => $v) {
             $meta_key = $this->getNormalizedKey($index);
             $meta[$meta_key]['nullable'] = (isset($meta[$meta_key]['nullable'])) ? $meta[$meta_key]['nullable'] : false;
@@ -174,6 +181,7 @@ class Dto extends \ArrayObject
      */
     protected function filter($value, $index, $bypass = false)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         // This is the odd counterpart to the end of the setTypeHash where it instantiates a new (empty) child
         // DTO (which is a condition equivalent ot $bypass = true below). Together, they avoid a loop condition.
         if ($bypass || (empty($value) && $index == '.')) {
@@ -190,6 +198,7 @@ class Dto extends \ArrayObject
         //$mutatorFunction = $this->getMutator($value, $normalized_key);
         $mutatorFunction = $this->getMutator($value, $index);
         //print $mutatorFunction; exit;
+        print '['.__LINE__ .'] ----> applying mutator '.$mutatorFunction."\n";
         // Final gatekeeping
         $value = $this->{$mutatorFunction}($value, $index);
         
@@ -209,6 +218,7 @@ class Dto extends \ArrayObject
      */
     public function get($dotted_key)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ .' dotted key: '. $dotted_key."\n";
         $parts = explode('.', trim($dotted_key, '.'));
         
         $location = $this->{array_shift($parts)}; // prime the pump with the first location
@@ -231,8 +241,8 @@ class Dto extends \ArrayObject
      */
     protected function getCompositeMutator($index)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         $normalized_key = $this->getNormalizedKey($index);
-        print __FUNCTION__ . ':' . __LINE__ . ' for index "' . $index . '" ('. $normalized_key.")\n";
         // Field-level Mutator
         if ($normalized_key != '.') {
             $functionName = $this->getFunctionName('set', $index);
@@ -260,6 +270,7 @@ class Dto extends \ArrayObject
      */
     protected function getFunctionName($prefix, $descriptor)
     {
+        // print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         if (!$prefix || !$descriptor) {
             return false;
         }
@@ -277,6 +288,7 @@ class Dto extends \ArrayObject
      */
     protected function getMeta($index)
     {
+        //print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         $normalized_key = $this->getNormalizedKey($index);
         
         if (!isset($this->meta[$normalized_key])) {
@@ -297,6 +309,7 @@ class Dto extends \ArrayObject
      */
     protected function getMetaSubset($prefix, array $meta)
     {
+        // print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         $trimmed = [];
         $prefix = $this->getNormalizedKey($prefix);
         
@@ -329,6 +342,7 @@ class Dto extends \ArrayObject
      */
     protected function getMutator($value, $index)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         if ($index == null) {
             return $this->getValueMutator($index);
         }
@@ -354,6 +368,7 @@ class Dto extends \ArrayObject
      */
     protected function getNormalizedKey($key)
     {
+        // print '['.__LINE__ .'] '.__FUNCTION__ .' key: '. $key . ' --> '.'.' . trim($key, '.') ."\n";
         return '.' . trim($key, '.');
     }
     
@@ -364,6 +379,7 @@ class Dto extends \ArrayObject
      */
     protected function getParentIndex($normalized_key)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         $result = substr($normalized_key, 0, strrpos($normalized_key, '.'));
         
         return ($result) ? $result : '.';
@@ -376,6 +392,7 @@ class Dto extends \ArrayObject
      */
     protected function getTemplateSubset($index, array $template)
     {
+        // print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         return (isset($template[$index]) && is_array($template[$index])) ? $template[$index] : [];
     }
     
@@ -389,6 +406,7 @@ class Dto extends \ArrayObject
      */
     protected function getValueMutator($index)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         $normalized_key = $this->getNormalizedKey($index);
         // Field-level mutator
         if ($normalized_key != '.') {
@@ -423,7 +441,8 @@ class Dto extends \ArrayObject
      * @param $index
      * @return boolean
      */
-    public function isAppendable($index) {
+    protected function isAppendable($index) {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         return in_array($this->getMeta($index)['type'], ['array', 'unknown']);
     }
     
@@ -436,6 +455,7 @@ class Dto extends \ArrayObject
      */
     public function isHash($arr)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         if (!is_array($arr) || empty($arr)) {
             return false;
         }
@@ -449,6 +469,7 @@ class Dto extends \ArrayObject
      */
     protected function isNullable($index)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         $meta = $this->getMeta($index);
         return (bool)(isset($meta['nullable']) && $meta['nullable']);
     }
@@ -460,6 +481,7 @@ class Dto extends \ArrayObject
      * @return bool
      */
     protected function isScalarType($type) {
+        print '['.__LINE__ .'] '.__FUNCTION__ .' type: '. $type."\n";
         return !in_array($type, ['array', 'hash', 'dto']);
     }
     
@@ -469,6 +491,7 @@ class Dto extends \ArrayObject
      */
     protected function isValidMetaKey($key)
     {
+        // print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         if (!is_scalar($key)) {
             return false;
         }
@@ -494,6 +517,7 @@ class Dto extends \ArrayObject
      */
     protected function isValidTargetLocation($value, $index, array $template)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         if (empty($template) || empty($index) || $index == '.') {
             return true;
         }
@@ -534,6 +558,7 @@ class Dto extends \ArrayObject
      */
     protected function isValidValue($value)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         if (is_null($value) || is_scalar($value) || is_array($value) || $value instanceof Dto || $value instanceof \stdClass) {
             return true;
         }
@@ -550,6 +575,7 @@ class Dto extends \ArrayObject
      */
     protected function normalizeMeta($meta)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         $normalized = [];
         foreach ($meta as $key => $value) {
             $key = $this->getNormalizedKey($key);
@@ -571,12 +597,14 @@ class Dto extends \ArrayObject
      */
     public function offsetGet($index)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '.$index."\n";
         //  Remember: isset() returns false if the value is null
         if (empty($this->template) || array_key_exists($index, $this->template)) {
             // This bit allows us to dynamically deepen the object structure
             //if (!isset($this[$index])) {
             if (!array_key_exists($index, $this)) {
                 $classname = get_called_class();
+                print '['.__LINE__ .']  (new '.$classname.'!) ' ."\n";
                 $this->offsetSet($index, new $classname()); // dynamically deepen the object structure just in time
             }
             
@@ -594,6 +622,7 @@ class Dto extends \ArrayObject
      * @throws AppendException
      */
     public function offsetSet($index, $newval, $force = false) {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         if ($index == null && !$this->isAppendable($index)) {
             throw new AppendException('Append operations at location "'.$this->getNormalizedKey($index).'" are not allowed.');
         }
@@ -612,6 +641,7 @@ class Dto extends \ArrayObject
      */
     public function set($index, $value, $force = false)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         // Special case for the root node: a dot means we're talking about THIS ArrayObject
         if ($index == '.') {
             parent::__construct($this->filter($value, '.', $force));
@@ -632,7 +662,7 @@ class Dto extends \ArrayObject
      */
     protected function setTypeArray($value, $index)
     {
-        print __FUNCTION__ . ':' . __LINE__ . ' index="'.$index.'"'."\n";
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         $value = (is_array($value)) ? array_values($value) : $value;
         return $this->setTypeHash($value, $index);
     }
@@ -645,12 +675,13 @@ class Dto extends \ArrayObject
      */
     protected function setTypeBoolean($value, $index)
     {
-        print __FUNCTION__ . ':' . __LINE__ . ' (index ' . $index . ')' . "\n";
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         return (is_null($value) && $this->isNullable($index)) ? null : boolval($value);
     }
     
     /**
      * Called internally by the filter() method.
+     * TODO: test
      * @param $value mixed
      * @param $index string
      * @return int
@@ -658,7 +689,7 @@ class Dto extends \ArrayObject
      */
     protected function setTypeDto($value, $index)
     {
-        print __FUNCTION__ . ':' . __LINE__ . ' (index ' . $index . ')' . "\n";
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         
         $meta = $this->getMeta($index);
         
@@ -669,7 +700,13 @@ class Dto extends \ArrayObject
         $classname = $meta['class'];
         
         if (is_null($value)) {
-            return ($this->isNullable($index)) ? null : new $classname();
+            if ($this->isNullable($index))  {
+                return null;
+            }
+            else {
+                print '['.__LINE__ .']  (new '.$classname.'!) ' ."\n";
+                return new $classname();
+            }
         }
         
         if ($value instanceof $classname) {
@@ -689,7 +726,7 @@ class Dto extends \ArrayObject
      */
     protected function setTypeFloat($value, $index)
     {
-        print __FUNCTION__ . ':' . __LINE__ . ' (index ' . $index . ')' . "\n";
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         return (is_null($value) && $this->isNullable($index)) ? null : floatval($value);
     }
     
@@ -702,17 +739,28 @@ class Dto extends \ArrayObject
      */
     protected function setTypeHash($value, $index)
     {
-        print __FUNCTION__ . ':' . __LINE__  . ' with index '.$index."\n";
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         $classname = get_called_class();
         
         if (is_null($value)) {
+            print '['.__LINE__ .']  (new '.$classname.'!) ' ."\n";
             return ($this->isNullable($index)) ? null : new $classname([], $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
         }
         
         $normalized_key = $this->getNormalizedKey($index);
         
+//        if (is_scalar($value)) {
+//            return $this->filter($value, $normalized_key.'.0');
+//        }
+//
+        
         // DTOs? I feel like this should work:
-        //return new $classname((array) $value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+        //$child = new $classname((array) $value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+        //return $child;
+//        print_r($value);
+//        print_r($this->getTemplateSubset($index, $this->template));
+//        print_r($this->getMetaSubset($index, $this->meta));
+//        print_r($child->toArray()); exit;
         
         // Or do it the long way
         $value = ($value instanceof Dto) ? $value->toArray() : $value;
@@ -732,6 +780,7 @@ class Dto extends \ArrayObject
         //return new $classname((array) $value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
         
         // This would get us a DTO, but bypass the redundant filtering and prevent the loop
+        print '['.__LINE__ .']  (new '.$classname.'!) ' ."\n";
         $child = new $classname([], $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
         $child->set('.', $value, true);
         return $child;
@@ -745,7 +794,7 @@ class Dto extends \ArrayObject
      */
     protected function setTypeInteger($value, $index)
     {
-        print __FUNCTION__ . ':' . __LINE__ . ' (index ' . $index . ')' . "\n";
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         return (is_null($value) && $this->isNullable($index)) ? null : intval($value);
     }
     
@@ -757,7 +806,7 @@ class Dto extends \ArrayObject
      */
     protected function setTypeScalar($value, $index)
     {
-        print __FUNCTION__ . ':' . __LINE__ . ' (index ' . $index . ')' . "\n";
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         return (is_null($value) && $this->isNullable($index)) ? null : strval($value);
     }
     
@@ -783,7 +832,7 @@ class Dto extends \ArrayObject
      */
     protected function setTypeUnknown($value, $index)
     {
-        print __FUNCTION__ . ':' . __LINE__ . ' for index ' . $index . "\n";
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         return $value; // do nothing
     }
     
@@ -794,6 +843,7 @@ class Dto extends \ArrayObject
      */
     public function toArray(Dto $arrayObj = null)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         $arrayObj = ($arrayObj) ? $arrayObj : $this;
         $output = [];
         foreach ($arrayObj as $k => $v) {
@@ -815,6 +865,7 @@ class Dto extends \ArrayObject
      */
     public function toJson($pretty = false, Dto $arrayObj = null)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         return ($pretty) ? json_encode($this->toArray($arrayObj), JSON_PRETTY_PRINT) : json_encode($this->toArray($arrayObj));
     }
     
@@ -825,6 +876,7 @@ class Dto extends \ArrayObject
      */
     public function toObject(Dto $arrayObj = null)
     {
+        print '['.__LINE__ .'] '.__FUNCTION__ .' index: '. $index."\n";
         return json_decode($this->toJson(false, $arrayObj));
     }
 }

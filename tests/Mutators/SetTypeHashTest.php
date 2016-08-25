@@ -1,14 +1,6 @@
 <?php
 class SetTypeHashTest extends DtoTest\TestCase
 {
-    protected function getMethod($dto)
-    {
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('setTypeHash');
-        $method->setAccessible(true);
-        return $method;
-    }
-    
     public function testNullableLocationReturnsNullWhenSetToNull()
     {
         $value = $this->callProtectedMethod(new SetTypeHashTestDto(), 'setTypeHash', [null, 'x']);
@@ -61,9 +53,9 @@ class SetTypeHashTestDto extends \Dto\Dto
             'nullable' => false
         ]
     ];
-    public function __construct()
-    {
-        // Overriding this so we don't trigger the call to filter present in the Dto constructor.
-    }
+//    public function __construct()
+//    {
+//        // Overriding this so we don't trigger the call to filter present in the Dto constructor.
+//    }
     
 }
