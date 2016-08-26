@@ -28,9 +28,8 @@ class Dto extends \ArrayObject
      * @param array $input starter data, filtered against the $template and $meta (if supplied)
      * @param array $template generic data template (i.e. default values) with loosely typed values
      * @param array $meta definitions
-     * @param boolean $bypass filters -- filters will not execute when true
      */
-    public function __construct(array $input = [], array $template = [], array $meta = [], $bypass = false)
+    public function __construct(array $input = [], array $template = [], array $meta = [])
     {
         print "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n";
         $this->setFlags(0);
@@ -50,9 +49,7 @@ class Dto extends \ArrayObject
         print_r($this->template);
         print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n";
         
-        $input = ($bypass) ? $input : $this->setRootNode($input);
-        
-        parent::__construct($input); // store the value in the ArrayObject
+        parent::__construct($this->setRootNode($input)); // store the value in the ArrayObject
     }
     
     /**
@@ -618,11 +615,8 @@ class Dto extends \ArrayObject
             throw new AppendException('Append operations at location "' . $this->getNormalizedKey($index) . '" are not allowed. Set type to "array".');
         }
         if ($index == '.') {
-            if ($bypass) {
-                parent::__construct($newval); // store value as is
-            } else {
-                $this->__construct($newval, $this->template, $this->meta); // re-run constructor will re-run filters
-            }
+            $newval = ($bypass) ? $newval : $this->setRootNode($newval);
+            parent::__construct($newval); // store value as is
         }
         else {
             // TODO: try/catch?
