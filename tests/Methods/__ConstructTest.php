@@ -15,14 +15,6 @@ class __ConstructTest extends DtoTest\TestCase
         $this->assertTrue($dto->filtered);
     }
     
-    // testBypass
-    public function testBypass()
-    {
-        $hash = ['x' => '12a', 'y' => '13.1'];
-        $dto = new __ConstructTestDto($hash, [], [], true);
-        $this->assertEquals($hash, $dto->toArray());
-        $this->assertFalse($dto->filtered);
-    }
 }
 
 class __ConstructTestDto extends \Dto\Dto
@@ -30,7 +22,7 @@ class __ConstructTestDto extends \Dto\Dto
     public $filtered = false;
     
     // Override
-    protected function filter($value, $index, $bypass = false) {
+    protected function filterRoot($value) {
         $this->filtered = true;
         return $value;
     }

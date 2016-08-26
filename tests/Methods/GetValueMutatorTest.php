@@ -4,7 +4,7 @@ class GetValueMutatorTest extends DtoTest\TestCase
     public function testDefaultValueReturned()
     {
         $value = $this->callProtectedMethod(new \Dto\Dto(), 'getValueMutator', ['']);
-        $this->assertEquals('setTypeUnknown', $value);
+        $this->assertEquals('mutateTypeUnknown', $value);
     }
     
     /**
@@ -44,7 +44,7 @@ class GetValueMutatorTest extends DtoTest\TestCase
         $method->setAccessible(true);
         
         $value = $method->invokeArgs($dto, ['x']);
-        $this->assertEquals('setX', $value);
+        $this->assertEquals('mutateX', $value);
     }
     
 //    public function testTypeLevelMutatorReturned()
@@ -85,13 +85,13 @@ class GetValueMutatorTest extends DtoTest\TestCase
         $method->setAccessible(true);
     
         $value = $method->invokeArgs($dto, ['x']);
-        $this->assertEquals('setTypeInteger', $value);
+        $this->assertEquals('mutateTypeInteger', $value);
     }
 }
 
 class TestGetValueMutatorDto extends \Dto\Dto {
     
-    function setX($value) {
+    function mutateX($value) {
         return $value;
     }
 }

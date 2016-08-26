@@ -49,7 +49,7 @@ class Dto extends \ArrayObject
         print_r($this->template);
         print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n";
         
-        parent::__construct($this->setRootNode($input)); // store the value in the ArrayObject
+        parent::__construct($this->filterRoot($input)); // store the value in the ArrayObject
     }
     
     /**
@@ -165,7 +165,7 @@ class Dto extends \ArrayObject
     }
     
     /**
-     * Filter the incoming variable at the $index location specified.  This is the main event.
+     * Filter the incoming $value by finding and applying a mutator at the $index location specified.
      *
      * @param $value mixed
      * @param $index string
@@ -173,7 +173,7 @@ class Dto extends \ArrayObject
      * @throws InvalidDataTypeException
      * @throws InvalidLocationException
      */
-    protected function filter($value, $index)
+    protected function filterNode($value, $index)
     {
         print '[' . __LINE__ . '] ' . __FUNCTION__ . "\n";
         
@@ -199,6 +199,24 @@ class Dto extends \ArrayObject
         return $value;
     }
     
+    /**
+     * Special case for setting the root node: we need to loop over individual keys
+     * @param $value mixed
+     * @return mixed
+     */
+    protected function filterRoot($value) {
+        
+        foreach ($value as $k => $v) {
+            $child_index = '.' . $k;
+            if ($this->isValidTargetLocation($v, $child_index, $this->template)) {
+                $value[$k] = $this->filterNode($v, $child_index);
+            } else {
+                // Throw Exception?
+                unset($value[$k]);
+            }
+        }
+        return $value;
+    }
     
     /**
      * Dot-notation getter: alternative to array and/or object get syntax.
@@ -225,7 +243,7 @@ class Dto extends \ArrayObject
      * Returns the function name used to mutate composite values (e.g. arrays, hashes) being set at the given $index.
      * The composite mutators will loop over the composite values and will in turn call value-mutators on individual
      * scalar values.
-     * Type-mutator-methods are named using a prefix of "setType"; field-mutators use the prefix of "set".
+     * Type-mutator-methods are named using a prefix of "mutateType"; field-mutators use the prefix of "set".
      * @param $index string (non-normalized)
      * @return string function name
      * @throws InvalidMutatorException
@@ -236,21 +254,21 @@ class Dto extends \ArrayObject
         $normalized_key = $this->getNormalizedKey($index);
         // Field-level Mutator
         if ($normalized_key != '.') {
-            $functionName = $this->getFunctionName('set', $index);
+            $functionName = $this->getFunctionName('mutate', $index);
             if (method_exists($this, $functionName)) {
                 return $functionName;
             }
         }
         // Type-level Mutator
         if (isset($this->meta[$normalized_key]['type'])) {
-            $functionName = $this->getFunctionName('setType', $this->meta[$normalized_key]['type']);
+            $functionName = $this->getFunctionName('mutateType', $this->meta[$normalized_key]['type']);
             if (!method_exists($this, $functionName)) {
                 throw new InvalidMutatorException('Mutator method "' . $functionName . '"does not exist. Type defined in meta at index "' . $normalized_key . '"');
             }
             return $functionName;
         }
         // Fallback
-        return 'setTypeHash';
+        return 'mutateTypeHash';
     }
     
     /**
@@ -384,7 +402,7 @@ class Dto extends \ArrayObject
     /**
      * Returns the function name used to mutate scalar values being set at the given $index.  This looks for definitions
      * in different places than the getCompositeMutatorFunctionName() method.
-     * Type-mutator-methods are named using a prefix of "setType"; field-mutators use the prefix of "set".
+     * Type-mutator-methods are named using a prefix of "mutateType"; field-mutators use the prefix of "set".
      * @param $index (non-normalized)
      * @return string function name
      * @throws InvalidMutatorException
@@ -395,14 +413,14 @@ class Dto extends \ArrayObject
         $normalized_key = $this->getNormalizedKey($index);
         // Field-level mutator
         if ($normalized_key != '.') {
-            $functionName = $this->getFunctionName('set', $index);
+            $functionName = $this->getFunctionName('mutate', $index);
             if (method_exists($this, $functionName)) {
                 return $functionName;
             }
         }
         // Type-level Mutator
         if (isset($this->meta[$normalized_key]['type']) && $this->isScalarType($this->meta[$normalized_key]['type'])) {
-            $functionName = $this->getFunctionName('setType', $this->meta[$normalized_key]['type']);
+            $functionName = $this->getFunctionName('mutateType', $this->meta[$normalized_key]['type']);
             if (!method_exists($this, $functionName)) {
                 throw new InvalidMutatorException('Mutator method "' . $functionName . '"does not exist. Type defined in meta at index "' . $normalized_key . '"');
             }
@@ -411,14 +429,14 @@ class Dto extends \ArrayObject
         // Value-Level Mutator (look to the parent)
         $parent_index = $this->getParentIndex($normalized_key);
         if (isset($this->meta[$parent_index]['values']['type'])) {
-            $functionName = $this->getFunctionName('setType', $this->meta[$parent_index]['values']['type']);
+            $functionName = $this->getFunctionName('mutateType', $this->meta[$parent_index]['values']['type']);
             if (!method_exists($this, $functionName)) {
                 throw new InvalidMutatorException('Mutator method "' . $functionName . '"does not exist. Type defined for values meta at index "' . $parent_index . '"');
             }
             return $functionName;
         }
         
-        return 'setTypeUnknown';
+        return 'mutateTypeUnknown';
     }
     
     /**
@@ -552,6 +570,161 @@ class Dto extends \ArrayObject
     }
     
     /**
+     * Called internally by the filterNode() method.
+     * @param $value
+     * @param $index
+     * @return mixed
+     * @throws InvalidDataTypeException
+     */
+    protected function mutateTypeArray($value, $index)
+    {
+        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
+        $value = (is_array($value)) ? array_values($value) : $value;
+        return $this->mutateTypeHash($value, $index);
+    }
+    
+    /**
+     * Called internally by the filterNode() method.
+     * @param $value mixed
+     * @param $index string
+     * @return bool
+     */
+    protected function mutateTypeBoolean($value, $index)
+    {
+        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
+        return (is_null($value) && $this->isNullable($index)) ? null : boolval($value);
+    }
+    
+    /**
+     * Called internally by the filterNode() method.
+     * TODO: test
+     * @param $value mixed
+     * @param $index string
+     * @return int
+     * @throws InvalidDataTypeException
+     */
+    protected function mutateTypeDto($value, $index)
+    {
+        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
+        
+        $meta = $this->getMeta($index);
+        
+        if (!isset($meta['class'])) {
+            throw new \InvalidArgumentException('Meta information for DTO at index ' . $index . ' requires "class" parameter.');
+        }
+        
+        $classname = $meta['class'];
+        
+        if (is_null($value)) {
+            if ($this->isNullable($index)) {
+                return null;
+            } else {
+                print '[' . __LINE__ . ']  (new ' . $classname . '!) ' . "\n";
+                return new $classname();
+            }
+        }
+        
+        if ($value instanceof $classname) {
+            return $value;
+        }
+        
+        // TODO: other data types?  array? Hash?
+        //print_r($value); exit;
+        throw new InvalidDataTypeException($index . ' value must be instance of ' . $classname);
+    }
+    
+    /**
+     * Called internally by the filterNode() method.
+     * @param $value mixed
+     * @param $index string
+     * @return float
+     */
+    protected function mutateTypeFloat($value, $index)
+    {
+        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
+        return (is_null($value) && $this->isNullable($index)) ? null : floatval($value);
+    }
+    
+    /**
+     * Called internally by the filterNode() method.  This is the powerhouse mapping function.
+     * @param $value mixed
+     * @param $index string
+     * @return mixed
+     * @throws InvalidDataTypeException
+     */
+    protected function mutateTypeHash($value, $index)
+    {
+        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index ."\n";
+        
+        $classname = get_called_class();
+        
+        if (is_null($value)) {
+            print '[' . __LINE__ . ']  (new ' . $classname . '!) ' . "\n";
+            return ($this->isNullable($index)) ? null : new $classname([], $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+        }
+        
+        print '[' . __LINE__ . ']  (new ' . $classname . '!) ' . "\n";
+        //print_r($value); print_r($this->getTemplateSubset($index, $this->template)); print_r($this->getMetaSubset($index, $this->meta)); exit;
+        $child = new $classname((array)$value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
+        
+        return $child;
+    }
+    
+    /**
+     * Called internally by the filterNode() method.
+     * @param $value mixed
+     * @param $index string
+     * @return integer
+     */
+    protected function mutateTypeInteger($value, $index)
+    {
+        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
+        return (is_null($value) && $this->isNullable($index)) ? null : intval($value);
+    }
+    
+    /**
+     * Called internally by the filterNode() method.
+     * @param $value mixed
+     * @param $index string
+     * @return string
+     */
+    protected function mutateTypeScalar($value, $index)
+    {
+        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
+        return (is_null($value) && $this->isNullable($index)) ? null : strval($value);
+    }
+    
+    /**
+     * Convenience function (because really, we have better things to do than argue about whether strings are scalars)
+     * @param $value mixed
+     * @param $index string
+     * @return string
+     */
+    protected function mutateTypeString($value, $index)
+    {
+        return $this->mutateTypeScalar($value, $index);
+    }
+    
+    /**
+     * Called internally by the filterNode() method.
+     * Type "unknown" is used in cases where:
+     *  1. a non-populated index is declared as an array or hash, but without use of the "values" qualifier. (aka ambiguous hash)
+     *  2. a template contains nested hashes but it does not have explicit meta data (i.e. the inferred meta data does
+     *      not include the "values" quantifier.
+     *
+     * @param $value mixed
+     * @param $index string
+     * @return mixed
+     * @throws InvalidDataTypeException
+     */
+    protected function mutateTypeUnknown($value, $index)
+    {
+        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
+        return $value; // do nothing
+    }
+    
+    
+    /**
      * Normalize the keys used to define meta data.  For dev's UX, we allow keys like "x", but internally, we consider all
      * locations defined in the meta definition to begin with "." -- so all keys are normalized to the leading dot format.
      * @param $meta
@@ -615,12 +788,12 @@ class Dto extends \ArrayObject
             throw new AppendException('Append operations at location "' . $this->getNormalizedKey($index) . '" are not allowed. Set type to "array".');
         }
         if ($index == '.') {
-            $newval = ($bypass) ? $newval : $this->setRootNode($newval);
+            $newval = ($bypass) ? $newval : $this->filterRoot($newval);
             parent::__construct($newval); // store value as is
         }
         else {
             // TODO: try/catch?
-            $newval = ($bypass) ? $newval : $this->filter($newval, $index);
+            $newval = ($bypass) ? $newval : $this->filterNode($newval, $index);
             parent::offsetSet($index, $newval); // store the value on the ArrayObject
         }
     }
@@ -649,179 +822,7 @@ class Dto extends \ArrayObject
 //            $this->offsetSet($index, $value, $bypass);
 //        }
     }
-    
-    /**
-     * Special case for setting the root node: we need to loop over individual keys
-     * @param $value mixed
-     * @return mixed
-     */
-    public function setRootNode($value) {
-        
-        foreach ($value as $k => $v) {
-            $child_index = '.' . $k;
-            if ($this->isValidTargetLocation($v, $child_index, $this->template)) {
-                $value[$k] = $this->filter($v, $child_index);
-            } else {
-                // Throw Exception?
-                unset($value[$k]);
-            }
-        }
-        return $value;
-    }
-    
-    /**
-     * Called internally by the filter() method.
-     * @param $value
-     * @param $index
-     * @return mixed
-     * @throws InvalidDataTypeException
-     */
-    protected function setTypeArray($value, $index)
-    {
-        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
-        $value = (is_array($value)) ? array_values($value) : $value;
-        return $this->setTypeHash($value, $index);
-    }
-    
-    /**
-     * Called internally by the filter() method.
-     * @param $value mixed
-     * @param $index string
-     * @return bool
-     */
-    protected function setTypeBoolean($value, $index)
-    {
-        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
-        return (is_null($value) && $this->isNullable($index)) ? null : boolval($value);
-    }
-    
-    /**
-     * Called internally by the filter() method.
-     * TODO: test
-     * @param $value mixed
-     * @param $index string
-     * @return int
-     * @throws InvalidDataTypeException
-     */
-    protected function setTypeDto($value, $index)
-    {
-        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
-        
-        $meta = $this->getMeta($index);
-        
-        if (!isset($meta['class'])) {
-            throw new \InvalidArgumentException('Meta information for DTO at index ' . $index . ' requires "class" parameter.');
-        }
-        
-        $classname = $meta['class'];
-        
-        if (is_null($value)) {
-            if ($this->isNullable($index)) {
-                return null;
-            } else {
-                print '[' . __LINE__ . ']  (new ' . $classname . '!) ' . "\n";
-                return new $classname();
-            }
-        }
-        
-        if ($value instanceof $classname) {
-            return $value;
-        }
-        
-        // TODO: other data types?  array? Hash?
-        //print_r($value); exit;
-        throw new InvalidDataTypeException($index . ' value must be instance of ' . $classname);
-    }
-    
-    /**
-     * Called internally by the filter() method.
-     * @param $value mixed
-     * @param $index string
-     * @return float
-     */
-    protected function setTypeFloat($value, $index)
-    {
-        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
-        return (is_null($value) && $this->isNullable($index)) ? null : floatval($value);
-    }
-    
-    /**
-     * Called internally by the filter() method.  This is the powerhouse mapping function.
-     * @param $value mixed
-     * @param $index string
-     * @return mixed
-     * @throws InvalidDataTypeException
-     */
-    protected function setTypeHash($value, $index)
-    {
-        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index ."\n";
-        
-        $classname = get_called_class();
-        
-        if (is_null($value)) {
-            print '[' . __LINE__ . ']  (new ' . $classname . '!) ' . "\n";
-            return ($this->isNullable($index)) ? null : new $classname([], $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
-        }
-        
-        print '[' . __LINE__ . ']  (new ' . $classname . '!) ' . "\n";
-        $child = new $classname((array)$value, $this->getTemplateSubset($index, $this->template), $this->getMetaSubset($index, $this->meta));
-        
-        return $child;
-    }
-    
-    /**
-     * Called internally by the filter() method.
-     * @param $value mixed
-     * @param $index string
-     * @return integer
-     */
-    protected function setTypeInteger($value, $index)
-    {
-        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
-        return (is_null($value) && $this->isNullable($index)) ? null : intval($value);
-    }
-    
-    /**
-     * Called internally by the filter() method.
-     * @param $value mixed
-     * @param $index string
-     * @return string
-     */
-    protected function setTypeScalar($value, $index)
-    {
-        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
-        return (is_null($value) && $this->isNullable($index)) ? null : strval($value);
-    }
-    
-    /**
-     * Convenience function (because really, we have better things to do than argue about whether strings are scalars)
-     * @param $value mixed
-     * @param $index string
-     * @return string
-     */
-    protected function setTypeString($value, $index)
-    {
-        return $this->setTypeScalar($value, $index);
-    }
-    
-    /**
-     * Called internally by the filter() method.
-     * Type "unknown" is used in cases where:
-     *  1. a non-populated index is declared as an array or hash, but without use of the "values" qualifier. (aka ambiguous hash)
-     *  2. a template contains nested hashes but it does not have explicit meta data (i.e. the inferred meta data does
-     *      not include the "values" quantifier.
-     *
-     * @param $value mixed
-     * @param $index string
-     * @return mixed
-     * @throws InvalidDataTypeException
-     */
-    protected function setTypeUnknown($value, $index)
-    {
-        print '[' . __LINE__ . '] ' . __FUNCTION__ . ' index: ' . $index . "\n";
-        return $value; // do nothing
-    }
-    
+
     /**
      * The input allows the injection of a foreign Dto $arrayObj for recursive resolving of children DTOs.
      * @param Dto|null $arrayObj

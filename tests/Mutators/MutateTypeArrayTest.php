@@ -1,20 +1,20 @@
 <?php
-class SetTypeArrayTest extends DtoTest\TestCase
+class MutateTypeArrayTest extends DtoTest\TestCase
 {
     public function testThatArrayKeysAreStripped()
     {
-        $dto = new SetTypeArrayTestDto();
+        $dto = new MutateTypeArrayTestDto();
         $array = [
             'a' => 'ape', 'b' => 'balloon'
         ];
-        $value = $this->callProtectedMethod($dto, 'setTypeArray', [$array, 'x']);
-
-        $this->assertEquals(['ape', 'balloon'], $value);
+        $value = $this->callProtectedMethod($dto, 'mutateTypeArray', [$array, 'x']);
+//print var_dump($value); exit;
+        $this->assertEquals(['ape', 'balloon'], (array) $value);
         $this->assertEquals(1, $dto->tickle_me);
     }
 }
 
-class SetTypeArrayTestDto extends \Dto\Dto
+class MutateTypeArrayTestDto extends \Dto\Dto
 {
     public $tickle_me = 0; // for testing only
     
@@ -24,7 +24,7 @@ class SetTypeArrayTestDto extends \Dto\Dto
     }
     
     // override this
-    public function setTypeHash($value, $index)
+    public function mutateTypeHash($value, $index)
     {
         $this->tickle_me = $this->tickle_me + 1;
         return $value;
