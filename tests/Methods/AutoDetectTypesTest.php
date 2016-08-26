@@ -24,6 +24,7 @@ class AutoDetectTypesTest extends DtoTest\TestCase
         $this->assertEquals('boolean', $meta['.boolean']['type']);
         $this->assertEquals('scalar', $meta['.string']['type']);
         $this->assertEquals('array', $meta['.array']['type']);
+        $this->assertEquals('unknown', $meta['.array']['values']['type']);
     }
     
     public function testValuesAssumedToBeNotNullable()

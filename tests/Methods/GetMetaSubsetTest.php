@@ -42,7 +42,10 @@ class GetMetaSubsetTest extends DtoTest\TestCase
         ];
         
         $trimmed = [
-            '.' => ['type' =>'boolean']
+            '.' => [
+                'type' => 'hash',
+                'values' => ['type' =>'boolean']
+            ]
         ];
         
         $this->assertEquals($trimmed, $method->invokeArgs($dto, ['somehash', $meta]));
@@ -96,7 +99,10 @@ class GetMetaSubsetTest extends DtoTest\TestCase
         
         $trimmed = [
             '.' => [
-                'type' => 'scalar'
+                'type' => 'array',
+                'values' => [
+                    'type' => 'scalar'
+                ]
             ]
         ];
         
