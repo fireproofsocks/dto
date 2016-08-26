@@ -12,13 +12,26 @@ class __ConstructTest extends DtoTest\TestCase
         $hash = ['x' => '12a', 'y' => '13.1'];
         $dto = new __ConstructTestDto($hash);
         $this->assertEquals($hash, $dto->toArray());
+        $this->assertTrue($dto->filtered);
+    }
+    
+    // testBypass
+    public function testBypass()
+    {
+        $hash = ['x' => '12a', 'y' => '13.1'];
+        $dto = new __ConstructTestDto($hash, [], [], true);
+        $this->assertEquals($hash, $dto->toArray());
+        $this->assertFalse($dto->filtered);
     }
 }
 
 class __ConstructTestDto extends \Dto\Dto
 {
+    public $filtered = false;
+    
     // Override
     protected function filter($value, $index, $bypass = false) {
+        $this->filtered = true;
         return $value;
     }
 }

@@ -4,9 +4,6 @@ class GetMetaSubsetTest extends DtoTest\TestCase
     public function testBasicTrimOperations()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getMetaSubset');
-        $method->setAccessible(true);
         
         // Assume a normalized meta key format w leading dots
         $meta = [
@@ -19,7 +16,7 @@ class GetMetaSubsetTest extends DtoTest\TestCase
             '.firstname' => 'a',
             '.lastname' => 'b',
         ];
-        $this->assertEquals($trimmed, $method->invokeArgs($dto, ['mother', $meta]));
+        $this->assertEquals($trimmed, $this->callProtectedMethod($dto, 'getMetaSubset', ['mother', $meta]));
         
     }
     
@@ -29,9 +26,6 @@ class GetMetaSubsetTest extends DtoTest\TestCase
     public function testGetMetaSubset2()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getMetaSubset');
-        $method->setAccessible(true);
         
         // Assume a normalized meta key format w leading dots
         $meta = [
@@ -47,9 +41,8 @@ class GetMetaSubsetTest extends DtoTest\TestCase
                 'values' => ['type' =>'boolean']
             ]
         ];
-        
-        $this->assertEquals($trimmed, $method->invokeArgs($dto, ['somehash', $meta]));
-        
+    
+        $this->assertEquals($trimmed, $this->callProtectedMethod($dto, 'getMetaSubset', ['somehash', $meta]));
     }
     
     /**
@@ -58,10 +51,7 @@ class GetMetaSubsetTest extends DtoTest\TestCase
     public function testGetMetaSubset3()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getMetaSubset');
-        $method->setAccessible(true);
-        
+
         // Assume a normalized meta key format w leading dots
         $meta = [
             '.somehash' => [
@@ -72,16 +62,12 @@ class GetMetaSubsetTest extends DtoTest\TestCase
         
         $trimmed = [];
         
-        $this->assertEquals($trimmed, $method->invokeArgs($dto, ['non_existant', $meta]));
-        
+        $this->assertEquals($trimmed, $this->callProtectedMethod($dto, 'getMetaSubset', ['non_existant', $meta]));
     }
     
     public function testGetMetaSubset4()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getMetaSubset');
-        $method->setAccessible(true);
         
         // Assume a normalized meta key format w leading dots
         $meta = [
@@ -106,8 +92,7 @@ class GetMetaSubsetTest extends DtoTest\TestCase
             ]
         ];
         
-        $this->assertEquals($trimmed, $method->invokeArgs($dto, ['array', $meta]));
-        
+        $this->assertEquals($trimmed, $this->callProtectedMethod($dto, 'getMetaSubset', ['array', $meta]));
     }
     
 }

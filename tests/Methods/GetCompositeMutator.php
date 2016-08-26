@@ -4,11 +4,7 @@ class GetCompositeMutator extends DtoTest\TestCase
     public function testDefaultValueReturned()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getCompositeMutator');
-        $method->setAccessible(true);
-    
-        $value = $method->invokeArgs($dto, ['']);
+        $value = $this->callProtectedMethod($dto, 'getCompositeMutator', ['']);
         $this->assertEquals('setTypeHash', $value);
     }
     

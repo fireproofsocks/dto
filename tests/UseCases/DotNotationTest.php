@@ -56,7 +56,7 @@ class DotNotationTest extends DtoTest\TestCase
      */
     public function testRegularSet()
     {
-        $D = new TestDotNotationTestDto2();
+        $D = new \Dto\Dto();
 
         $D->firstname = ['x','y','z'];
 

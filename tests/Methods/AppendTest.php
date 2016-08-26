@@ -1,7 +1,10 @@
 <?php
 class AppendTest extends DtoTest\TestCase
 {
-    public function testCanAppendToRegularDto()
+    /**
+     * @expectedException \Dto\Exceptions\AppendException
+     */
+    public function testCannotAppendToRegularDto()
     {
         $D = new \Dto\Dto();
         $D->append('a');
@@ -20,14 +23,13 @@ class AppendTest extends DtoTest\TestCase
         $this->assertEquals(['a','b','c'], $D->toArray());
     }
     
-    public function testCanAppendToUnknownDto()
+    /**
+     * @expectedException \Dto\Exceptions\AppendException
+     */
+    public function testCannotAppendToUnknownDto()
     {
         $D = new AppendUnknownTestDto();
         $D->append('a');
-        $D->append('b');
-        $D[] = 'c';
-        
-        $this->assertEquals(['a','b','c'], $D->toArray());
     }
     
     /**
