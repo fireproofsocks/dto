@@ -50,15 +50,10 @@ class DeclareTypeArrayTest extends DtoTest\TestCase
     public function testSetArrayAtNodeAsValue()
     {
         $D = new DeclareTypeArrayDto();
-        //exit;
-        //print_r($D->toArray()); exit;
-        //print "===============================================================\n";
+        
         $D->array = ['x','y'];
-
-//        $D->array[] = 'z';
         $this->assertEquals(['x','y'], $D->array->toArray());
         $D->array->append('z');
-
         $this->assertEquals(['x','y','z'], (array) $D->array);
 
     }

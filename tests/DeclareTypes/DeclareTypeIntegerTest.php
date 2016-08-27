@@ -4,31 +4,41 @@ class DeclareTypeIntegerTest extends DtoTest\TestCase
     public function testWriteInteger()
     {
         $D = new DeclareTypeIntegerDto();
-        $D->integer = 5;
-        $this->assertEquals(5, $D->integer);
+    
+        $this->assertEquals(0, $D->prop); // template value should be filtered upon instantiation
+        $this->assertNull($D->prop_nullable);
         
-        $D->integer = '6x';
-        $this->assertEquals(6, $D->integer);
+        $D->prop = 5;
+        $this->assertEquals(5, $D->prop);
         
-        $D->set('integer', 7);
-        $this->assertEquals(7, $D->integer);
+        $D->prop = '6x';
+        $this->assertEquals(6, $D->prop);
         
-        $D->set('integer', 'Not an Integer');
-        $this->assertEquals(0, $D->integer);
+        $D->set('prop', 7);
+        $this->assertEquals(7, $D->prop);
         
-        $D->set('integer', 'Not an Integer', true); // Bypass checks
-        $this->assertEquals('Not an Integer', $D->integer);
+        $D->set('prop', 'Not an Integer');
+        $this->assertEquals(0, $D->prop);
+        
+        $D->set('prop', 'Not an Integer', true); // Bypass checks
+        $this->assertEquals('Not an Integer', $D->prop);
     }
 }
 class DeclareTypeIntegerDto extends \Dto\Dto
 {
     protected $template = [
-        'integer' => null,
+        'prop' => null,
+        'prop_nullable' => null,
     ];
     
     protected $meta = [
-        'integer' => [
+        'prop' => [
             'type' => 'integer'
+        ],
+    
+        'prop_nullable' => [
+            'type' => 'integer',
+            'nullable' => true,
         ],
     ];
 }
