@@ -14,11 +14,34 @@ class ArrayOfArrayTest extends DtoTest\TestCase
     /**
      * @expectedException Dto\Exceptions\InvalidDataTypeException
      */
-    public function testYouCannotWriteScalarValuesToArrayLocations()
+    public function testYouCannotWriteScalarValuesToArrayLocations1()
     {
-        //$D = new TestArrayOfArrayTestDto();
-        $D = new TestArrayOfArrayTestDto([1,2,3]);
+        
+        // $D = new TestArrayOfArrayTestDto([1,2,3]);
+        $D = new \Dto\Dto([], ['my_array'=>[]],['my_array'=>['type'=>'array']]);
+        $D->my_array = 'scalar';
     }
+    
+    /**
+     * @expectedException Dto\Exceptions\InvalidDataTypeException
+     */
+    public function testYouCannotWriteScalarValuesToArrayLocations2()
+    {
+        
+        // $D = new TestArrayOfArrayTestDto([1,2,3]);
+        $D = new \Dto\Dto([], ['my_array'=>[]],['my_array'=>['type'=>'array']]);
+        $D->set('my_array', 'scalar');
+    }
+    
+    /**
+     * @expectedException Dto\Exceptions\InvalidDataTypeException
+     */
+    public function testYouCannotWriteScalarValuesToArrayLocations3()
+    {
+        $D = new TestArrayOfArrayTestDto(['my_array' => 'scalar'], ['my_array'=>[]],['my_array'=>['type'=>'array']]);
+        
+    }
+    
     
     public function testYouCanWriteArraysToArrayLocations()
     {
@@ -46,4 +69,5 @@ class TestArrayOfArrayTestDto extends \Dto\Dto
             ]
         ]
     ];
+    
 }

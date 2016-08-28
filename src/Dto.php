@@ -224,34 +224,16 @@ class Dto extends \ArrayObject
      */
     protected function filterRoot($value)
     {
-        // If the $meta[.][type][values] expects an array (non scalar), then we should bail here if the data type doesn't match
-        $meta = $this->getMeta('.');
+        print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         
         foreach ($value as $k => $v) {
-            // isValidLocation ?
-//            if ($this->isScalarType($meta['values']['type'])) {
-//                if (!is_scalar($v) && !is_null($v)) {
-//                    throw new InvalidDataTypeException('Cannot write non-scalar value to scalar locations at root');
-//                }
-//
-//            } // Composite Types
-//            else {
-//                if (is_scalar($v) && !is_null($v)) {
-//                    throw new InvalidDataTypeException('Cannot write scalar values to non-scalars location at root');
-//                }
-//
-//            }
             $child_index = '.'.$k;
-            try {
-                $value[$k] = $this->filterNode($v, $child_index);
-            } catch (\Exception $e) {
-                unset($value[$k]);
-            }
+            $value[$k] = $this->filterNode($v, $child_index);
         }
 
         return $value;
     }
-
+    
     /**
      * Ensure that it's legit to write to the given $index (a 1st level location).
      * For append operations, the $index will be null.
@@ -263,7 +245,7 @@ class Dto extends \ArrayObject
      */
     protected function isValidTargetLocation($index, array $template)
     {
-        echo '['.__LINE__.'] '.__FUNCTION__.' index: "'.$index.'"'."\n";
+        echo '['.__LINE__.'] '.__FUNCTION__.' for index "'.$index.'"'."\n";
         if (empty($template) || is_null($index)) {
             echo '['.__LINE__.']     ----> empty'."\n";
             return true;
@@ -291,13 +273,12 @@ class Dto extends \ArrayObject
      */
     public function isValidMapping($value, $index, array $template) {
     
-        
-        
+        //echo '['.__LINE__.'] '.__FUNCTION__.' for index "'.$index.'"'."\n";
         // Check for compatible value/target
         $normalized_key = $this->getNormalizedKey($index);
         $meta = $this->getMeta($index);
-        echo '['.__LINE__.'] '.__FUNCTION__.' index: "'.$normalized_key.'"'."\n";
-        print_r($value); print "\n";
+        echo '['.__LINE__.'] '.__FUNCTION__.' for index "'.$normalized_key.'"'."\n";
+        print 'value: '; print_r($value); print "\n";
         print_r($template); print "\n";
         print_r($meta); print "\n";
         
@@ -305,9 +286,11 @@ class Dto extends \ArrayObject
         // Append operation
         if (is_null($index)) {
             $target_type = $meta['values']['type'];
+            echo '['.__LINE__.'] null detected... using target type:'.$target_type."\n";
         }
         else {
             $target_type = $meta['type'];
+            echo '['.__LINE__.'] target type: '.$target_type."\n";
         }
         
         if ($target_type == 'unknown') {
@@ -320,11 +303,12 @@ class Dto extends \ArrayObject
             throw new InvalidDataTypeException('Cannot write non-scalar value to scalar location "'.$normalized_key.'"');
         } // Composite Types
         else {
-            if (!is_scalar($value) || is_null($value)) {
-                return true;
+            if (is_scalar($value) && $value != null) {
+                throw new InvalidDataTypeException('Cannot write scalar value to non-scalar location "'.$normalized_key.'"');
             }
-            throw new InvalidDataTypeException('Cannot write scalar value to non-scalar location "'.$normalized_key.'"');
         }
+        
+        return true;
     }
     
     /**
