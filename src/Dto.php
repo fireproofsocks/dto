@@ -13,9 +13,9 @@ use Dto\Exceptions\InvalidMutatorException;
  *
  * Allows object schemas to be defined and helps to normalize object access.
  *
- * See http://php.net/manual/en/class.arrayobject.php
- * Some ideas from https://symfony.com/doc/current/components/property_access/introduction.html#installation
- * And others from http://json-schema.org/
+ * See http://php.net/manual/en/class.arrayobject.php, some ideas from
+ * https://symfony.com/doc/current/components/property_access/introduction.html#installation
+ * others from http://json-schema.org/
  *
  * @category
  */
@@ -27,9 +27,9 @@ class Dto extends \ArrayObject
     /**
      * Dto constructor.
      *
-     * @param array $input    starter data, filtered against the $template and $meta (if supplied)
-     * @param array $template generic data template (i.e. default values) with loosely typed values
-     * @param array $meta     definitions
+     * @param array $input    values filtered against the $template and $meta
+     * @param array $template template (i.e. default values) with loosely typed values
+     * @param array $meta     extra info about the template data.
      */
     public function __construct(array $input = [], array $template = [], array $meta = [])
     {
@@ -55,16 +55,19 @@ class Dto extends \ArrayObject
     }
 
     /**
-     * Normalize the keys used to define meta data.  For dev's UX, we allow keys like "x", but internally, we consider all
-     * locations defined in the meta definition to begin with "." -- so all keys are normalized to the leading dot format.
+     * Normalize the keys used to define meta data.  For dev's UX, keys like "x" are
+     * allowed in the template definitions, but internally, we consider all locations
+     * defined in the meta definition to begin with "." -- this normalizes the keys
+     * of the given $meta array to use the leading dot format.  Exceptions are raised
+     * for invalid keys.
      *
-     * @param $meta
+     * @param $meta array hash of meta definitions.
      *
      * @return array
      *
      * @throws InvalidMetaKeyException
      */
-    protected function normalizeMeta($meta)
+    protected function normalizeMeta(array $meta)
     {
         // print '['.__LINE__ .'] '.__FUNCTION__ ."\n";
         $normalized = [];
@@ -116,10 +119,13 @@ class Dto extends \ArrayObject
     }
 
     /**
-     * Fill in any empty spots in the $this->meta definitions based on what is provided in the $template.
-     * This function only detect the first "left-most" (i.e. top-level) nodes: deeper structures will be iteratively
-     * passed to child instances.  For instance, $template = ['is_on' => false] would have the effect as explicitly
-     * defining the corresponding $meta key as 'boolean': $meta = ['is_on' => ['type => 'boolean']];.
+     * Fill in empty spots in the $this->meta definitions based on what is provided
+     * in the $template.  This function only operates on the first "left-most" (i.e.
+     * top-level) nodes: deeper structures will be iteratively passed to child
+     * instances.  For instance, $template = ['is_on' => false] would have the same
+     * effect as explicitly defining the corresponding $meta key as a 'boolean' type:
+     *
+     *      $meta = ['is_on' => ['type => 'boolean']];.
      *
      * Modifies class-level $this->meta.
      *
@@ -187,7 +193,6 @@ class Dto extends \ArrayObject
     protected function isScalarType($type)
     {
         echo '['.__LINE__.'] '.__FUNCTION__.' type: '.$type."\n";
-
         return !in_array($type, ['array', 'hash', 'dto']);
     }
 
@@ -214,17 +219,32 @@ class Dto extends \ArrayObject
      * Special case for setting the root node: we need to loop over individual keys.
      *
      * @param $value mixed
-     *
+     * @throws InvalidDataTypeException
      * @return mixed
      */
     protected function filterRoot($value)
     {
+        // If the $meta[.][type][values] expects an array (non scalar), then we should bail here if the data type doesn't match
+        $meta = $this->getMeta('.');
+        
         foreach ($value as $k => $v) {
+            // isValidLocation ?
+//            if ($this->isScalarType($meta['values']['type'])) {
+//                if (!is_scalar($v) && !is_null($v)) {
+//                    throw new InvalidDataTypeException('Cannot write non-scalar value to scalar locations at root');
+//                }
+//
+//            } // Composite Types
+//            else {
+//                if (is_scalar($v) && !is_null($v)) {
+//                    throw new InvalidDataTypeException('Cannot write scalar values to non-scalars location at root');
+//                }
+//
+//            }
             $child_index = '.'.$k;
-            if ($this->isValidTargetLocation($v, $child_index, $this->template)) {
+            try {
                 $value[$k] = $this->filterNode($v, $child_index);
-            } else {
-                // Throw Exception?
+            } catch (\Exception $e) {
                 unset($value[$k]);
             }
         }
@@ -233,37 +253,67 @@ class Dto extends \ArrayObject
     }
 
     /**
-     * Ensure that it's legit to write the given $value to the given $index (1st level location).  Nulls are allowed as
-     * values at this point:.
+     * Ensure that it's legit to write to the given $index (a 1st level location).
+     * For append operations, the $index will be null.
      *
-     * @param $value mixed
-     * @param $index string (non-normalized string or null for root location)
+     * @param $index mixed (null for appends, string for set operations)
      * @param $template array
-     *
-     * @throws InvalidDataTypeException
      *
      * @return bool
      */
-    protected function isValidTargetLocation($value, $index, array $template)
+    protected function isValidTargetLocation($index, array $template)
     {
-        echo '['.__LINE__.'] '.__FUNCTION__.' index: '.$index."\n";
-        if (empty($template) || empty($index) || $index == '.') {
+        echo '['.__LINE__.'] '.__FUNCTION__.' index: "'.$index.'"'."\n";
+        if (empty($template) || is_null($index)) {
+            echo '['.__LINE__.']     ----> empty'."\n";
             return true;
         }
-
-        // TODO: Special rules defined for keys? Override function? Regex?
-        // Make sure the target location exists
-        if (!array_key_exists(trim($index, '.'), $template)) {
-            return false;
+        
+        $meta = $this->getMeta($index);
+        if (isset($meta['ambiguous'])) {
+            return true;
         }
-
+        
+        // Make sure the target location exists
+        return array_key_exists(trim($index, '.'), $template);
+    }
+    
+    /**
+     * Ensure that it's kosher to store the given $value at the given location $index.
+     * This is where we prevent scalars from overwriting arrays or vice versa.
+     *
+     * @param $value
+     * @param $index
+     * @param array $template
+     * @return bool
+     *
+     * @throws InvalidDataTypeException
+     */
+    public function isValidMapping($value, $index, array $template) {
+    
+        
+        
         // Check for compatible value/target
         $normalized_key = $this->getNormalizedKey($index);
         $meta = $this->getMeta($index);
-        if ($meta['type'] == 'unknown') {
+        echo '['.__LINE__.'] '.__FUNCTION__.' index: "'.$normalized_key.'"'."\n";
+        print_r($value); print "\n";
+        print_r($template); print "\n";
+        print_r($meta); print "\n";
+        
+        
+        // Append operation
+        if (is_null($index)) {
+            $target_type = $meta['values']['type'];
+        }
+        else {
+            $target_type = $meta['type'];
+        }
+        
+        if ($target_type == 'unknown') {
             return true;
         } // Scalar Types
-        elseif ($this->isScalarType($meta['type'])) {
+        elseif ($this->isScalarType($target_type)) {
             if (is_scalar($value) || is_null($value)) {
                 return true;
             }
@@ -276,7 +326,7 @@ class Dto extends \ArrayObject
             throw new InvalidDataTypeException('Cannot write scalar value to non-scalar location "'.$normalized_key.'"');
         }
     }
-
+    
     /**
      * Get the meta definition data for the given index (normalized or not).
      *
@@ -310,19 +360,28 @@ class Dto extends \ArrayObject
     protected function filterNode($value, $index)
     {
         echo '['.__LINE__.'] '.__FUNCTION__."\n";
-
+        
         // Test for root-level arrays and index is null?
         //print '???'; exit;
+        if ($index == '.') {
+            throw new InvalidLocationException('filterRoot must be used for root key (.)');
+        }
+        
         $normalized_key = $this->getNormalizedKey($index);
-
-        if (!$this->isValidTargetLocation($value, $index, $this->template)) {
+        
+        if (!$this->isValidTargetLocation($index, $this->template)) {
             throw new InvalidLocationException('Index "'.$normalized_key.'" not valid for writing');
         }
-
+    
+        if (!$this->isValidMapping($value, $index, $this->template)) {
+            throw new InvalidLocationException('Invalid mapping at "'.$normalized_key.'"');
+        }
+        
+        
         //$mutatorFunction = $this->getMutator($value, $normalized_key);
         $mutatorFunction = $this->getMutator($value, $index);
-        //print $mutatorFunction; exit;
-        echo '['.__LINE__.'] ----> applying mutator '.$mutatorFunction."\n";
+        
+        echo '['.__LINE__.'] ----> applying mutator '.$mutatorFunction. ' at index "'.$index.'" (normalized: '.$normalized_key.')'."\n";
         // Final gatekeeping
         $value = $this->{$mutatorFunction}($value, $index);
 
@@ -585,7 +644,7 @@ class Dto extends \ArrayObject
     protected function isAppendable($index)
     {
         echo '['.__LINE__.'] '.__FUNCTION__."\n";
-
+        // TODO: look for meta flag? appendable?
         return in_array($this->getMeta($index)['type'], ['array']);
     }
 
@@ -866,19 +925,13 @@ class Dto extends \ArrayObject
         $meta = $this->getMeta($index);
 
         if (!isset($meta['class'])) {
-            throw new \InvalidArgumentException('Meta information for DTO at index '.$index.' requires "class" parameter.');
+            throw new \InvalidArgumentException('Meta information for DTO at index "'.$this->getNormalizedKey($index).'" requires "class" parameter.');
         }
 
         $classname = $meta['class'];
 
         if (is_null($value)) {
-            if ($this->isNullable($index)) {
-                return null;
-            } else {
-                echo '['.__LINE__.']  (new '.$classname.'!) '."\n";
-
-                return new $classname();
-            }
+            return ($this->isNullable($index)) ? null : new $classname();
         }
 
         if ($value instanceof $classname) {

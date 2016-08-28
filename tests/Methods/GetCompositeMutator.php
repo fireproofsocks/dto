@@ -5,7 +5,7 @@ class GetCompositeMutator extends DtoTest\TestCase
     {
         $dto = new \Dto\Dto();
         $value = $this->callProtectedMethod($dto, 'getCompositeMutator', ['']);
-        $this->assertEquals('setTypeHash', $value);
+        $this->assertEquals('mutateTypeHash', $value);
     }
     
     /**
@@ -39,7 +39,7 @@ class GetCompositeMutator extends DtoTest\TestCase
         $method->setAccessible(true);
         
         $value = $method->invokeArgs($dto, ['x']);
-        $this->assertEquals('setX', $value);
+        $this->assertEquals('mutateX', $value);
     }
     
     public function testTypeLevelMutatorReturned()
@@ -55,13 +55,13 @@ class GetCompositeMutator extends DtoTest\TestCase
         $method->setAccessible(true);
     
         $value = $method->invokeArgs($dto, ['x']);
-        $this->assertEquals('setTypeBoolean', $value);
+        $this->assertEquals('mutateTypeBoolean', $value);
     }
 }
 
 class TestGetCompositeMutatorDto extends \Dto\Dto {
     
-    function setX($value) {
+    function mutateX($value) {
         return $value;
     }
 }

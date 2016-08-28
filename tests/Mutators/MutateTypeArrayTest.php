@@ -8,9 +8,17 @@ class MutateTypeArrayTest extends DtoTest\TestCase
             'a' => 'ape', 'b' => 'balloon'
         ];
         $value = $this->callProtectedMethod($dto, 'mutateTypeArray', [$array, 'x']);
-//print var_dump($value); exit;
+
         $this->assertEquals(['ape', 'balloon'], (array) $value);
         $this->assertEquals(1, $dto->tickle_me);
+    }
+    
+    public function testThatScalarValuesAreTypedToArrays()
+    {
+        $dto = new MutateTypeArrayTestDto();
+        $scalar = 'cat';
+        $value = $this->callProtectedMethod($dto, 'mutateTypeArray', [$scalar, 'x']);
+        $this->assertEquals(['cat'], (array) $value);
     }
 }
 

@@ -13,8 +13,13 @@
     <php>
     </php>
     <testsuites>
-        <!--testsuite name="">
+        <testsuite name="all">
             <directory>./tests/</directory>
-        </testsuite-->
+        </testsuite>
     </testsuites>
+    <filter>
+        <whitelist>
+            <directory>./src/</directory>
+        </whitelist>
+    </filter>
 </phpunit>

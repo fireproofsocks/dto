@@ -13,9 +13,9 @@ class FilterNodeTest extends DtoTest\TestCase
     }
     
     /**
-     * The dot location is valid: it is inferred for append operations
+     * @expectedException \Dto\Exceptions\InvalidLocationException
      */
-    public function testFilteringDotNodeIsAllowed()
+    public function testFilteringDotNodeIsNotAllowed()
     {
         $dto = new TestFilterDto();
         $hash = ['x' => '12a', 'y' => '13.1'];

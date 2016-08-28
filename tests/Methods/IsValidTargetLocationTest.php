@@ -1,43 +1,50 @@
 <?php
 class IsValidTargetLocationTest extends DtoTest\TestCase
 {
-    public function testThatDefinedIndexIsValidTargetForScalar()
+    public function testThatDefinedIndexIsValidTarget()
     {
         $template = [
             'my_index' => null
         ];
         
-        $result = $this->callProtectedMethod(new IsValidTargetLocationTestDto(), 'isValidTargetLocation', ['x', 'my_index', $template]);
+        $result = $this->callProtectedMethod(new IsValidTargetLocationTestDto(), 'isValidTargetLocation', ['my_index', $template]);
         $this->assertTrue($result);
     }
     
-    public function testThatUndefinedIndexIsNotValidTargetForScalar()
+    public function testThatUndefinedIndexIsNotValidTarget()
     {
         $template = [
             'my_index' => null
         ];
         
-        $result = $this->callProtectedMethod(new IsValidTargetLocationTestDto(), 'isValidTargetLocation', ['x', 'does-not-exist', $template]);
+        $result = $this->callProtectedMethod(new IsValidTargetLocationTestDto(), 'isValidTargetLocation', ['not-defined-in-template', $template]);
         $this->assertFalse($result);
     }
     
-    public function testThatEmptyTemplateDoesNotRestrictTargets()
+    public function testUndefinedIndexesAreAllowedWhenTheNodeIsAmbiguous()
     {
-        $template = [];
-        $result = $this->callProtectedMethod(new IsValidTargetLocationTestDto(), 'isValidTargetLocation', ['x', 'does-not-exist', $template]);
+        $dto = new IsValidTargetLocationTestDto();
+        $template = [
+            'my_index' => null
+        ];
+        $dto->setMeta(['ambiguous' => true]);
+        
+        $result = $this->callProtectedMethod($dto, 'isValidTargetLocation', ['not-defined-in-template', $template]);
         $this->assertTrue($result);
     }
     
-    public function testThatTheRootLocationIsValid()
+    public function testEmptyTemplateDoesNotRestrictTargets()
     {
-        $values = [
-            'x' => 'y'
-        ];
-        $template = [
-            'my_index' => null,
-        ];
+        $template = [];
+        $result = $this->callProtectedMethod(new IsValidTargetLocationTestDto(), 'isValidTargetLocation', ['does-not-exist', $template]);
+        $this->assertTrue($result);
+    }
+    
+    public function testEvenEmptyStringIsConsideredValidOnUndefinedTemplates()
+    {
+        $template = [];
         
-        $result = $this->callProtectedMethod(new IsValidTargetLocationTestDto(), 'isValidTargetLocation', [$values, '.', $template]);
+        $result = $this->callProtectedMethod(new IsValidTargetLocationTestDto(), 'isValidTargetLocation', ['', $template]);
         $this->assertTrue($result);
     }
     
@@ -47,36 +54,8 @@ class IsValidTargetLocationTest extends DtoTest\TestCase
             'my_index' => null,
         ];
         
-        $result = $this->callProtectedMethod(new IsValidTargetLocationTestDto(), 'isValidTargetLocation', ['x', '.my_index', $template]);
+        $result = $this->callProtectedMethod(new IsValidTargetLocationTestDto(), 'isValidTargetLocation', ['.my_index', $template]);
         $this->assertTrue($result);
-    }
-    
-    /**
-     * @expectedException \Dto\Exceptions\InvalidDataTypeException
-     */
-    public function testThatWritingArraysToScalarLocationsIsNotAllowed()
-    {
-        $dto = new IsValidTargetLocationTestDto();
-        $dto->setMeta(['type' => 'scalar']);
-        $template = [
-            'my_index' => null,
-        ];
-    
-        $this->callProtectedMethod($dto, 'isValidTargetLocation', [['some','array'], 'my_index', $template]);
-    }
-    
-    /**
-     * @expectedException \Dto\Exceptions\InvalidDataTypeException
-     */
-    public function testThatWritingScalarsToArrayLocationsIsNotAllowed()
-    {
-        $dto = new IsValidTargetLocationTestDto();
-        $dto->setMeta(['type' => 'array']);
-        $template = [
-            'my_index' => null,
-        ];
-        
-        $this->callProtectedMethod($dto, 'isValidTargetLocation', ['my-scalar', 'my_index', $template]);
     }
 }
 

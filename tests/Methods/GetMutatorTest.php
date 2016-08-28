@@ -26,7 +26,7 @@ class GetMutatorTest extends \DtoTest\TestCase
         $this->assertEquals('getCompositeMutator', $value);
     }
     
-    public function testHashValueForHashMetaUsesCompositMutator()
+    public function testHashValueForHashMetaUsesCompositeMutator()
     {
         $dto = new GetMutatorTestDto();
         $dto->setMeta(['type' => 'hash']);
@@ -38,7 +38,7 @@ class GetMutatorTest extends \DtoTest\TestCase
         $this->assertEquals('getCompositeMutator', $value);
     }
     
-    public function testHashValueForScalarMetaUsesCompositMutator()
+    public function testHashValueForScalarMetaUsesCompositeMutator()
     {
         $dto = new GetMutatorTestDto();
         $dto->setMeta(['type' => 'integer']);
@@ -96,6 +96,7 @@ class GetMutatorTestDto extends \Dto\Dto
         // Overriding this so we don't trigger the call to filter present in the Dto constructor.
     }
     
+    // Hack function to let us easily mock the response from getMeta
     protected function getMeta($index)
     {
         return $this->meta;

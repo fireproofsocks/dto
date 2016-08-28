@@ -14,17 +14,13 @@ class ArrayOfArrayTest extends DtoTest\TestCase
     /**
      * @expectedException Dto\Exceptions\InvalidDataTypeException
      */
-    public function testThatYouCannotWriteScalarValuestoArrayLocations()
+    public function testYouCannotWriteScalarValuesToArrayLocations()
     {
         //$D = new TestArrayOfArrayTestDto();
-        $D = new TestArrayOfArrayTestDto([[1,2,3]]);
-        
-        //$D[] = [1,2,3];
-        //$D->array[] = ['x', 'y', 'z'];
-        //$D->array[] = ['a' => 'apple']; // TODO: should arrays filter out hashes?
+        $D = new TestArrayOfArrayTestDto([1,2,3]);
     }
     
-    public function testThatYouCanWriteArraysToArrayLocations()
+    public function testYouCanWriteArraysToArrayLocations()
     {
         $a = ['ape', 'apple', 'africa'];
         $b = ['bear', 'bun', 'boise'];
@@ -43,7 +39,10 @@ class TestArrayOfArrayTestDto extends \Dto\Dto
         '.' => [
             'type' => 'array',
             'values' => [
-                'type' => 'array'
+                'type' => 'array',
+                'values' => [
+                    'type' => 'scalar'
+                ]
             ]
         ]
     ];
