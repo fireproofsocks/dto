@@ -4,7 +4,7 @@ class DotNotationTest extends DtoTest\TestCase
     public function testGet()
     {
         $D = new TestDotNotationTestDto();
-        //print_r($D->mother->toArray()); exit;
+
         $this->assertEquals('Beth', $D->mother->firstname);
         $this->assertEquals('Beth', $D['mother']['firstname']);
         $this->assertEquals('Beth', $D->get('mother.firstname'));
@@ -18,17 +18,14 @@ class DotNotationTest extends DtoTest\TestCase
     public function testGetInvalid()
     {
         $D = new TestDotNotationTestDto();
-        $result = $D->get('does.not.exist');
-        //print var_dump($result); exit;
+        $D->get('does.not.exist');
     }
 
     public function testSet()
     {
         $D = new TestDotNotationTestDto();
-        //exit;
         $D->set('firstname', 'Snoopy');
         $this->assertEquals('Snoopy', $D->firstname);
-//print_r($D->mother); exit;
         $D->mother->set('firstname', 'Margaret');
         $this->assertEquals('Margaret', $D->mother->firstname);
     }
@@ -62,6 +59,15 @@ class DotNotationTest extends DtoTest\TestCase
 
         $this->assertEquals('Array', $D->firstname);
 
+    }
+    
+    public function testExperimental()
+    {
+        $this->markTestIncomplete('Deep dot notation not yet supported.');
+        $D = new \Dto\Dto();
+        $D->set('a.b', 'c');
+        
+        $this->assertEquals($D->a->b, 'c');
     }
 
 }

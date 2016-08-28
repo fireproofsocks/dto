@@ -33,7 +33,7 @@ class Dto extends \ArrayObject
      */
     public function __construct(array $input = [], array $template = [], array $meta = [])
     {
-        echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n";
+        echo "vvvvvvvvvvvvvvvvvvvvvvvvvv ". get_called_class(). " vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n";
         $this->setFlags(0);
         $arg_list = func_get_args();
 
@@ -580,17 +580,6 @@ class Dto extends \ArrayObject
     {
         echo '['.__LINE__.'] '.__FUNCTION__."\n";
         $this->offsetSet($index, $value, $bypass);
-        // Special case for the root node: a dot means we're talking about THIS ArrayObject
-
-//        if ($index == '.') {
-//            if ($bypass) {
-//                parent::__construct($value); // store value as is
-//            } else {
-//                $this->__construct($value, $this->template, $this->meta); // re-run constructor will re-run filters
-//            }
-//        } else {
-//            $this->offsetSet($index, $value, $bypass);
-//        }
     }
 
     /**
@@ -907,12 +896,17 @@ class Dto extends \ArrayObject
         echo '['.__LINE__.'] '.__FUNCTION__.' index: '.$index."\n";
 
         $meta = $this->getMeta($index);
-
-        if (!isset($meta['class'])) {
-            throw new \InvalidArgumentException('Meta information for DTO at index "'.$this->getNormalizedKey($index).'" requires "class" parameter.');
+        //print var_dump($index);
+        //print_r($meta); exit;
+        
+        
+//print var_dump($value); exit;
+        // Handle appending values
+        if ((!is_null($index) && !isset($meta['class'])) || (is_null($index) && !isset($meta['values']['class']))) {
+            throw new \InvalidArgumentException('Meta information for DTO at index "'.$this->getNormalizedKey($index).'" requires "class" parameter in '. get_called_class());
         }
-
-        $classname = $meta['class'];
+    
+        $classname = (is_null($index)) ? $meta['values']['class'] : $meta['class'];
 
         if (is_null($value)) {
             return ($this->isNullable($index)) ? null : new $classname();

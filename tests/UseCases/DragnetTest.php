@@ -9,7 +9,7 @@ class DragnetTest extends \DtoTest\TestCase
             'c' => 'cat',
             'd' => 'dog'
         ];
-        
+        // Raise an exception?  Or silently omit the unmapped index?
         $dto = new DragnetTestDto($values);
         // We only want to keep items a, b, c
         $this->assertEquals([

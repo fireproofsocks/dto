@@ -27,10 +27,11 @@ class ArrayOfDtoTest extends DtoTest\TestCase
         $data3 = ['x'=>'g', 'y'=>'h', 'z'=>'i'];
     
         $D[] = new TestRecord($data1);
-        $D[] = new TestRecord($data2);
-        $D[] = new TestRecord($data3);
+        //$D[] = new TestRecord($data2);
+        //$D[] = new TestRecord($data3);
     
-        $this->assertEquals([$data1, $data2, $data3], $D->toArray());
+        //$this->assertEquals([$data1, $data2, $data3], $D->toArray());
+        $this->assertEquals([$data1], $D->toArray());
     }
 }
 
