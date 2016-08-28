@@ -40,9 +40,8 @@ class Dto extends \ArrayObject
         // We need to be able to override the class variables when the input variables are empty.
         $this->template = (isset($arg_list[1])) ? $arg_list[1] : $this->template;
         $this->meta = (isset($arg_list[2])) ? $arg_list[2] : $this->meta;
-
-        $this->meta = $this->normalizeMeta($this->meta);
-        $this->meta = $this->autoDetectTypes($this->template, $this->meta);
+        
+        $this->meta = $this->autoDetectTypes($this->template, $this->normalizeMeta($this->meta));
 
         $input = ($input) ? $input : $this->template; // You cannot override $this->template with an empty input
 
@@ -377,9 +376,8 @@ class Dto extends \ArrayObject
     }
 
     /**
-     * Logic for resolving which mutator function to use.  It can be a bit tricky when data is not explicitly defined.
-     * This does not try to determine the validity of mutating a scalar value onto a composite location or a composite
-     * value onto a scalar location (SRP).  See isValidTargetLocation for that.
+     * Contains the logic for resolving which mutator function to use.  It can be a
+     * bit tricky when data is not explicitly defined (i.e. type=undefined).
      *
      * @param $value mixed
      * @param $index string
@@ -405,9 +403,8 @@ class Dto extends \ArrayObject
     }
 
     /**
-     * Returns the function name used to mutate scalar values being set at the given $index.  This looks for definitions
-     * in different places than the getCompositeMutatorFunctionName() method.
-     * Type-mutator-methods are named using a prefix of "mutateType"; field-mutators use the prefix of "set".
+     * Returns mutator function name used to mutate scalar values at the given $index
+     * Type-mutator-methods use a prefix of "mutateType"; field-mutators use "mutate".
      *
      * @param $index (non-normalized)
      *
@@ -450,7 +447,7 @@ class Dto extends \ArrayObject
     }
 
     /**
-     * Return a valid function name.
+     * Return a valid function name, potentially assembled from location parts.
      *
      * @param $prefix string
      * @param $descriptor string - from the meta index location
