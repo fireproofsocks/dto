@@ -19,27 +19,20 @@ class GetCompositeMutator extends DtoTest\TestCase
             ]
         ];
         $dto = new \Dto\Dto([],[],$meta);
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getCompositeMutator');
-        $method->setAccessible(true);
-        
-        $method->invokeArgs($dto, ['x']);
+        $this->callProtectedMethod($dto, 'getCompositeMutator', ['x']);
     }
     
     public function testFieldLevelMutatorReturnedWhenMethodExists()
     {
         $meta = [
             '.x' => [
-                'type' => 'scalar'
+                'type' => 'scalar',
+                'mutator' => 'mutateMyX'
             ]
         ];
         $dto = new TestGetCompositeMutatorDto([],[],$meta);
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getCompositeMutator');
-        $method->setAccessible(true);
-        
-        $value = $method->invokeArgs($dto, ['x']);
-        $this->assertEquals('mutateX', $value);
+        $value = $this->callProtectedMethod($dto, 'getCompositeMutator', ['x']);
+        $this->assertEquals('mutateMyX', $value);
     }
     
     public function testTypeLevelMutatorReturned()
@@ -50,18 +43,14 @@ class GetCompositeMutator extends DtoTest\TestCase
             ]
         ];
         $dto = new \Dto\Dto([],[],$meta);
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getCompositeMutator');
-        $method->setAccessible(true);
-    
-        $value = $method->invokeArgs($dto, ['x']);
+        $value = $this->callProtectedMethod($dto, 'getCompositeMutator', ['x']);
         $this->assertEquals('mutateTypeBoolean', $value);
     }
 }
 
 class TestGetCompositeMutatorDto extends \Dto\Dto {
     
-    function mutateX($value) {
+    function mutateMyX($value) {
         return $value;
     }
 }

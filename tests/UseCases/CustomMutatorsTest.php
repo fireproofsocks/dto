@@ -3,13 +3,10 @@ class CustomMutatorsTest extends \DtoTest\TestCase
 {
     public function testMutatorMethodNamesPropertyInheritTemplateLocation()
     {
-        $this->markTestIncomplete('Not yet supported');
-        
         $dto = new CustomMutatorsDto();
         $dto->x = 'anything';
         $dto->other->x = 'anything';
         
-        // The child object @ "other" would need to be aware of the parent object...
         $this->assertEquals('mutateX', $dto->x);
         $this->assertEquals('mutateOtherX', $dto->other->x);
     }
@@ -21,6 +18,15 @@ class CustomMutatorsDto extends \Dto\Dto
         'x' => '',
         'other' => [
             'x' => '',
+        ]
+    ];
+    
+    protected $meta = [
+        '.x' => [
+            'mutator' => 'mutateX'
+        ],
+        '.other.x' => [
+            'mutator' => 'mutateOtherX'
         ]
     ];
     

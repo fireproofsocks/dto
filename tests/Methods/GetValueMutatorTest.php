@@ -24,44 +24,49 @@ class GetValueMutatorTest extends DtoTest\TestCase
             ]
         ];
         $dto = new \Dto\Dto([],[],$meta);
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getValueMutator');
-        $method->setAccessible(true);
-        
-        $method->invokeArgs($dto, ['x']);
+        $this->callProtectedMethod($dto, 'getValueMutator', ['x']);
     }
     
     public function testFieldLevelMutatorReturnedWhenMethodExists()
     {
         $meta = [
             '.x' => [
-                'type' => 'scalar'
+                'type' => 'scalar',
+                'mutator' => 'mutateMyX'
             ]
         ];
         $dto = new TestGetValueMutatorDto([],[],$meta);
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getValueMutator');
-        $method->setAccessible(true);
-        
-        $value = $method->invokeArgs($dto, ['x']);
-        $this->assertEquals('mutateX', $value);
+        $value = $this->callProtectedMethod($dto, 'getValueMutator', ['x']);
+        $this->assertEquals('mutateMyX', $value);
     }
     
-//    public function testTypeLevelMutatorReturned()
-//    {
-//        $meta = [
-//            '.x' => [
-//                'type' => 'boolean'
-//            ]
-//        ];
-//        $dto = new \Dto\Dto([],[],$meta);
-//        $reflection = new ReflectionClass(get_class($dto));
-//        $method = $reflection->getMethod('getValueMutator');
-//        $method->setAccessible(true);
-//
-//        $value = $method->invokeArgs($dto, ['x']);
-//        $this->assertEquals('setTypeBoolean', $value);
-//    }
+    /**
+     * @expectedException \Dto\Exceptions\InvalidMutatorException
+     */
+    public function testFieldLevelMutatorFailsWhenMethodDoesNotExist()
+    {
+        $meta = [
+            '.x' => [
+                'type' => 'scalar',
+                'mutator' => 'does_not_exist'
+            ]
+        ];
+        $dto = new TestGetValueMutatorDto([],[],$meta);
+        $this->callProtectedMethod($dto, 'getValueMutator', ['x']);
+    }
+    
+    
+    public function testTypeLevelMutatorReturned()
+    {
+        $meta = [
+            '.x' => [
+                'type' => 'boolean'
+            ]
+        ];
+        $dto = new \Dto\Dto([],[],$meta);
+        $value = $this->callProtectedMethod($dto, 'getValueMutator', ['x']);
+        $this->assertEquals('mutateTypeBoolean', $value);
+    }
     
     public function testValueLevelMutator()
     {
@@ -87,11 +92,33 @@ class GetValueMutatorTest extends DtoTest\TestCase
         $value = $method->invokeArgs($dto, ['x']);
         $this->assertEquals('mutateTypeInteger', $value);
     }
+    
+    /**
+     *
+     */
+    public function testDeferToParentCustomMutator()
+    {
+        $meta = [
+            '.x' => [
+                // empty -- no data defined for this node
+            ],
+            '.' => [
+                'type' => 'hash',
+                'values' => [
+                    'type' => 'integer',
+                    'mutator' => 'mutateMyX'
+                ]
+            ]
+        ];
+        $dto = new TestGetValueMutatorDto([],[],$meta);
+        $value = $this->callProtectedMethod($dto, 'getValueMutator', ['x']);
+        $this->assertEquals('mutateMyX', $value);
+    }
 }
 
 class TestGetValueMutatorDto extends \Dto\Dto {
     
-    function mutateX($value) {
+    function mutateMyX($value) {
         return $value;
     }
 }
