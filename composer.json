@@ -1,13 +1,12 @@
 {
   "name": "dto/dto",
-  "description": "Data Transfer Object",
+  "description": "Data Transfer Object: quickly create structured objects to hold loosely typed data",
   "type": "project",
-  "license": "proprietary",
+  "license": "MIT",
   "minimum-stability": "stable",
   "require": {
   },
   "require-dev": {
-    "phpunit/phpunit": "^4.8"
   },
   "autoload": {
     "psr-4": {
