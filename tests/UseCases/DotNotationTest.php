@@ -60,16 +60,6 @@ class DotNotationTest extends DtoTest\TestCase
         $this->assertEquals('Array', $D->firstname);
 
     }
-    
-    public function testExperimental()
-    {
-        $this->markTestIncomplete('Deep dot notation not yet supported.');
-        $D = new \Dto\Dto();
-        $D->set('a.b', 'c');
-        
-        $this->assertEquals($D->a->b, 'c');
-    }
-
 }
 
 class TestDotNotationTestDto extends \Dto\Dto

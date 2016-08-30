@@ -1,9 +1,11 @@
 <?php
 class DragnetTest extends \DtoTest\TestCase
 {
+    /**
+     * @expectedException \Dto\Exceptions\InvalidLocationException
+     */
     public function testThatOnlyValuesDefinedInTheTemplateAreKept()
     {
-        $this->markTestIncomplete('Need to decide if we throw an exception or silently handle this');
         $values = [
             'a' => 'ape',
             'b' => 'boy',
