@@ -65,7 +65,7 @@ class SetTest extends TestCase
 class SetDto extends \Dto\Dto {
     
     // Simplified integer filtering here
-    protected function filter($value, $index) {
+    protected function filterNode($value, $index) {
         if (!is_array($value)) {
             return intval($value);
         }
