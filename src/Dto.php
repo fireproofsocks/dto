@@ -215,11 +215,28 @@ class Dto extends \ArrayObject
     {
         foreach ($value as $k => $v) {
             $child_index = '.' . $k;
-            // TODO: try/catch
-            $value[$k] = $this->filterNode($v, $child_index);
+            try {
+                $value[$k] = $this->filterNode($v, $child_index);
+            } catch (\Exception $e) {
+                $this->handleException($e);
+                unset($value[$k]);
+            }
         }
         
         return $value;
+    }
+    
+    /**
+     * Override this function in a child class if needed (see the DtoStrict class).
+     * The method is implemented for "graceful/silent failing".
+     * @param \Exception $e
+     * @throws InvalidDataTypeException
+     */
+    protected function handleException(\Exception $e)
+    {
+        if ($e instanceof InvalidDataTypeException) {
+            throw $e;
+        }
     }
     
     /**
@@ -343,10 +360,9 @@ class Dto extends \ArrayObject
         
         $mutatorFunction = $this->getMutator($value, $index);
         
-        // Final gatekeeping
-        // TODO: try/catch
         $value = $this->{$mutatorFunction}($value, $index);
         
+        // Final gatekeeping: make sure our mutators don't try to sneak invalid values past
         if (!$this->isValidValue($value)) {
             throw new InvalidDataTypeException('Invalid data type cannot be written at location "' . $normalized_key . '"');
         }
@@ -552,7 +568,7 @@ class Dto extends \ArrayObject
      */
     public function __set($name, $value)
     {
-        return $this->set($name, $value);
+        $this->set($name, $value);
     }
     
     /**
@@ -585,10 +601,20 @@ class Dto extends \ArrayObject
         if ($index == '.') {
             $newval = ($bypass) ? $newval : $this->filterRoot($newval);
             parent::__construct($newval); // store value as is
-        } else {
-            // TODO: try/catch?
-            $newval = ($bypass) ? $newval : $this->filterNode($newval, $index);
+            return;
+        }
+        
+        if ($bypass) {
             parent::offsetSet($index, $newval); // store the value on the ArrayObject
+            return;
+        }
+        
+        try {
+            
+            $newval = $this->filterNode($newval, $index);
+            parent::offsetSet($index, $newval); // store the value on the ArrayObject
+        } catch (\Exception $e) {
+            $this->handleException($e); // Do not store the value
         }
     }
     

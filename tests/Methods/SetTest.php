@@ -58,7 +58,22 @@ class SetTest extends TestCase
         $D->set(null, 'b');
         $D->set(null, 'c');
         $this->assertEquals(['a','b','c'], $D->toArray());
-        
+    }
+    
+    public function testSetFailsWhenLocationNotDefined()
+    {
+        $D = new \Dto\Dto([],['x' => '']);
+        $D->y = 'this location is not defined';
+        $this->assertFalse(isset($D->y));
+    }
+    
+    /**
+     * @expectedException \Dto\Exceptions\InvalidLocationException
+     */
+    public function testSetErrorsWhenLocationNotDefinedWhenInStrictMode()
+    {
+        $D = new \Dto\DtoStrict([],['x' => '']);
+        $D->y = 'this location is not defined';
     }
 }
 

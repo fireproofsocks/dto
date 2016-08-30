@@ -16,7 +16,7 @@ class HashTest extends TestCase
     }
 }
 
-class DeclareTypeHashDto extends \Dto\Dto
+class DeclareTypeHashDto extends \Dto\DtoStrict
 {
     protected $template = [
         'a' => '',
