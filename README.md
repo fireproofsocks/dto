@@ -2,7 +2,8 @@
 
 [![Build Status](https://travis-ci.org/fireproofsocks/dto.svg?branch=master)](https://travis-ci.org/fireproofsocks/dto)
 
-[![Coverage Status](https://coveralls.io/repos/github/fireproofsocks/dto/badge.svg)](https://coveralls.io/github/fireproofsocks/dto)
+[![codecov](https://codecov.io/gh/fireproofsocks/dto/branch/master/graph/badge.svg)](https://codecov.io/gh/fireproofsocks/dto)
+
 
 A Data Transfer Object (DTO) is an object used to pass structured data between layers in your application.  It aims to provide a quick and easy way to define structure objects, filter the data, and reuse structures between objects.  
 
