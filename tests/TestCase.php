@@ -1,7 +1,7 @@
 <?php
 namespace DtoTest;
 
-class TestCase extends \PHPUnit_Framework_Testcase
+class TestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * Call a private or protected function for testing purposes
