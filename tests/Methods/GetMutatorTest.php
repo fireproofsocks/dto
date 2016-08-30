@@ -1,6 +1,10 @@
 <?php
 
-class GetMutatorTest extends \DtoTest\TestCase
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class GetMutatorTest extends TestCase
 {
     public function testScalarValueForScalarMetaUsesValueMutator()
     {

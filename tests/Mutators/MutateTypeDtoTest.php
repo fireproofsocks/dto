@@ -1,10 +1,15 @@
 <?php
-class MutateTypeDtoTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class MutateTypeDtoTest extends TestCase
 {
     public function testNullableLocationReturnsNullWhenSetToNull()
     {
         $value = $this->callProtectedMethod(
-            new \Dto\Dto([], ['x' => null], ['x' => ['type' => 'dto', 'class' => 'MutateTypeDtoChildDto', 'nullable' => true]]), 'mutateTypeDto',
+            new \Dto\Dto([], ['x' => null], ['x' => ['type' => 'dto', 'class' => 'DtoTest\DeclareTypes\MutateTypeDtoChildDto', 'nullable' => true]]), 'mutateTypeDto',
             [null, 'x']
         );
         $this->assertNull($value);
@@ -13,7 +18,7 @@ class MutateTypeDtoTest extends DtoTest\TestCase
     public function testNotNullableLocationDoesNotReturnNullWhenSetToNull()
     {
         $value = $this->callProtectedMethod(
-            new \Dto\Dto([], ['x' => null], ['x' => ['type' => 'dto', 'class' => 'MutateTypeDtoChildDto', 'nullable' => false]]), 'mutateTypeDto',
+            new \Dto\Dto([], ['x' => null], ['x' => ['type' => 'dto', 'class' => 'DtoTest\DeclareTypes\MutateTypeDtoChildDto', 'nullable' => false]]), 'mutateTypeDto',
             [null, 'x']
         );
         $this->assertNotNull($value);
@@ -22,7 +27,7 @@ class MutateTypeDtoTest extends DtoTest\TestCase
     
     public function testSettingPropertyWithDtoInstanceWorks()
     {
-        $parent = new \Dto\Dto([], ['x' => null], ['x' => ['type' => 'dto', 'class' => 'MutateTypeDtoChildDto', 'nullable' => false]]);
+        $parent = new \Dto\Dto([], ['x' => null], ['x' => ['type' => 'dto', 'class' => 'DtoTest\DeclareTypes\MutateTypeDtoChildDto', 'nullable' => false]]);
         $child = new MutateTypeDtoChildDto();
         $child->y = 'my-value';
         

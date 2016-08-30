@@ -1,5 +1,10 @@
 <?php
-class MutateTypeHashTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class MutateTypeHashTest extends TestCase
 {
     public function testNullableLocationReturnsNullWhenSetToNull()
     {

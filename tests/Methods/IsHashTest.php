@@ -1,5 +1,10 @@
 <?php
-class IsHashTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class IsHashTest extends TestCase
 {
     public function testThatScalarsAreNotHashes()
     {
@@ -38,7 +43,7 @@ class IsHashTest extends DtoTest\TestCase
     public function testThatObjectsAreNotHashes()
     {
         $D = new \Dto\Dto();
-        $obj = new stdClass();
+        $obj = new \stdClass();
         $this->assertFalse($D->isHash($obj));
     }
     

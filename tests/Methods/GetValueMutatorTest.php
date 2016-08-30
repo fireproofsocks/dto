@@ -1,5 +1,10 @@
 <?php
-class GetValueMutatorTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class GetValueMutatorTest extends TestCase
 {
     public function testDefaultValueReturned()
     {
@@ -85,11 +90,7 @@ class GetValueMutatorTest extends DtoTest\TestCase
             ]
         ];
         $dto = new \Dto\Dto([],[],$meta);
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getValueMutator');
-        $method->setAccessible(true);
-    
-        $value = $method->invokeArgs($dto, ['x']);
+        $value = $this->callProtectedMethod($dto, 'getValueMutator', ['x']);
         $this->assertEquals('mutateTypeInteger', $value);
     }
     

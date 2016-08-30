@@ -1,5 +1,10 @@
 <?php
-class NullableTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class NullableTest extends TestCase
 {
     public function testIndexesCanBeSetToNullWhenExplicitlyDeclaredAsNullable()
     {

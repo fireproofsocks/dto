@@ -1,5 +1,10 @@
 <?php
-class ArrayOfDtoTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes\Arrays;
+
+use DtoTest\TestCase;
+
+class ArrayOfDtoTest extends TestCase
 {
     
     public function testPassArrayOfDtsToConstructor()
@@ -44,7 +49,7 @@ class TestRecordSet extends \Dto\Dto
             'type' => 'array',
             'values' => [
                 'type' => 'dto',
-                'class' => 'TestRecord'
+                'class' => 'DtoTest\DeclareTypes\Arrays\TestRecord'
             ]
         ]
     ];

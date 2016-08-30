@@ -1,5 +1,10 @@
 <?php
-class IsValidTargetLocationTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class IsValidTargetLocationTest extends TestCase
 {
     public function testThatDefinedIndexIsValidTarget()
     {

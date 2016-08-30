@@ -1,11 +1,15 @@
 <?php
 
-class __ConstructTest extends DtoTest\TestCase
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class __ConstructTest extends TestCase
 {
     public function testInstantiation()
     {
         $dto = new __ConstructTestDto();
-        $this->assertInstanceOf('__ConstructTestDto', $dto);
+        $this->assertInstanceOf('DtoTest\DeclareTypes\__ConstructTestDto', $dto);
     }
     
     public function testSetValuesThruFilterRootViaConstructor()
@@ -76,11 +80,11 @@ class __ConstructTestParentDto extends \Dto\Dto
     protected $meta = [
         'not_nullable_child' => [
             'type' => 'dto',
-            'class' => '__ConstructTestRecordDto',
+            'class' => 'DtoTest\DeclareTypes\__ConstructTestRecordDto',
         ],
         'nullable_child' => [
             'type' => 'dto',
-            'class' => '__ConstructTestRecordDto',
+            'class' => 'DtoTest\DeclareTypes__ConstructTestRecordDto',
             'nullable' => true
         ]
     ];

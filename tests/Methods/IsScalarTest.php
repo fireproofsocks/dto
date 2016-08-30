@@ -1,10 +1,15 @@
 <?php
-class IsScalarTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class IsScalarTest extends TestCase
 {
     public function testBasicPHPrealityCheck()
     {
         $dto = new \Dto\Dto();
-        $obj = new stdClass();
+        $obj = new \stdClass();
         $arr = array();
         $int = 0;
         $float = 1.1;
@@ -25,18 +30,15 @@ class IsScalarTest extends DtoTest\TestCase
     public function testIsScalarType()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('isScalarType');
-        $method->setAccessible(true);
+        
+        $this->assertFalse($this->callProtectedMethod($dto, 'isScalarType', ['dto']));
+        $this->assertFalse($this->callProtectedMethod($dto, 'isScalarType', ['array']));
+        $this->assertFalse($this->callProtectedMethod($dto, 'isScalarType', ['hash']));
     
-        $this->assertFalse($method->invokeArgs($dto, ['dto']));
-        $this->assertFalse($method->invokeArgs($dto, ['array']));
-        $this->assertFalse($method->invokeArgs($dto, ['hash']));
-    
-        $this->assertTrue($method->invokeArgs($dto, ['integer']));
-        $this->assertTrue($method->invokeArgs($dto, ['float']));
-        $this->assertTrue($method->invokeArgs($dto, ['scalar']));
-        $this->assertTrue($method->invokeArgs($dto, ['string']));
-        $this->assertTrue($method->invokeArgs($dto, ['boolean']));
+        $this->assertTrue($this->callProtectedMethod($dto, 'isScalarType', ['integer']));
+        $this->assertTrue($this->callProtectedMethod($dto, 'isScalarType', ['float']));
+        $this->assertTrue($this->callProtectedMethod($dto, 'isScalarType', ['scalar']));
+        $this->assertTrue($this->callProtectedMethod($dto, 'isScalarType', ['string']));
+        $this->assertTrue($this->callProtectedMethod($dto, 'isScalarType', ['boolean']));
     }
 }

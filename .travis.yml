@@ -16,7 +16,8 @@ script:
     - vendor/bin/phpunit --coverage-clover=coverage.xml
 
 install:
-  - composer install --dev
+  - composer install
+  - composer dump-autoload
 
 after_success:
     - bash <(curl -s https://codecov.io/bash)

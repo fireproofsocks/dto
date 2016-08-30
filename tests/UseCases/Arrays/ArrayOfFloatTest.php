@@ -1,5 +1,10 @@
 <?php
-class ArrayOfFloatTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes\Arrays;
+
+use DtoTest\TestCase;
+
+class ArrayOfFloatTest extends TestCase
 {
     
     public function testArraySet1()

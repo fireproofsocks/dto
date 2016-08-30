@@ -1,5 +1,10 @@
 <?php
-class ArrayOfIntegersTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes\Arrays;
+
+use DtoTest\TestCase;
+
+class ArrayOfIntegersTest extends TestCase
 {
     
     public function testArraySet1()

@@ -1,5 +1,10 @@
 <?php
-class DeclareTypeIntegerTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class IntegerTest extends TestCase
 {
     public function testWriteInteger()
     {

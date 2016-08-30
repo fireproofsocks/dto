@@ -1,5 +1,10 @@
 <?php
-class GetCompositeMutator extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class GetCompositeMutator extends TestCase
 {
     public function testDefaultValueReturned()
     {

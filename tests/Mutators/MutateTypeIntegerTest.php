@@ -1,5 +1,10 @@
 <?php
-class MutateTypeIntegerTest extends \DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class MutateTypeIntegerTest extends TestCase
 {
     public function testNullableLocationReturnsNullWhenSetToNull()
     {

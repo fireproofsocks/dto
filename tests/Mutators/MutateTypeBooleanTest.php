@@ -1,5 +1,10 @@
 <?php
-class MutateTypeBooleanTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class MutateTypeBooleanTest extends TestCase
 {
     public function testStringsConvertToBoolean()
     {

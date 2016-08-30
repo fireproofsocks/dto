@@ -1,5 +1,9 @@
 <?php
-class MutateTypeUnknownTest extends DtoTest\TestCase
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class MutateTypeUnknownTest extends TestCase
 {
     public function testPassthru()
     {
@@ -18,7 +22,7 @@ class MutateTypeUnknownTest extends DtoTest\TestCase
         $value = $this->callProtectedMethod(new MutateTypeUnknownTestDto(), 'mutateTypeUnknown', [['my'=>'hash'], 'ignoreme']);
         $this->assertEquals(['my'=>'hash'], $value);
     
-        $obj = new stdClass();
+        $obj = new \stdClass();
         $value = $this->callProtectedMethod(new MutateTypeUnknownTestDto(), 'mutateTypeUnknown', [$obj, 'ignoreme']);
         $this->assertEquals($obj, $value);
         

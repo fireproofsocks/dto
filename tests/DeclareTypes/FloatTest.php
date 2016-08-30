@@ -1,5 +1,10 @@
 <?php
-class DeclareTypeFloatTest extends \DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class DeclareTypeFloatTest extends TestCase
 {
     public function test()
     {

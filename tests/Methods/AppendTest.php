@@ -1,5 +1,10 @@
 <?php
-class AppendTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class AppendTest extends TestCase
 {
     /**
      * @expectedException \Dto\Exceptions\AppendException

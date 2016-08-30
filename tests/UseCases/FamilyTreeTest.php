@@ -1,5 +1,10 @@
 <?php
-class FamilyTreeTest extends \DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class FamilyTreeTest extends TestCase
 {
     public function testMappingParentsAndGrandparents()
     {
@@ -60,12 +65,12 @@ class PersonDto extends \Dto\Dto
     protected $meta = [
         'mother' => [
             'type' => 'dto',
-            'class' => 'PersonDto',
+            'class' => 'DtoTest\DeclareTypes\PersonDto',
             'nullable' => true,
         ],
         'father' => [
             'type' => 'dto',
-            'class' => 'PersonDto',
+            'class' => 'DtoTest\DeclareTypes\PersonDto',
             'nullable' => true,
         ]
     ];

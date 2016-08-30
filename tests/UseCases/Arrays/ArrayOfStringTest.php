@@ -1,5 +1,10 @@
 <?php
-class ArrayOfStringTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes\Arrays;
+
+use DtoTest\TestCase;
+
+class ArrayOfStringTest extends TestCase
 {
     
     public function testArrayNodeSet()

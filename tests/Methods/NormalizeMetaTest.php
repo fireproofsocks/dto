@@ -1,12 +1,15 @@
 <?php
-class NormalizeMetaTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class NormalizeMetaTest extends TestCase
 {
     public function testThatDotsArePrepended()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('normalizeMeta');
-        $method->setAccessible(true);
+
         $meta = [
             'firstname' => 'x',
             '.lastname' => 'y',
@@ -19,6 +22,7 @@ class NormalizeMetaTest extends DtoTest\TestCase
             '.mother.firstname' => 'a',
         ];
 
-        $this->assertEquals($normalized, $method->invokeArgs($dto, [$meta]));
+        $value = $this->callProtectedMethod($dto, 'normalizeMeta', [$meta]);
+        $this->assertEquals($normalized, $value);
     }
 }

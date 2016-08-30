@@ -1,5 +1,10 @@
 <?php
-class IsValidMappingTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class IsValidMappingTest extends TestCase
 {
     /**
      * @expectedException \Dto\Exceptions\InvalidDataTypeException

@@ -1,5 +1,10 @@
 <?php
-class MutateTypeScalarTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class MutateTypeScalarTest extends TestCase
 {
     public function testIntegersConvertToStrings()
     {

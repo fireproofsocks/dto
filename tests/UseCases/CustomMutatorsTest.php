@@ -1,5 +1,10 @@
 <?php
-class CustomMutatorsTest extends \DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class CustomMutatorsTest extends TestCase
 {
     public function testMutatorMethodNamesPropertyInheritTemplateLocation()
     {

@@ -1,5 +1,10 @@
 <?php
-class MutateTypeArrayTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class MutateTypeArrayTest extends TestCase
 {
     public function testThatArrayKeysAreStripped()
     {

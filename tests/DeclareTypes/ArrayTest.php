@@ -1,5 +1,10 @@
 <?php
-class DeclareTypeArrayTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class ArrayTest extends TestCase
 {
     public function testAppendToArrayAtRootForTypeArrayRootNode()
     {

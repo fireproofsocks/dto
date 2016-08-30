@@ -1,5 +1,10 @@
 <?php
-class FilterNodeTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class FilterNodeTest extends TestCase
 {
     public function testFilteringUsingValueMutators()
     {

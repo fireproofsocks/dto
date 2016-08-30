@@ -1,5 +1,10 @@
 <?php
-class DotNotationTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class DotNotationTest extends TestCase
 {
     public function testGet()
     {
@@ -13,7 +18,7 @@ class DotNotationTest extends DtoTest\TestCase
     }
 
     /**
-     * @expectedException Dto\Exceptions\InvalidLocationException
+     * @expectedException \Dto\Exceptions\InvalidLocationException
      */
     public function testGetInvalid()
     {

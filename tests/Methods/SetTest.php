@@ -1,5 +1,10 @@
 <?php
-class SetTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class SetTest extends TestCase
 {
     public function testSetRegularScalar()
     {

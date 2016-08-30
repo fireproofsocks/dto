@@ -1,5 +1,10 @@
 <?php
-class DeclareTypeHashTest extends \DtoTest\TestCase 
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class HashTest extends TestCase
 {
     /**
      * @expectedException \Dto\Exceptions\InvalidLocationException

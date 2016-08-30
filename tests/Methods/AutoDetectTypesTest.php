@@ -1,5 +1,10 @@
 <?php
-class AutoDetectTypesTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class AutoDetectTypesTest extends TestCase
 {
     public function testBasicAutoDetectionForStandardTypes()
     {
@@ -12,12 +17,8 @@ class AutoDetectTypesTest extends DtoTest\TestCase
         ];
         
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('autoDetectTypes');
-        $method->setAccessible(true);
         
-        
-        $meta = $method->invokeArgs($dto, [$template, []]);
+        $meta = $this->callProtectedMethod($dto, 'autoDetectTypes', [$template, []]);
         
         $this->assertEquals('integer', $meta['.integer']['type']);
         $this->assertEquals('float', $meta['.float']['type']);
@@ -38,12 +39,9 @@ class AutoDetectTypesTest extends DtoTest\TestCase
         ];
         
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('autoDetectTypes');
-        $method->setAccessible(true);
+
+        $meta = $this->callProtectedMethod($dto, 'autoDetectTypes', [$template, []]);
         
-        
-        $meta = $method->invokeArgs($dto, [$template, []]);
         
         $this->assertTrue(array_key_exists('nullable', $meta['.integer']));
         $this->assertTrue(array_key_exists('nullable', $meta['.float']));
@@ -70,13 +68,8 @@ class AutoDetectTypesTest extends DtoTest\TestCase
         ];
         
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('autoDetectTypes');
-        $method->setAccessible(true);
         
-        
-        $meta = $method->invokeArgs($dto, [$template, $meta]);
-
+        $meta = $this->callProtectedMethod($dto, 'autoDetectTypes', [$template, $meta]);
         $this->assertFalse(isset($meta['x']));
         $this->assertTrue(isset($meta['.x']));
         $this->assertEquals('integer', $meta['.x']['type']);
@@ -92,13 +85,7 @@ class AutoDetectTypesTest extends DtoTest\TestCase
         ];
         
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('autoDetectTypes');
-        $method->setAccessible(true);
-        
-        
-        $meta = $method->invokeArgs($dto, [$template, $meta]);
-        
+        $meta = $this->callProtectedMethod($dto, 'autoDetectTypes', [$template, $meta]);
         $this->assertTrue(isset($meta['left-field']));
     }
     

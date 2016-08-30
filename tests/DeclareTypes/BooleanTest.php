@@ -1,6 +1,10 @@
 <?php
 
-class DeclareTypeBooleanTest extends \DtoTest\TestCase
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class BooleanTest extends TestCase
 {
     public function test()
     {

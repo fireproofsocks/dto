@@ -1,5 +1,10 @@
 <?php
-class IsValidValueTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class IsValidValueTest extends TestCase
 {
     public function testValid()
     {
@@ -21,7 +26,7 @@ class IsValidValueTest extends DtoTest\TestCase
         $value = $this->callProtectedMethod(new isValidValueTestDto(), 'isValidValue', [['my'=>'hash']]);
         $this->assertTrue($value);
     
-        $obj = new stdClass();
+        $obj = new \stdClass();
         $value = $this->callProtectedMethod(new isValidValueTestDto(), 'isValidValue', [$obj]);
         $this->assertTrue($value);
     

@@ -1,49 +1,40 @@
 <?php
-class GetFunctionNameTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class GetFunctionNameTest extends TestCase
 {
     public function testSimpleFunctionName()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getFunctionName');
-        $method->setAccessible(true);
-        
-        $value = $method->invokeArgs($dto, ['set', 'something']);
+        $value = $this->callProtectedMethod($dto, 'getFunctionName', ['set', 'something']);
         $this->assertEquals('setSomething', $value);
     }
     
     public function testFunctionNameForDeepIndexWithDots()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getFunctionName');
-        $method->setAccessible(true);
-    
-        $value = $method->invokeArgs($dto, ['set', 'something.really.cool']);
+        $value = $this->callProtectedMethod($dto, 'getFunctionName', ['set', 'something.really.cool']);
         $this->assertEquals('setSomethingReallyCool', $value);
     }
     
     public function testFunctionNameForDeepIndexWithDotsWithCapitalLetters()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getFunctionName');
-        $method->setAccessible(true);
-        
-        $value = $method->invokeArgs($dto, ['set', 'SOMETHING.REALLY.COOL']);
+        $value = $this->callProtectedMethod($dto, 'getFunctionName', ['set', 'SOMETHING.REALLY.COOL']);
         $this->assertEquals('setSomethingReallyCool', $value);
     }
     
     public function testReturnsFalseWhenInputInvalid()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getFunctionName');
-        $method->setAccessible(true);
-    
-        $value = $method->invokeArgs($dto, ['', 'SOMETHING.REALLY.COOL']);
+
+        $value = $this->callProtectedMethod($dto, 'getFunctionName', ['', 'SOMETHING.REALLY.COOL']);
         $this->assertFalse($value);
-        $value = $method->invokeArgs($dto, ['set', '']);
+        
+        $value = $this->callProtectedMethod($dto, 'getFunctionName', ['set', '']);
         $this->assertFalse($value);
     }
     

@@ -1,17 +1,19 @@
 <?php
 
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
 /**
  * Class DtoTest
  *
  * Test inclusion of other DTO files
  */
-class DtoTest extends DtoTest\TestCase
+class DtoTest extends TestCase
 {
     public function testInstantiation()
     {
         $P = new TestParentDto();
-        //print_r((array) $P); exit;
-        //print_r($P->toArray()); exit;
         $this->assertEquals('default', $P->mydto->mystring);
         $this->assertEquals(42, $P->mydto->myinteger);
         $this->assertEquals(42.42, $P->mydto->myfloat);
@@ -62,11 +64,11 @@ class TestParentDto extends \Dto\Dto {
     protected $meta = [
         'mydto' => [
             'type' => 'dto',
-            'class' => 'TestChildDto'
+            'class' => 'DtoTest\DeclareTypes\TestChildDto'
         ],
         'mydto_nullable' => [
             'type' => 'dto',
-            'class' => 'TestChildDto',
+            'class' => 'DtoTest\DeclareTypes\TestChildDto',
             'nullable' => true
         ]
     ];

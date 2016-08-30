@@ -1,5 +1,10 @@
 <?php
-class BasicUsageTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class BasicUsageTest extends TestCase
 {
     public function testInstantiation()
     {

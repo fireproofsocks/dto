@@ -1,15 +1,17 @@
 <?php
-class GetMetaTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class GetMetaTest extends TestCase
 {
     public function testThatMetaIsEmptyForNonExistentIndex()
     {
         $dto = new \Dto\Dto();
-        $reflection = new ReflectionClass(get_class($dto));
-        $method = $reflection->getMethod('getMeta');
-        $method->setAccessible(true);
         
         // TODO: throw exception?
-        $value = $method->invokeArgs($dto, ['non-existent-index']);
+        $value = $this->callProtectedMethod($dto, 'getMeta', ['non-existent-index']);
         $this->assertEquals(['type'=>'unknown'], $value);
     }
 }

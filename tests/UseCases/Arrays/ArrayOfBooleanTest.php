@@ -1,5 +1,10 @@
 <?php
-class ArrayOfBooleanTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes\Arrays;
+
+use DtoTest\TestCase;
+
+class ArrayOfBooleanTest extends TestCase
 {
     
     public function testSettingOfArrayNodeWithActualBooleans()

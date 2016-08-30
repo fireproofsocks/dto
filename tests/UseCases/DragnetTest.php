@@ -1,5 +1,10 @@
 <?php
-class DragnetTest extends \DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class DragnetTest extends TestCase
 {
     /**
      * @expectedException \Dto\Exceptions\InvalidLocationException

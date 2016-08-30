@@ -1,5 +1,10 @@
 <?php
-class DeclareTypeScalarTest extends \DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes;
+
+use DtoTest\TestCase;
+
+class ScalarTest extends TestCase
 {
     public function test()
     {

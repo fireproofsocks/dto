@@ -1,9 +1,14 @@
 <?php
-class ArrayOfArrayTest extends DtoTest\TestCase
+
+namespace DtoTest\DeclareTypes\Arrays;
+
+use DtoTest\TestCase;
+
+class ArrayOfArrayTest extends TestCase
 {
     
     /**
-     * @ expectedException Dto\Exceptions\InvalidDataTypeException
+     * @ expectedException \Dto\Exceptions\InvalidDataTypeException
      */
 //    public function testCannotWriteScalarToArrayLocation()
 //    {
@@ -12,7 +17,7 @@ class ArrayOfArrayTest extends DtoTest\TestCase
 //    }
     
     /**
-     * @expectedException Dto\Exceptions\InvalidDataTypeException
+     * @expectedException \Dto\Exceptions\InvalidDataTypeException
      */
     public function testYouCannotWriteScalarValuesToArrayLocations1()
     {
@@ -23,7 +28,7 @@ class ArrayOfArrayTest extends DtoTest\TestCase
     }
     
     /**
-     * @expectedException Dto\Exceptions\InvalidDataTypeException
+     * @expectedException \Dto\Exceptions\InvalidDataTypeException
      */
     public function testYouCannotWriteScalarValuesToArrayLocations2()
     {
@@ -34,7 +39,7 @@ class ArrayOfArrayTest extends DtoTest\TestCase
     }
     
     /**
-     * @expectedException Dto\Exceptions\InvalidDataTypeException
+     * @expectedException \Dto\Exceptions\InvalidDataTypeException
      */
     public function testYouCannotWriteScalarValuesToArrayLocations3()
     {
