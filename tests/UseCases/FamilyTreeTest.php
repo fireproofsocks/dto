@@ -27,11 +27,15 @@ class FamilyTreeTest extends TestCase
                         array (
                             'first_name' => 'Silvia',
                             'last_name' => 'Crawler',
+                            'mother' => null,
+                            'father' => null,
                         ),
                     'father' =>
                         array (
                             'first_name' => 'Earnest',
                             'last_name' => 'Crawler',
+                            'mother' => null,
+                            'father' => null,
                         ),
                 ),
             'father' =>
@@ -42,11 +46,15 @@ class FamilyTreeTest extends TestCase
                         array (
                             'first_name' => 'Nana',
                             'last_name' => 'Sloth',
+                            'mother' => null,
+                            'father' => null,
                         ),
                     'father' =>
                         array (
                             'first_name' => 'Ignatius',
                             'last_name' => 'Sloth',
+                            'mother' => null,
+                            'father' => null,
                         ),
                 ),
         ), $me->toArray());
