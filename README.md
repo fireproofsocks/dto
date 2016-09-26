@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/fireproofsocks/dto.svg?branch=master)](https://travis-ci.org/fireproofsocks/dto) [![codecov](https://codecov.io/gh/fireproofsocks/dto/branch/master/graph/badge.svg)](https://codecov.io/gh/fireproofsocks/dto)
 
 
-A Data Transfer Object (DTO) is a container used to pass structured data between layers in your application.  They can be objects or arrays.  They usually do not have behaviors and instead are primarily containers for values (similiar in concept to Martin Fowler's [Transfer Objects](http://martinfowler.com/eaaCatalog/dataTransferObject.html) or [Value Objects](https://en.wikipedia.org/wiki/Value_object)).  DTOs are often the counterpart of the [Data Accessor Object (DAO)](https://en.wikipedia.org/wiki/Data_access_object) pattern, and DTOs can be useful in implementing the [Repository](https://bosnadev.com/2015/03/07/using-repository-pattern-in-laravel-5/) pattern.
+A Data Transfer Object (DTO) is a container used to pass structured data between layers in your application, similiar in concept to Martin Fowler's [Transfer Objects](http://martinfowler.com/eaaCatalog/dataTransferObject.html) or [Value Objects](https://en.wikipedia.org/wiki/Value_object).  DTOs are a helpful counterpart to the [Data Accessor Object (DAO)](https://en.wikipedia.org/wiki/Data_access_object) [Repository](https://bosnadev.com/2015/03/07/using-repository-pattern-in-laravel-5/) patterns.
 
 This package aims to provide a quick and easy way to define structured objects, filter the data (e.g. as integers, boolean, hashes, etc.), and reuse structures between objects (e.g. a "Person" DTO might reference an "MailingAddress" DTO).
 

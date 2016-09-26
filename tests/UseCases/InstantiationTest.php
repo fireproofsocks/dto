@@ -38,6 +38,21 @@ class InstantiationTest extends TestCase
         $this->assertEquals(3, $dto->get('b'));
         
     }
+    
+    public function testInstantiationWithDeeplyNestedData()
+    {
+        $data = [
+            'a' => [
+                'apple' => 'yes'
+            ],
+        ];
+        $dto = new InstantiationTestDto2($data);
+        $array = $dto->toArray();
+        
+        $this->assertNotEmpty($array['a']);
+        $this->assertNotEmpty($array['a']['apple']);
+        $this->assertEquals('yes', $array['a']['apple']);
+    }
 }
 
 class InstantiationTestDto extends Dto
@@ -46,5 +61,19 @@ class InstantiationTestDto extends Dto
         'a' => '',
         'b' => 2,
         'c' => false,
+    ];
+}
+
+class InstantiationTestDto2 extends Dto
+{
+    protected $template = [
+        'a' => [
+            'air' => '',
+            'apple' => '',
+        ],
+        'b' => [
+            'bear' => '',
+            'ball' => '',
+        ]
     ];
 }

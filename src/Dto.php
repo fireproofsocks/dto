@@ -45,7 +45,7 @@ class Dto extends \ArrayObject
         $this->meta = $this->autoDetectTypes($this->template,
             $this->normalizeMeta($this->meta));
         // We must always ensure that the template's properties are passed to filterRoot
-        $input = array_replace($this->template, $input);
+        $input = array_replace_recursive($this->template, $input);
     
         // store the filtered values in the ArrayObject
         parent::__construct($this->filterRoot($input));
