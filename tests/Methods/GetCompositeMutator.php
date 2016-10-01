@@ -40,6 +40,22 @@ class GetCompositeMutator extends TestCase
         $this->assertEquals('mutateMyX', $value);
     }
     
+    /**
+     * @expectedException \Dto\Exceptions\InvalidMutatorException
+     */
+    public function testFieldLevelMutatorThrowsExceptionWhenMethodDoesNotExist()
+    {
+        $meta = [
+            '.x' => [
+                'type' => 'scalar',
+                'mutator' => 'thisFunctionDoesNotExist'
+            ]
+        ];
+        $dto = new TestGetCompositeMutatorDto([],[],$meta);
+        $value = $this->callProtectedMethod($dto, 'getCompositeMutator', ['x']);
+        $this->assertEquals('mutateMyX', $value);
+    }
+    
     public function testTypeLevelMutatorReturned()
     {
         $meta = [
@@ -55,7 +71,7 @@ class GetCompositeMutator extends TestCase
 
 class TestGetCompositeMutatorDto extends \Dto\Dto {
     
-    function mutateMyX($value) {
+    protected function mutateMyX($value) {
         return $value;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace DtoTest\DeclareTypes;
 
+use Doctrine\Instantiator\Exception\InvalidArgumentException;
 use DtoTest\TestCase;
 
 class MutateTypeDtoTest extends TestCase
@@ -35,6 +36,18 @@ class MutateTypeDtoTest extends TestCase
         
         $this->assertNotNull($value);
         $this->assertEquals($value->toArray(), $child->toArray());
+    }
+    
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testExceptionThrownWhenDtoTypeMetaDataOmitsType()
+    {
+        $parent = new \Dto\Dto([], ['x' => null], ['x' => ['type' => 'dto', 'nullable' => false]]);
+        $child = new MutateTypeDtoChildDto();
+        $child->y = 'my-value';
+    
+        $this->callProtectedMethod($parent, 'mutateTypeDto', [$child, 'x']);
     }
 }
 

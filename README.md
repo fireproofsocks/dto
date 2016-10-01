@@ -17,3 +17,11 @@ This package was inspired by the [JSON Schema](http://json-schema.org/) specific
 - Result Sets: instead of returning an array of stdClass objects or associative arrays from a database lookup, a DTO can describe the result set (as well as the individual records).    
 
 Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
+
+------------------------------------
+
+# Version History
+
+# 1.0.0 
+
+MVP. Initial release.

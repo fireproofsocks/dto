@@ -13,6 +13,7 @@ class IsValidMetaKeyTest extends TestCase
         $this->assertFalse($this->callProtectedMethod($dto, 'isValidMetaKey', ['']));
         $this->assertTrue($this->callProtectedMethod($dto, 'isValidMetaKey', ['.']));
         $this->assertFalse($this->callProtectedMethod($dto, 'isValidMetaKey', ['cat..dog']));
+        $this->assertFalse($this->callProtectedMethod($dto, 'isValidMetaKey', [new \stdClass()]));
         $this->assertFalse($this->callProtectedMethod($dto, 'isValidMetaKey', ['..catdog']));
         $this->assertTrue($this->callProtectedMethod($dto, 'isValidMetaKey', ['mother.father.dog']));
     }

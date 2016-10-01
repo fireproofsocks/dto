@@ -2,6 +2,7 @@
 
 namespace DtoTest\DeclareTypes;
 
+use Dto\Dto;
 use DtoTest\TestCase;
 
 class NormalizeMetaTest extends TestCase
@@ -24,5 +25,27 @@ class NormalizeMetaTest extends TestCase
 
         $value = $this->callProtectedMethod($dto, 'normalizeMeta', [$meta]);
         $this->assertEquals($normalized, $value);
+    }
+    
+    /**
+     * @expectedException \Dto\Exceptions\InvalidMetaKeyException
+     */
+    public function testExceptionThrownForInvalidMetaKey()
+    {
+        $dto = new NormalizeMetaTestDto();
+    
+        $meta = [
+            '..' => 'double-dots are not allowed',
+        ];
+        
+        $this->callProtectedMethod($dto, 'normalizeMeta', [$meta]);
+    }
+}
+
+class NormalizeMetaTestDto extends Dto
+{
+    protected function isValidMetaKey($key)
+    {
+        false;
     }
 }

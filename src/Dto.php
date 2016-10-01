@@ -275,7 +275,7 @@ class Dto extends \ArrayObject
      *
      * @throws InvalidDataTypeException
      */
-    public function isValidMapping($value, $index)
+    protected function isValidMapping($value, $index)
     {
         
         // Check for compatible value/target
@@ -374,7 +374,7 @@ class Dto extends \ArrayObject
     
     /**
      * Contains the logic for resolving which mutator function to use.  It can be a
-     * bit tricky when data is not explicitly defined (i.e. type=undefined).
+     * bit tricky when data is not explicitly defined (i.e. type=unknown).
      *
      * @param $value mixed
      * @param $index string
@@ -511,8 +511,9 @@ class Dto extends \ArrayObject
         // Field-level Mutator
         if ($normalized_key != '.') {
             if (isset($meta['mutator'])) {
-                if (method_exists($this, $meta['mutator'])) {
-                    return $meta['mutator'];
+                $functionName = $meta['mutator'];
+                if (method_exists($this, $functionName)) {
+                    return $functionName;
                 }
                 throw new InvalidMutatorException('Mutator method "' . $meta['mutator'] . '"does not exist.  Defined at index "' . $normalized_key . '"');
             }

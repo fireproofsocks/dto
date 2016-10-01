@@ -8,7 +8,7 @@ class FilterNodeTest extends TestCase
 {
     public function testFilteringUsingValueMutators()
     {
-        $dto = new TestFilterDto();
+        $dto = new FilterNodeTestDto();
         
         $value = $this->callProtectedMethod($dto, 'filterNode', ['123a4', 'x']);
         $this->assertEquals(123, $value);
@@ -22,21 +22,41 @@ class FilterNodeTest extends TestCase
      */
     public function testFilteringDotNodeIsNotAllowed()
     {
-        $dto = new TestFilterDto();
+        $dto = new FilterNodeTestDto();
         $hash = ['x' => '12a', 'y' => '13.1'];
         $this->callProtectedMethod($dto, 'filterNode', [$hash, '.']);
     }
     
     public function testFilteringUsingCompositeMutators()
     {
-        $dto = new TestFilterDto();
+        $dto = new FilterNodeTestDto();
         $hash = ['x' => '12a', 'y' => '13.1'];
         $value = $this->callProtectedMethod($dto, 'filterNode', [$hash, 'z']);
         $this->assertEquals(['x'=>12, 'y'=>true], $value->toArray());
     }
+    
+    /**
+     * @expectedException \Dto\Exceptions\InvalidLocationException
+     */
+    public function testInvalidMappingThrowsException()
+    {
+        $dto = new FilterNodeTestDto2();
+        $hash = ['x' => '12a', 'y' => '13.1'];
+        $this->callProtectedMethod($dto, 'filterNode', [$hash, 'z']);
+    }
+    
+    /**
+     * @expectedException \Dto\Exceptions\InvalidDataTypeException
+     */
+    public function testInvalidValueThrowsException()
+    {
+        $dto = new FilterNodeTestDto3();
+        $hash = ['x' => '12a', 'y' => '13.1'];
+        $this->callProtectedMethod($dto, 'filterNode', [$hash, 'z']);
+    }
 }
 
-class TestFilterDto extends \Dto\Dto {
+class FilterNodeTestDto extends \Dto\Dto {
     
     protected $template = [
         'x' => 1,
@@ -65,4 +85,20 @@ class TestFilterDto extends \Dto\Dto {
             'values' => ['type' => 'integer']
         ]
     ];
+}
+
+class FilterNodeTestDto2 extends FilterNodeTestDto
+{
+    protected function isValidMapping($value, $index)
+    {
+        return false;
+    }
+}
+
+class FilterNodeTestDto3 extends FilterNodeTestDto
+{
+    protected function isValidValue($value)
+    {
+        return false;
+    }
 }
