@@ -362,7 +362,7 @@ class Dto extends \ArrayObject
         
         $mutatorFunction = $this->getMutator($value, $index);
         
-        $value = $this->{$mutatorFunction}($value, $index);
+        $value = $this->{$mutatorFunction}($value, $index, $this->getMeta($index));
         
         // Final gatekeeping: make sure our mutators don't try to sneak invalid values past
         if (!$this->isValidValue($value)) {
@@ -765,18 +765,19 @@ class Dto extends \ArrayObject
     /**
      * Called internally by the filterNode() method.
      *
-     * @param $value
-     * @param $index
+     * @param $value mixed
+     * @param $index string
+     * @param $meta array
      *
      * @return mixed
      *
      * @throws InvalidDataTypeException
      */
-    protected function mutateTypeArray($value, $index)
+    protected function mutateTypeArray($value, $index, array $meta = [])
     {
         $value = (is_array($value)) ? array_values($value) : $value;
         
-        return $this->mutateTypeHash($value, $index);
+        return $this->mutateTypeHash($value, $index, $meta);
     }
     
     /**
@@ -784,12 +785,13 @@ class Dto extends \ArrayObject
      *
      * @param $value mixed
      * @param $index string
+     * @param $meta array
      *
      * @return mixed
      *
      * @throws InvalidDataTypeException
      */
-    protected function mutateTypeHash($value, $index)
+    protected function mutateTypeHash($value, $index, array $meta = [])
     {
         $classname = get_called_class();
         
@@ -863,10 +865,11 @@ class Dto extends \ArrayObject
      *
      * @param $value mixed
      * @param $index string
+     * @param $meta array
      *
      * @return bool
      */
-    protected function mutateTypeBoolean($value, $index)
+    protected function mutateTypeBoolean($value, $index, array $meta = [])
     {
         return (is_null($value) && $this->isNullable($index)) ? null : boolval($value);
     }
@@ -882,10 +885,8 @@ class Dto extends \ArrayObject
      *
      * @throws InvalidDataTypeException
      */
-    protected function mutateTypeDto($value, $index)
+    protected function mutateTypeDto($value, $index, array $meta = [])
     {
-        $meta = $this->getMeta($index);
-        
         // Handle appending values
         if ((!is_null($index) && !isset($meta['class'])) || (is_null($index) && !isset($meta['values']['class']))) {
             throw new \InvalidArgumentException('Meta information for DTO at index "' . $this->getNormalizedKey($index) . '" requires "class" parameter in ' . get_called_class());
@@ -910,10 +911,11 @@ class Dto extends \ArrayObject
      *
      * @param $value mixed
      * @param $index string
+     * @param $meta array
      *
      * @return float
      */
-    protected function mutateTypeFloat($value, $index)
+    protected function mutateTypeFloat($value, $index, array $meta = [])
     {
         return (is_null($value) && $this->isNullable($index)) ? null : floatval($value);
     }
@@ -923,10 +925,10 @@ class Dto extends \ArrayObject
      *
      * @param $value mixed
      * @param $index string
-     *
+     * @param $meta array
      * @return int
      */
-    protected function mutateTypeInteger($value, $index)
+    protected function mutateTypeInteger($value, $index, array $meta = [])
     {
         return (is_null($value) && $this->isNullable($index)) ? null : intval($value);
     }
@@ -936,12 +938,13 @@ class Dto extends \ArrayObject
      *
      * @param $value mixed
      * @param $index string
+     * @param $meta array
      *
      * @return string
      */
-    protected function mutateTypeString($value, $index)
+    protected function mutateTypeString($value, $index, array $meta = [])
     {
-        return $this->mutateTypeScalar($value, $index);
+        return $this->mutateTypeScalar($value, $index, $meta);
     }
     
     /**
@@ -949,10 +952,11 @@ class Dto extends \ArrayObject
      *
      * @param $value mixed
      * @param $index string
+     * @param $meta array
      *
      * @return string
      */
-    protected function mutateTypeScalar($value, $index)
+    protected function mutateTypeScalar($value, $index, array $meta = [])
     {
         return (is_null($value) && $this->isNullable($index)) ? null : strval($value);
     }
