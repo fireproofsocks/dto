@@ -15,6 +15,7 @@ class CustomMutatorsTest extends TestCase
         $this->assertEquals('mutateX', $dto->x);
         $this->assertEquals('mutateOtherX', $dto->other->x);
     }
+    
 }
 
 class CustomMutatorsDto extends \Dto\Dto

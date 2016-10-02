@@ -876,7 +876,6 @@ class Dto extends \ArrayObject
     
     /**
      * Called internally by the filterNode() method.
-     * TODO: test.
      *
      * @param $value mixed
      * @param $index string
