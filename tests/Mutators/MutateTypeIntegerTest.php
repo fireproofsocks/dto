@@ -6,13 +6,13 @@ use DtoTest\TestCase;
 
 class MutateTypeIntegerTest extends TestCase
 {
-    public function testNullableLocationReturnsNullWhenSetToNull()
+    public function testNullIsTypeCastToInteger()
     {
         $value = $this->callProtectedMethod(
             new \Dto\Dto([], ['x' => null], ['x' => ['type' => 'integer', 'nullable' => true]]), 'mutateTypeInteger',
             [null, 'x']
         );
-        $this->assertNull($value);
+        $this->assertNotNull($value);
     }
     
     public function testNotNullableLocationDoesNotReturnNullWhenSetToNull()

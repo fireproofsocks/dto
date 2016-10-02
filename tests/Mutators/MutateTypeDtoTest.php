@@ -7,18 +7,18 @@ use DtoTest\TestCase;
 
 class MutateTypeDtoTest extends TestCase
 {
-    public function testNullableLocationReturnsNullWhenSetToNull()
+    public function testTypeCastsNullValuesToDto()
     {
         $value = $this->callProtectedMethod(
             new \Dto\Dto(
                 [],
                 ['x' => null],
-                ['x' => ['type' => 'dto', 'class' => 'DtoTest\DeclareTypes\MutateTypeDtoChildDto', 'nullable' => true]]
+                ['x' => ['type' => 'dto', 'class' => 'DtoTest\DeclareTypes\MutateTypeDtoChildDto', 'nullable' => false]]
             ),
             'mutateTypeDto',
-            [null, 'x', ['type' => 'dto', 'class' => 'DtoTest\DeclareTypes\MutateTypeDtoChildDto', 'nullable' => true]]
+            [null, 'x', ['type' => 'dto', 'class' => 'DtoTest\DeclareTypes\MutateTypeDtoChildDto', 'nullable' => false]]
         );
-        $this->assertNull($value);
+        $this->assertNotNull($value);
     }
     
     public function testNotNullableLocationDoesNotReturnNullWhenSetToNull()

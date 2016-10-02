@@ -6,10 +6,10 @@ use DtoTest\TestCase;
 
 class MutateTypeHashTest extends TestCase
 {
-    public function testNullableLocationReturnsNullWhenSetToNull()
+    public function testTypeCastsNullToObject()
     {
-        $value = $this->callProtectedMethod(new MutateTypeHashTestDto(), 'mutateTypeHash', [null, 'x']);
-        $this->assertNull($value);
+        $value = $this->callProtectedMethod(new MutateTypeHashTestDto(), 'mutateTypeHash', [null, 'x', []]);
+        $this->assertNotNull($value);
     }
     
     public function testNotNullableLocationReturnsInstanceOfDtoWhenSetToNull()

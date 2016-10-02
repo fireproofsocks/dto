@@ -46,7 +46,6 @@ class Dto extends \ArrayObject
             $this->normalizeMeta($this->meta));
         // We must always ensure that the template's properties are passed to filterRoot
         $input = array_replace_recursive($this->template, $input);
-    
         // store the filtered values in the ArrayObject
         parent::__construct($this->filterRoot($input));
     }
@@ -255,9 +254,12 @@ class Dto extends \ArrayObject
         if (empty($template) || is_null($index)) {
             return true;
         }
+    
         
-        $meta = $this->getMeta($index);
-        if (isset($meta['ambiguous'])) {
+        $parent_index = $this->getParentIndex($this->getNormalizedKey($index));
+        $meta = $this->getMeta($parent_index);
+        
+        if (isset($meta['ambiguous']) && $meta['ambiguous']) {
             return true;
         }
         
@@ -351,13 +353,18 @@ class Dto extends \ArrayObject
         }
         
         $normalized_key = $this->getNormalizedKey($index);
-        
+
         if (!$this->isValidTargetLocation($index, $this->template)) {
             throw new InvalidLocationException('Index "' . $normalized_key . '" not valid for writing');
         }
-        
+
         if (!$this->isValidMapping($value, $index)) {
             throw new InvalidLocationException('Invalid mapping at "' . $normalized_key . '"');
+        }
+    
+        // We can bypass a lot of logic if we are setting null on a nullable field
+        if (is_null($value) && $this->isNullable($index)) {
+            return null;
         }
         
         $mutatorFunction = $this->getMutator($value, $index);
@@ -613,7 +620,6 @@ class Dto extends \ArrayObject
         }
         
         try {
-            
             $newval = $this->filterNode($newval, $index);
             parent::offsetSet($index, $newval); // store the value on the ArrayObject
         } catch (\Exception $e) {
@@ -698,7 +704,8 @@ class Dto extends \ArrayObject
     public function offsetGet($index)
     {
         //  Remember: isset() returns false if the value is null
-        if (empty($this->template) || array_key_exists($index, $this->template)) {
+        if ($this->isValidTargetLocation($index, $this->template)) {
+        //if (empty($this->template) || array_key_exists($index, $this->template)) {
             // This bit allows us to dynamically deepen the object structure
             if (!array_key_exists($index, $this)) {
                 $classname = get_called_class();
@@ -794,13 +801,7 @@ class Dto extends \ArrayObject
     protected function mutateTypeHash($value, $index, array $meta = [])
     {
         $classname = get_called_class();
-        
-        if (is_null($value)) {
-            return ($this->isNullable($index)) ? null : new $classname([],
-                $this->getTemplateSubset($index, $this->template),
-                $this->getMetaSubset($index, $this->meta));
-        }
-        
+
         return new $classname((array)$value,
             $this->getTemplateSubset($index, $this->template),
             $this->getMetaSubset($index, $this->meta));
@@ -826,6 +827,7 @@ class Dto extends \ArrayObject
      */
     protected function getTemplateSubset($index, array $template)
     {
+        $index = ltrim($index, '.'); // denormalize
         return (isset($template[$index]) && is_array($template[$index])) ? $template[$index] : [];
     }
     
@@ -871,7 +873,7 @@ class Dto extends \ArrayObject
      */
     protected function mutateTypeBoolean($value, $index, array $meta = [])
     {
-        return (is_null($value) && $this->isNullable($index)) ? null : boolval($value);
+        return boolval($value);
     }
     
     /**
@@ -894,7 +896,7 @@ class Dto extends \ArrayObject
         $classname = (is_null($index)) ? $meta['values']['class'] : $meta['class'];
         
         if (is_null($value)) {
-            return ($this->isNullable($index)) ? null : new $classname();
+            return new $classname();
         }
         
         if ($value instanceof $classname) {
@@ -916,7 +918,7 @@ class Dto extends \ArrayObject
      */
     protected function mutateTypeFloat($value, $index, array $meta = [])
     {
-        return (is_null($value) && $this->isNullable($index)) ? null : floatval($value);
+        return floatval($value);
     }
     
     /**
@@ -929,11 +931,11 @@ class Dto extends \ArrayObject
      */
     protected function mutateTypeInteger($value, $index, array $meta = [])
     {
-        return (is_null($value) && $this->isNullable($index)) ? null : intval($value);
+        return intval($value);
     }
     
     /**
-     * Convenience function (because really, we have better things to do than argue about whether strings are scalars).
+     * Alias function: we have better things to do than argue about whether strings are scalars.
      *
      * @param $value mixed
      * @param $index string
@@ -957,7 +959,7 @@ class Dto extends \ArrayObject
      */
     protected function mutateTypeScalar($value, $index, array $meta = [])
     {
-        return (is_null($value) && $this->isNullable($index)) ? null : strval($value);
+        return strval($value);
     }
     
     /**
