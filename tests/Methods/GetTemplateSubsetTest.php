@@ -3,7 +3,6 @@
 namespace DtoTest\Methods;
 
 use Dto\Dto;
-use DtoTest\DeclareTypes\GetMutatorTestDto;
 use DtoTest\TestCase;
 
 class GetTemplateSubsetTest extends TestCase

@@ -418,8 +418,10 @@ class Dto extends \ArrayObject
     protected function getValueMutator($index)
     {
         $normalized_key = $this->getNormalizedKey($index);
+        
         $meta = $this->getMeta($index);
-        // Field-level mutator
+        
+        // Mutator specified for this specific Field-level
         if ($normalized_key != '.') {
             if (isset($meta['mutator'])) {
                 if (method_exists($this, $meta['mutator'])) {
@@ -436,13 +438,12 @@ class Dto extends \ArrayObject
             if (!method_exists($this, $functionName)) {
                 throw new InvalidMutatorException('Mutator method "' . $functionName . '"does not exist. Type defined in meta at index "' . $normalized_key . '"');
             }
-            
             return $functionName;
         }
         // Look to the Parent
         $parent_index = $this->getParentIndex($normalized_key);
         
-        // Parent Field-level
+        // Mutator for parent's Values (i.e. children) -- akin to a custom type mutator?
         if (isset($this->meta[$parent_index]['values']['mutator'])) {
             if (method_exists($this,
                 $this->meta[$parent_index]['values']['mutator'])) {
@@ -457,7 +458,7 @@ class Dto extends \ArrayObject
             if (!method_exists($this, $functionName)) {
                 throw new InvalidMutatorException('Mutator method "' . $functionName . '"does not exist. Type defined for values meta at index "' . $parent_index . '"');
             }
-            
+
             return $functionName;
         }
         

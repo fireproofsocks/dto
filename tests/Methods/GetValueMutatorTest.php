@@ -73,14 +73,11 @@ class GetValueMutatorTest extends TestCase
         $this->assertEquals('mutateTypeBoolean', $value);
     }
     
-    public function testValueLevelMutator()
+    public function testUseFieldTypeMutatorIfDefinedAndDoNotFallBackToParent()
     {
         $meta = [
             '.x' => [
-                'type' => 'array',
-                'values' => [
-                    'type' => 'boolean'
-                ]
+                'type' => 'boolean',
             ],
             '.' => [
                 'type' => 'hash',
@@ -91,13 +88,13 @@ class GetValueMutatorTest extends TestCase
         ];
         $dto = new \Dto\Dto([],[],$meta);
         $value = $this->callProtectedMethod($dto, 'getValueMutator', ['x']);
-        $this->assertEquals('mutateTypeInteger', $value);
+        $this->assertEquals('mutateTypeBoolean', $value);
     }
     
     /**
      *
      */
-    public function testDeferToParentCustomMutator()
+    public function testDeferToParentCustomMutatorWhenAFieldHasNoMutatorDefined()
     {
         $meta = [
             '.x' => [

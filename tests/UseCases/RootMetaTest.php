@@ -3,6 +3,7 @@
 namespace DtoTest\UseCases;
 
 use Dto\Dto;
+use Dto\DtoStrict;
 use DtoTest\TestCase;
 
 class RootMetaTest extends TestCase
@@ -18,10 +19,10 @@ class RootMetaTest extends TestCase
     {
         $dto = new RootMetaTestDto();
         $dto->x = 'A String Should Convert to an integer for an integer field';
-        $this->assertEquals(1, $dto->x);
+        $this->assertEquals(0, $dto->x);
     }
 
-    public function testNonDefinedFieldsUseTypeFilteringFromTheParent()
+    public function testNonDefinedFieldsUseTypeFilteringFromTheirParent()
     {
         $dto = new RootMetaTestDto();
         $dto->y = 1;
@@ -29,10 +30,10 @@ class RootMetaTest extends TestCase
     }
 }
 
-class RootMetaTestDto extends Dto
+class RootMetaTestDto extends DtoStrict
 {
     protected $template = [
-        'x' => 0
+        'x' => 1
     ];
     
     protected $meta = [
@@ -42,6 +43,9 @@ class RootMetaTestDto extends Dto
             'values' => [
                 'type' => 'boolean'
             ]
+        ],
+        '.x' => [
+            'type' => 'integer'
         ]
     ];
 }
