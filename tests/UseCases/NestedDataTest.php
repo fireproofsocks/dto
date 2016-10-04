@@ -10,6 +10,7 @@ class NestedDataTest extends TestCase
     {
         $post = new NestedDataTestBlogPostDto();
      
+        // this is the problem: if the template is empty, ambiguity is assumed
         $post->not_defined = true;
         $this->assertFalse(array_key_exists('not_defined',$post->toArray()));
         $post->flags->not_defined = true;
@@ -20,9 +21,8 @@ class NestedDataTest extends TestCase
 class NestedDataTestBlogPostDto extends \Dto\Dto
 {
     protected $template = [
-        //'title' => '',
         'flags' => [
-            'published' => true,
+            'anything' => 'The array must have something, otherwise it is considered ambiguous, even if ambiguous is set to false',
         ]
     ];
     

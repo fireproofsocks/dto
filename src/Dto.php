@@ -224,7 +224,8 @@ class Dto extends \ArrayObject
             }
         }
         
-        return $value;
+        // The root object is assumed to be a hash unless defined otherwise
+        return ((isset($this->meta['.']['type']) && $this->meta['.']['type'] == 'array')) ? array_values($value) : $value;
     }
     
     /**

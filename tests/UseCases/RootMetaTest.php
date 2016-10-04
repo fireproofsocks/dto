@@ -28,6 +28,76 @@ class RootMetaTest extends TestCase
         $dto->y = 1;
         $this->assertTrue($dto->y);
     }
+    
+    public function testRootTypeArrayStripsArrayKeysWhenValuesPassedToConstructor()
+    {
+        $array = [
+            'a' => 'apple',
+            'b' => 'ball',
+            'c' => 'cat'
+        ];
+        $dto = new RootMetaTestDto2($array);
+        
+        $this->assertEquals(array_values($array), $dto->toArray());
+        
+        $dto = new RootMetaTestDto2();
+        $dto->set('.', $array);
+    
+        $this->assertEquals(array_values($array), $dto->toArray());
+        $dto = new RootMetaTestDto2();
+        $dto[] = 'apple';
+        $dto[] = 'ball';
+        $dto[] = 'cat';
+        
+        $this->assertEquals(array_values($array), $dto->toArray());
+    }
+    
+    public function testRootTypeArrayStripsArrayKeysWhenValuesSetViaSetMethod()
+    {
+        $array = [
+            'a' => 'apple',
+            'b' => 'ball',
+            'c' => 'cat'
+        ];
+        
+        $dto = new RootMetaTestDto2();
+        $dto->set('.', $array);
+        
+        $this->assertEquals(array_values($array), $dto->toArray());
+        
+    }
+    
+    public function testRootTypeArrayStripsArrayKeysWhenValuesAppendedUsingSquareBracketNotation()
+    {
+        $array = [
+            'a' => 'apple',
+            'b' => 'ball',
+            'c' => 'cat'
+        ];
+        
+        $dto = new RootMetaTestDto2();
+        $dto[] = 'apple';
+        $dto[] = 'ball';
+        $dto[] = 'cat';
+        
+        $this->assertEquals(array_values($array), $dto->toArray());
+    }
+    
+    public function testRootTypeArrayStripsArrayKeysWhenValuesAppendedUsingAppendMethod()
+    {
+        $array = [
+            'a' => 'apple',
+            'b' => 'ball',
+            'c' => 'cat'
+        ];
+        
+        $dto = new RootMetaTestDto2();
+        $dto->append('apple');
+        $dto->append('ball');
+        $dto->append('cat');
+        
+        $this->assertEquals(array_values($array), $dto->toArray());
+    }
 }
 
 class RootMetaTestDto extends DtoStrict
@@ -46,6 +116,18 @@ class RootMetaTestDto extends DtoStrict
         ],
         '.x' => [
             'type' => 'integer'
+        ]
+    ];
+}
+
+class RootMetaTestDto2 extends \Dto\Dto
+{
+    protected $template = [];
+    
+    protected $meta = [
+        '.' => [
+            'type' => 'array',
+            'values' => ['type' => 'string'],
         ]
     ];
 }
