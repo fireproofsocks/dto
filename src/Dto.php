@@ -349,7 +349,7 @@ class Dto extends \ArrayObject
     protected function filterNode($value, $index)
     {
         // Test for root-level arrays and index is null?
-        if ($index == '.') {
+        if ($index === '.') {
             throw new InvalidLocationException('filterRoot must be used for root key (.)');
         }
         
@@ -604,13 +604,15 @@ class Dto extends \ArrayObject
      * @param bool $bypass filters if true
      *
      * @throws AppendException
+     * @throws InvalidLocationException
      */
     public function offsetSet($index, $newval, $bypass = false)
     {
-        if ($index == null && !$this->isAppendable($index)) {
+        if ($index === null && !$this->isAppendable($index)) {
             throw new AppendException('Append operations at location "' . $this->getNormalizedKey($index) . '" are not allowed. Set type to "array".');
         }
-        if ($index == '.') {
+        // Beware string equivalence!
+        if ($index === '.') {
             $newval = ($bypass) ? $newval : $this->filterRoot($newval);
             parent::__construct($newval); // store value as is
             return;
@@ -619,6 +621,12 @@ class Dto extends \ArrayObject
         if ($bypass) {
             parent::offsetSet($index, $newval); // store the value on the ArrayObject
             return;
+        }
+        
+        // Allowed to set specific indexes in an array?
+        $meta = $this->getMeta($this->getParentIndex($index));
+        if ($meta['type'] == 'array' && is_numeric($index) && !parent::offsetExists($index)) {
+            throw new InvalidLocationException('Location does not exist in array '.$index);
         }
         
         try {
@@ -707,7 +715,6 @@ class Dto extends \ArrayObject
     {
         //  Remember: isset() returns false if the value is null
         if ($this->isValidTargetLocation($index, $this->template)) {
-        //if (empty($this->template) || array_key_exists($index, $this->template)) {
             // This bit allows us to dynamically deepen the object structure
             if (!array_key_exists($index, $this)) {
                 $classname = get_called_class();

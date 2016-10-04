@@ -98,6 +98,42 @@ class RootMetaTest extends TestCase
         
         $this->assertEquals(array_values($array), $dto->toArray());
     }
+    
+    
+    public function testRootTypeArrayDoesNotAllowSettingNonDefinedLocations()
+    {
+        $array = [
+            'a' => 'apple',
+            'b' => 'ball',
+            'c' => 'cat'
+        ];
+        
+        $dto = new RootMetaTestDto2($array);
+        
+        $dto->{1} = 'something';  // this works
+        
+        $this->assertEquals(['apple','something','cat'], $dto->toArray());
+        
+        $dto[0] = 'amazing';
+        
+        $this->assertEquals(['amazing','something','cat'], $dto->toArray());
+    }
+    
+    /**
+     * @expectedException \Dto\Exceptions\InvalidLocationException
+     */
+    public function testExceptionThrownWhenNonExistentArrayLocationsAreSet()
+    {
+        $array = [
+            'a' => 'apple',
+            'b' => 'ball',
+            'c' => 'cat'
+        ];
+    
+        $dto = new RootMetaTestDto2($array);
+        $dto[3] = 'invalid location';
+    }
+    
 }
 
 class RootMetaTestDto extends DtoStrict
