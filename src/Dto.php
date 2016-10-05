@@ -219,7 +219,7 @@ class Dto extends \ArrayObject
             try {
                 $value[$k] = $this->filterNode($v, $child_index);
             } catch (\Exception $e) {
-                $this->handleException($e);
+                $this->handleException($e, $k, $v);
                 unset($value[$k]);
             }
         }
@@ -232,9 +232,11 @@ class Dto extends \ArrayObject
      * Override this function in a child class if needed (see the DtoStrict class).
      * The method is implemented for "graceful/silent failing".
      * @param \Exception $e
+     * @param string $index the location being written to
+     * @param mixed $value the problematic value
      * @throws InvalidDataTypeException
      */
-    protected function handleException(\Exception $e)
+    protected function handleException(\Exception $e, $index, $value)
     {
         if ($e instanceof InvalidDataTypeException) {
             throw $e;
@@ -359,6 +361,7 @@ class Dto extends \ArrayObject
             throw new InvalidLocationException('Index "' . $normalized_key . '" not valid for writing');
         }
 
+        // Todo: let this exception be thrown
         if (!$this->isValidMapping($value, $index)) {
             throw new InvalidLocationException('Invalid mapping at "' . $normalized_key . '"');
         }
@@ -611,7 +614,7 @@ class Dto extends \ArrayObject
         if ($index === null && !$this->isAppendable($index)) {
             throw new AppendException('Append operations at location "' . $this->getNormalizedKey($index) . '" are not allowed. Set type to "array".');
         }
-        // Beware string equivalence!
+        // Beware string equivalence with integers: 0 == '.' so we must use ===
         if ($index === '.') {
             $newval = ($bypass) ? $newval : $this->filterRoot($newval);
             parent::__construct($newval); // store value as is
@@ -633,7 +636,7 @@ class Dto extends \ArrayObject
             $newval = $this->filterNode($newval, $index);
             parent::offsetSet($index, $newval); // store the value on the ArrayObject
         } catch (\Exception $e) {
-            $this->handleException($e); // Do not store the value
+            $this->handleException($e, $index, $newval); // Do not store the value
         }
     }
     

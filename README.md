@@ -22,6 +22,6 @@ Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 # Version History
 
-# 1.0.0 
+# 1.0.5 
 
-MVP. Initial release.
+Initial release with some grooming as documentation was added.

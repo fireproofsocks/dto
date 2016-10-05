@@ -14,9 +14,12 @@ class DtoStrict extends Dto
 {
     /**
      * @param \Exception $e
+     * @param string $index the location being written to
+     * @param mixed $value the problematic value
      * @throws \Exception
      */
-    protected function handleException(\Exception $e) {
+    protected function handleException(\Exception $e, $index, $value)
+    {
         throw $e;
     }
 }
