@@ -914,7 +914,17 @@ class Dto extends \ArrayObject
         if ($value instanceof $classname) {
             return $value;
         }
-        
+
+        // This solves problems of injecting a deeply nested array into the constructor: we convert the array into a DTO
+        if (is_array($value) && $meta['type'] === 'dto') {
+
+            return new $classname($value);
+//            if ($converted->toArray() === $value) {
+//                print_r($meta); exit;
+//                return $converted;
+//            }
+        }
+
         // TODO: other data types?  array? Hash?
         throw new InvalidDataTypeException($index . ' value must be instance of ' . $classname);
     }
