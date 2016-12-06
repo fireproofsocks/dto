@@ -22,10 +22,14 @@ Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 # Version History
 
-# 1.0.6
+## 1.0.7
+
+Fixes for arrays of DTOs injected into the constructor as arrays.
+
+## 1.0.6
 
 Fixes for hierarchical data injected into the constructor.
 
-# 1.0.5 
+## 1.0.5 
 
 Initial release with some grooming as documentation was added.

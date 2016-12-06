@@ -67,6 +67,22 @@ class GetCompositeMutator extends TestCase
         $value = $this->callProtectedMethod($dto, 'getCompositeMutator', ['x']);
         $this->assertEquals('mutateTypeBoolean', $value);
     }
+
+    public function testArrayValueMutatorReturned()
+    {
+        $meta = [
+            '.' => [
+                'type' => 'array',
+                'values' => [
+                    'type' => 'dto',
+                    'class' => 'MyDtoClass'
+                ]
+            ]
+        ];
+        $dto = new \Dto\Dto([],[],$meta);
+        $value = $this->callProtectedMethod($dto, 'getCompositeMutator', ['.0']);
+        $this->assertEquals('mutateTypeDto', $value);
+    }
 }
 
 class TestGetCompositeMutatorDto extends \Dto\Dto {

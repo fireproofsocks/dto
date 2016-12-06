@@ -322,8 +322,13 @@ class Dto extends \ArrayObject
     protected function getMeta($index)
     {
         $normalized_key = $this->getNormalizedKey($index);
-        
+
         if (!isset($this->meta[$normalized_key])) {
+            // if $normalized_key like ".0" -- i.e. array members
+            if (is_numeric(trim($normalized_key, '.')) && isset($this->meta['.']['values'])) {
+                return $this->meta['.']['values'];
+            }
+
             return ['type' => 'unknown']; // TODO: throw exception?
         }
         // TODO: Enforce some keys
@@ -372,7 +377,7 @@ class Dto extends \ArrayObject
         }
         
         $mutatorFunction = $this->getMutator($value, $index);
-        
+
         $value = $this->{$mutatorFunction}($value, $index, $this->getMeta($index));
         
         // Final gatekeeping: make sure our mutators don't try to sneak invalid values past
@@ -400,7 +405,7 @@ class Dto extends \ArrayObject
         
         $meta = $this->getMeta($index);
         $meta['type'] = (isset($meta['type'])) ? $meta['type'] : 'unknown';
-        
+
         // Unknown can be either/or -- it changes depending on the value type
         if ($meta['type'] == 'unknown') {
             return (is_scalar($value) || is_null($value)) ? $this->getValueMutator($index) : $this->getCompositeMutator($index);
@@ -519,6 +524,7 @@ class Dto extends \ArrayObject
     protected function getCompositeMutator($index)
     {
         $normalized_key = $this->getNormalizedKey($index);
+
         $meta = $this->getMeta($index);
         // Field-level Mutator
         if ($normalized_key != '.') {
@@ -540,7 +546,16 @@ class Dto extends \ArrayObject
             
             return $functionName;
         }
-        
+        // Are we setting items in an array?
+        if (is_numeric(trim($normalized_key,'.'))) {
+            $functionName = $this->getFunctionName('mutateType', $meta['type']);
+            if (!method_exists($this, $functionName)) {
+                throw new InvalidMutatorException('Mutator method "' . $functionName . '"does not exist. Type defined in meta at index "' . $normalized_key . '"');
+            }
+
+            return $functionName;
+        }
+
         // Fallback
         return 'mutateTypeHash';
     }
@@ -917,12 +932,7 @@ class Dto extends \ArrayObject
 
         // This solves problems of injecting a deeply nested array into the constructor: we convert the array into a DTO
         if (is_array($value) && $meta['type'] === 'dto') {
-
             return new $classname($value);
-//            if ($converted->toArray() === $value) {
-//                print_r($meta); exit;
-//                return $converted;
-//            }
         }
 
         // TODO: other data types?  array? Hash?

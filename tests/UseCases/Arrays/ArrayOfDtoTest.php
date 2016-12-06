@@ -32,12 +32,28 @@ class ArrayOfDtoTest extends TestCase
         $data3 = ['x'=>'g', 'y'=>'h', 'z'=>'i'];
     
         $D[] = new TestRecord($data1);
-        //$D[] = new TestRecord($data2);
-        //$D[] = new TestRecord($data3);
+        $D[] = new TestRecord($data2);
+        $D[] = new TestRecord($data3);
     
-        //$this->assertEquals([$data1, $data2, $data3], $D->toArray());
-        $this->assertEquals([$data1], $D->toArray());
+        $this->assertEquals([$data1, $data2, $data3], $D->toArray());
     }
+
+    public function testPassingArraysViaConstructorFiltersOutUndefinedProperties()
+    {
+        $data = [
+            ['x'=>'a', 'y'=>'b', 'z'=>'c'],
+            ['x'=>'d', 'y'=>'e', 'z'=>'f'],
+            ['x'=>'g', 'y'=>'h', 'z'=>'i'],
+        ];
+
+        $extra = $data;
+        $extra[0]['a'] = 'oops';
+
+        $D = new TestRecordSet($extra);
+
+        $this->assertEquals($data, $D->toArray());
+    }
+
 }
 
 class TestRecordSet extends \Dto\Dto
