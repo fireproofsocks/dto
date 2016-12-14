@@ -1,6 +1,6 @@
 <?php
 
-namespace DtoTest\DeclareTypes;
+namespace DtoTest\UseCases;
 
 use Dto\DtoStrict;
 use DtoTest\TestCase;

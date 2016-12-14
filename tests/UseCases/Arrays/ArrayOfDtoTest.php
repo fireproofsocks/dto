@@ -1,6 +1,6 @@
 <?php
 
-namespace DtoTest\DeclareTypes\Arrays;
+namespace DtoTest\UseCases\Arrays;
 
 use DtoTest\TestCase;
 
@@ -54,6 +54,38 @@ class ArrayOfDtoTest extends TestCase
         $this->assertEquals($data, $D->toArray());
     }
 
+    public function testPassingArraysViaSetMethodShouldFilterOutUndefinedProperties()
+    {
+        $data = [
+            ['x'=>'a', 'y'=>'b', 'z'=>'c'],
+            ['x'=>'d', 'y'=>'e', 'z'=>'f'],
+            ['x'=>'g', 'y'=>'h', 'z'=>'i'],
+        ];
+
+        $extra = $data;
+        $extra[0]['a'] = 'oops';
+
+        $D = new TestRecordSet();
+        $D->set('.', $extra);
+
+        $this->assertEquals($data, $D->toArray());
+    }
+
+    public function testEachArrayInArrayOfDtosHasTypeOfChildDto()
+    {
+        $data = [
+            ['x'=>'a', 'y'=>'b', 'z'=>'c'],
+            ['x'=>'d', 'y'=>'e', 'z'=>'f'],
+            ['x'=>'g', 'y'=>'h', 'z'=>'i'],
+        ];
+
+        $D = new TestRecordSet($data);
+
+        foreach ($D as $record) {
+            $this->assertInstanceOf(TestRecord::class, $record);
+        }
+    }
+
 }
 
 class TestRecordSet extends \Dto\Dto
@@ -65,7 +97,7 @@ class TestRecordSet extends \Dto\Dto
             'type' => 'array',
             'values' => [
                 'type' => 'dto',
-                'class' => 'DtoTest\DeclareTypes\Arrays\TestRecord'
+                'class' => 'DtoTest\UseCases\Arrays\TestRecord'
             ]
         ]
     ];
@@ -78,3 +110,18 @@ class TestRecord extends \Dto\Dto
         'z' => '',
     ];
 }
+/*
+ * Dto\Exceptions\InvalidDataTypeException: .0 value must be instance of S6\DataTransfer\ProductType\ProductTypeDto
+ *
+ *
+ *      $collection = new ProductTypeDto();
+        $collection->id = $results->id;
+        // etc
+        foreach ($results->attributes->children as $child) {
+            $tmp = new ProductTypeDto((array) $child);
+
+            print_r($tmp->toArray()); exit;
+            $collection->children[] = new ProductTypeDto((array) $child);
+        }
+        print_r($collection->toArray()); exit;
+ */

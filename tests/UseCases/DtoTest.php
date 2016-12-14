@@ -1,6 +1,6 @@
 <?php
 
-namespace DtoTest\DeclareTypes;
+namespace DtoTest\UseCases;
 
 use DtoTest\TestCase;
 
@@ -64,11 +64,11 @@ class TestParentDto extends \Dto\Dto {
     protected $meta = [
         'mydto' => [
             'type' => 'dto',
-            'class' => 'DtoTest\DeclareTypes\TestChildDto'
+            'class' => 'DtoTest\UseCases\TestChildDto'
         ],
         'mydto_nullable' => [
             'type' => 'dto',
-            'class' => 'DtoTest\DeclareTypes\TestChildDto',
+            'class' => 'DtoTest\UseCases\TestChildDto',
             'nullable' => true
         ]
     ];

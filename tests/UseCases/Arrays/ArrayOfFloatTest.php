@@ -1,6 +1,6 @@
 <?php
 
-namespace DtoTest\DeclareTypes\Arrays;
+namespace DtoTest\UseCases\Arrays;
 
 use DtoTest\TestCase;
 

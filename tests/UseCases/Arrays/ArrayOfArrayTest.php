@@ -1,6 +1,6 @@
 <?php
 
-namespace DtoTest\DeclareTypes\Arrays;
+namespace DtoTest\UseCases\Arrays;
 
 use DtoTest\TestCase;
 
@@ -54,7 +54,7 @@ class ArrayOfArrayTest extends TestCase
         $b = ['bear', 'bun', 'boise'];
         $c = ['cat', 'chunk', 'chile'];
         $D = new TestArrayOfArrayTestDto([$a,$b,$c]);
-        //print_r($D->toArray()); exit;
+
         $this->assertEquals([$a, $b, $c], $D->toArray());
     }
 }

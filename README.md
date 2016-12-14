@@ -22,6 +22,11 @@ Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 # Version History
 
+## 1.0.8
+
+- Fixes for anonymous hashes of DTOs injected into the constructor. 
+- Corrected namespaces in tests.
+
 ## 1.0.7
 
 Fixes for arrays of DTOs injected into the constructor as arrays.

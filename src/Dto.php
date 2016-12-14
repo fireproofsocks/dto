@@ -328,6 +328,10 @@ class Dto extends \ArrayObject
             if (is_numeric(trim($normalized_key, '.')) && isset($this->meta['.']['values'])) {
                 return $this->meta['.']['values'];
             }
+            // Or if it's an anonymous hash
+            if (isset($this->meta['.']['anonymous']) && $this->meta['.']['anonymous'] && isset($this->meta['.']['values'])) {
+                return $this->meta['.']['values'];
+            }
 
             return ['type' => 'unknown']; // TODO: throw exception?
         }
@@ -338,7 +342,6 @@ class Dto extends \ArrayObject
         //$meta = $this->meta[$normalized_key];
         //$meta[$normalized_key]['type'] = (isset($meta[$normalized_key]['type'])) ? $meta[$normalized_key]['type'] : 'unknown';
         //return $meta;
-        
         return $this->meta[$normalized_key];
     }
     
@@ -587,7 +590,8 @@ class Dto extends \ArrayObject
     {
         return $this[$name];
     }
-    
+
+
     /**
      * Accessed when the object is written to via object notation.
      *
@@ -734,6 +738,7 @@ class Dto extends \ArrayObject
         //  Remember: isset() returns false if the value is null
         if ($this->isValidTargetLocation($index, $this->template)) {
             // This bit allows us to dynamically deepen the object structure
+            // TODO: does this need to return a child DTO vs. a "sub-DTO"?
             if (!array_key_exists($index, $this)) {
                 $classname = get_called_class();
                 $child = new $classname([],
@@ -815,7 +820,8 @@ class Dto extends \ArrayObject
     }
     
     /**
-     * Called internally by the filterNode() method.  This is the powerhouse mapping function.
+     * Called internally by the filterNode() method.  This is the powerhouse mapping function: it returns a "sub-Dto",
+     * with a subset of the template and meta definitions.
      *
      * @param $value mixed
      * @param $index string
@@ -827,11 +833,25 @@ class Dto extends \ArrayObject
      */
     protected function mutateTypeHash($value, $index, array $meta = [])
     {
-        $classname = get_called_class();
-
-        return new $classname((array)$value,
-            $this->getTemplateSubset($index, $this->template),
-            $this->getMetaSubset($index, $this->meta));
+        // Is the "sub-Dto" an instance of the parent DTO? Or does it use a specific sub-class?
+        if (isset($this->meta[$index]['type']['class']) && $this->meta[$index]['type'] == 'dto') {
+            $classname = $this->meta[$index]['type']['class'];
+            return new $classname((array)$value);
+        }
+        elseif (isset($this->meta['.']['anonymous']) && $this->meta['.']['anonymous']
+            && isset($this->meta['.']['values']['type'])
+            && $this->meta['.']['values']['type'] == 'dto'
+            && isset($this->meta['.']['values']['class'])) {
+            $classname = $this->meta['.']['values']['class'];
+            return new $classname((array)$value);
+        }
+        else {
+            // Return a subset of the parent DTO
+            $classname = get_called_class();
+            return new $classname((array)$value,
+                $this->getTemplateSubset($index, $this->template),
+                $this->getMetaSubset($index, $this->meta));
+        }
     }
     
     /**
