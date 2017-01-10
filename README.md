@@ -18,6 +18,36 @@ This package was inspired by the [JSON Schema](http://json-schema.org/) specific
 
 Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
+
+TODO v2:
+
+pattern, e.g. in 
+
+```
+"properties": {
+    "type": { "enum": [ "disk" ] },
+    "label": {
+        "type": "string",
+        "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+}
+```
+
+
+enum support
+
+int, numbers, strings with validation stuff added
+```
+"minimum": 0,
+"exclusiveMinimum": true
+```
+
+How to type-hint different DTO classes when really, the power behind them is in the JSON Schema class?
+I would prefer to avoid having to customize 2 classes for every data structure, e.g. ProductDto.php, ProductSchema
+.php...
+So that would mean that the Dto class would need to be able to define its own schema.
+
+
 ------------------------------------
 
 # Version History
