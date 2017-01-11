@@ -29,5 +29,4 @@ class DtoSpec extends ObjectBehavior
         $this->toObject()->shouldBeLike(new \stdClass());
     }
 
-
 }

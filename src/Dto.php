@@ -22,89 +22,41 @@ use Dto\Exceptions\InvalidMutatorException;
 class Dto extends \ArrayObject implements DtoInterface
 {
     /**
-     * I.e. the "$schema" keyword, an "absolute" URI
+     * Optional in-class schema definition
      *
-     * @var string
+     * @var mixed
      */
-    //protected $schema = 'http://json-schema.org/draft-04/schema#';
     protected $schema;
 
     /**
-     * URI for the schema
-     * @var string
+     * Optional default values
+     * @var
      */
-    protected $id = '';
+    protected $default;
 
-    protected $title = '';
 
     /**
-     * Human readable description of your schema
-     * @var string
+     * @var JsonSchema
      */
-    protected $description = '';
-
-    /**
-     * Defines one type for the data (e.g. "object"), or a list of allowable types (e.g. ["array", "null"])
-     * string | array
-     * @var string
-     */
-    protected $type = '';
-
-    /**
-     * Only relevant when type=object
-     * @var array
-     */
-    protected $properties = [];
-
-    /**
-     * List of required properties
-     * @var array
-     */
-    protected $required = [];
-
-    /**
-     * Only relevant when type=array, this defines what each array element looks like
-     * @var array
-     */
-    protected $items = [];
-
-    /**
-     * In-line schema definitions
-     * @var array
-     */
-    protected $definitions = [];
-
-
-    protected $patternProperties = [];
-
-    /**
-     * Can additional ad-hoc properties be added? (Formerly refered to as "ambiguous hash")
-     * @var bool
-     */
-    protected $additionalProperties = false;
+    protected $jsonSchema;
 
     /**
      * Only relevant when type is not an aggregate (i.e. when type is neither object nor array)
      * @var
      */
-    protected $scalarValue;
+    protected $scalarStorage;
 
-
-    // use Trait?  w $default_schema = [...]
-    // $this->my_schema = [...];
-    // $this->schema = new Schema(array_merge($this->default_schema, $this->my_schema));
-    // Default values?
     /**
      * Dto constructor.
      *
      * @param mixed $input values filtered against the $template and $meta
-     * @param $schema JsonSchema|null
+     * @param $jsonSchema JsonSchema|null
      */
-    public function __construct($input = null, JsonSchema $schema = null)
+    public function __construct($input = null, JsonSchema $jsonSchema = null)
     {
         $this->setFlags(0);
 
-        $this->schema = ($schema) ? $schema : new JsonSchema();
+        $this->jsonSchema = ($jsonSchema) ? $jsonSchema : new JsonSchema($this->schema);
 
         // Filter input
         if ($input === null) {
@@ -359,27 +311,27 @@ class Dto extends \ArrayObject implements DtoInterface
 
     protected function storeString($value)
     {
-        $this->scalarValue = $value;
+        $this->scalarStorage = $value;
     }
 
     protected function storeInteger($value)
     {
-        $this->scalarValue = $value;
+        $this->scalarStorage = $value;
     }
 
     protected function storeNumber($value)
     {
-        $this->scalarValue = $value;
+        $this->scalarStorage = $value;
     }
 
     protected function storeBoolean($value)
     {
-        $this->scalarValue = $value;
+        $this->scalarStorage = $value;
     }
 
     protected function storeNull($value)
     {
-        $this->scalarValue = $value;
+        $this->scalarStorage = $value;
     }
 
     protected function isAggregateType()
@@ -551,7 +503,7 @@ class Dto extends \ArrayObject implements DtoInterface
             throw new \Exception('This DTO stores aggregate data and cannot be represented as a scalar value.');
         }
 
-        return $this->scalarValue;
+        return $this->scalarStorage;
     }
     
 
