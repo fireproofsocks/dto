@@ -83,6 +83,13 @@ class JsonSchema implements JsonSchemaInterface
      */
     protected $data;
 
+
+    protected $detector;
+
+    protected $converter;
+
+    protected $formatter;
+
     /**
      *
      * @var array
@@ -175,7 +182,7 @@ class JsonSchema implements JsonSchemaInterface
 
     public function __construct($input = null)
     {
-        $this->loadSchemaDataFromInput($input);
+        $this->constructSchema($input);
     }
 
     /**
@@ -186,15 +193,15 @@ class JsonSchema implements JsonSchemaInterface
      *
      * @param $input
      */
-    protected function loadSchemaDataFromInput($input)
+    protected function constructSchema($input)
     {
         if (!is_array($input)) {
-            $input = $this->loadJsonSchema($input);
+            $input = $this->getJsonFileContents($input);
         }
-        $this->mapArrayInput($input);
+        $this->constructSchemaFromArray($input);
     }
 
-    protected function loadJsonSchema($filename_or_url) {
+    protected function getJsonFileContents($filename_or_url) {
         $contents = file_get_contents($filename_or_url);
         if ($contents === false) {
             throw new JsonSchemaFileNotFoundException('JSON Schema not found: '. $filename_or_url);
@@ -203,6 +210,12 @@ class JsonSchema implements JsonSchemaInterface
         $array = json_decode($contents, true);
         // Errors?
         return $array;
+    }
+
+    protected function constructSchemaFromArray(array $input)
+    {
+        // TODO: filter/validate the schema
+        $this->data = $input;
     }
 
     public function toArray()
@@ -223,12 +236,12 @@ class JsonSchema implements JsonSchemaInterface
 
     public function __isset($key)
     {
-
+        return isset($this->data[$key]);
     }
 
     public function __get($key)
     {
-
+        return $this->data[$key];
     }
 
     public function getTypeAsArray()
@@ -236,9 +249,79 @@ class JsonSchema implements JsonSchemaInterface
 
     }
 
-    protected function mapArrayInput(array $input)
+    /**
+     * Either the property is explicitly defined in the $properties array, or $additionalProperties is set to true.
+     * @param $index
+     * @return boolean
+     */
+    public function isPropertySettable($index)
     {
-        // TODO: filter/validate the schema
-        $this->data = $input;
+        return ($this->additionalProperties || array_key_exists($index, $this->properties));
     }
+
+    public function isAppendable()
+    {
+
+    }
+
+    public function canHoldScalar()
+    {
+
+    }
+
+    /**
+     * @param $value mixed
+     * @return bool
+     */
+    protected function isValueOneOfAllowedTypes($value)
+    {
+        // TODO: enum could be up here?
+
+        // Type is usually a single value, but some may allow multiple types, esp. nullable, e.g. ["string", "null"]
+        $types = (is_array($this->type)) ? $this->type : [$this->type];
+
+        foreach ($types as $t) {
+            switch ($t) {
+                case 'object':
+                    if ($this->detector->isObject($value)) {
+                        return true;
+                    }
+                    break;
+                case 'array':
+                    if ($this->detector->isArray($value)) {
+                        return true;
+                    }
+                    break;
+                case 'string':
+                    if ($this->detector->isString($value)) {
+                        return true;
+                    }
+                    break;
+                case 'integer':
+                    if ($this->detector->isInteger($value)) {
+                        return true;
+                    }
+                    break;
+                case 'number':
+                    if ($this->detector->isNumber($value)) {
+                        return true;
+                    }
+                    break;
+                case 'boolean':
+                    if ($this->detector->isBoolean($value)) {
+                        return true;
+                    }
+                    break;
+                case 'null':
+                    if ($this->detector->isNull($value)) {
+                        return true;
+                    }
+                    break;
+            }
+        }
+
+        return false;
+    }
+
+
 }

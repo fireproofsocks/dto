@@ -36,6 +36,16 @@ class Dto extends \ArrayObject implements DtoInterface
 
 
     /**
+     * @var Detector
+     */
+    protected $detector;
+
+    /**
+     * @var Converter
+     */
+    protected $converter;
+
+    /**
      * @var JsonSchema
      */
     protected $jsonSchema;
@@ -65,17 +75,6 @@ class Dto extends \ArrayObject implements DtoInterface
         else {
             parent::__construct($input);
         }
-//        $arg_list = func_get_args();
-//
-//        // We need to be able to override the class variables when the input variables are empty.
-//        $this->template = (isset($arg_list[1])) ? $arg_list[1] : $this->template;
-//        $this->meta = (isset($arg_list[2])) ? $arg_list[2] : $this->meta;
-//        $this->meta = $this->autoDetectTypes($this->template,
-//            $this->normalizeMeta($this->meta));
-//        // We must always ensure that the template's properties are passed to filterRoot
-//        $input = array_replace_recursive($this->template, $input);
-//        // store the filtered values in the ArrayObject
-//        parent::__construct($this->filterRoot($input));
     }
 
     /**
@@ -135,166 +134,14 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     final public function offsetSet($index, $newval, $bypass = false)
     {
-        if ($bypass || $this->isPropertySettable($index)) {
+        if ($bypass || $this->jsonSchema->isPropertySettable($index)) {
             parent::offsetSet($index, $newval);
         }
 
     }
 
 
-    /**
-     * Either the property is explicitly defined in the $properties array, or $additionalProperties is set to true.
-     * @param $index
-     * @return boolean
-     */
-    protected function isPropertySettable($index)
-    {
-        return ($this->additionalProperties || array_key_exists($index, $this->properties));
-    }
 
-    /**
-     * @param $value mixed
-     * @return bool
-     */
-    protected function isValueOneOfAllowedTypes($value)
-    {
-        // TODO: enum could be up here?
-
-        // Type is usually a single value, but some may allow multiple types, esp. nullable, e.g. ["string", "null"]
-        $types = (is_array($this->type)) ? $this->type : [$this->type];
-
-        foreach ($types as $t) {
-            switch ($t) {
-                case 'object':
-                    if ($this->isObject($value)) {
-                        return true;
-                    }
-                    break;
-                case 'array':
-                    if ($this->isArray($value)) {
-                        return true;
-                    }
-                    break;
-                case 'string':
-                    if ($this->isString($value)) {
-                        return true;
-                    }
-                    break;
-                case 'integer':
-                    if ($this->isInteger($value)) {
-                        return true;
-                    }
-                    break;
-                case 'number':
-                    if ($this->isNumber($value)) {
-                        return true;
-                    }
-                    break;
-                case 'boolean':
-                    if ($this->isBoolean($value)) {
-                        return true;
-                    }
-                    break;
-                case 'null':
-                    if ($this->isNull($value)) {
-                        return true;
-                    }
-                    break;
-            }
-        }
-
-        return false;
-    }
-
-    protected function isObject($value)
-    {
-        return (is_object($value));
-    }
-
-    protected function isArray($value)
-    {
-        return $this->isTrueArray($value);
-    }
-
-    protected function isString($value)
-    {
-        return (is_string($value));
-    }
-
-    protected function isInteger($value)
-    {
-        return (is_integer($value));
-    }
-
-    protected function isNumber($value)
-    {
-        // Fall back to integers
-        return (is_float($value)) ? true : $this->isInteger($value);
-    }
-
-    protected function isBoolean($value)
-    {
-        return (is_bool($value));
-    }
-
-    protected function isNull($value)
-    {
-        return ($value === null);
-    }
-
-    /**
-     * Helps us work around one of PHP's warts: there are no true arrays in PHP
-     * http://stackoverflow.com/questions/173400/how-to-check-if-php-array-is-associative-or-sequential
-     * @param $value mixed
-     * @return bool
-     */
-    protected function isTrueArray($value)
-    {
-        if (!is_array($value)) {
-            return false;
-        }
-
-        return array_keys($value) === range(0, count($value) - 1);
-    }
-
-    protected function convertToObject($value)
-    {
-        if (is_array($value)) {
-            $value = (object) $value;
-        }
-
-        return (is_object($value)) ? $value : new \stdClass();
-    }
-
-    protected function convertToArray($value)
-    {
-        return (is_array($value)) ? array_values($value) : [];
-    }
-
-    protected function convertToString($value)
-    {
-        return strval($value);
-    }
-
-    protected function convertToInteger($value)
-    {
-        return intval($value);
-    }
-
-    protected function convertToNumber($value)
-    {
-        return floatval($value);
-    }
-
-    protected function convertToBoolean($value)
-    {
-        return boolval($value);
-    }
-
-    protected function convertToNull($value)
-    {
-        return null;
-    }
 
 
     protected function storeObject($value)
