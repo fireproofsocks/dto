@@ -2,14 +2,14 @@
 
 namespace spec\Dto;
 
-use Dto\Converter;
+use Dto\TypeConverter;
 use PhpSpec\ObjectBehavior;
 
-class ConverterSpec extends ObjectBehavior
+class TypeConverterSpec extends ObjectBehavior
 {
     function it_is_initializable()
     {
-        $this->shouldHaveType(Converter::class);
+        $this->shouldHaveType(TypeConverter::class);
     }
 
     //--------------------- toObject -----------------------------

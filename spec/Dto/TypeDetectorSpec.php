@@ -2,14 +2,14 @@
 
 namespace spec\Dto;
 
-use Dto\Detector;
+use Dto\TypeDetector;
 use PhpSpec\ObjectBehavior;
 
-class DetectorSpec extends ObjectBehavior
+class TypeDetectorSpec extends ObjectBehavior
 {
     function it_is_initializable()
     {
-        $this->shouldHaveType(Detector::class);
+        $this->shouldHaveType(TypeDetector::class);
     }
 
     //-------------------------- isObject ----------------------------

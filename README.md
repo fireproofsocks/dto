@@ -47,6 +47,19 @@ I would prefer to avoid having to customize 2 classes for every data structure, 
 .php...
 So that would mean that the Dto class would need to be able to define its own schema.
 
+Problem: "type" is an array, e.g. a nullable string: `"type": ["string", "null"]`
+
+You pass an integer, so it's not a clean match, and you must do a TypeConverter operation.  Which one?
+
+Answer: probably best would be to use the first type that is defined (string in this example)
+
+
+Problem: "type" is an array, e.g. a nullable object: `"type": ["object", "null"]`
+
+Hydration is passed a "null" value.  
+
+Answer: store null as a scalar.
+
 
 ------------------------------------
 

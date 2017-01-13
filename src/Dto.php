@@ -28,27 +28,16 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     protected $schema;
 
-    /**
-     * Optional default values
-     * @var
-     */
-    protected $default;
-
 
     /**
-     * @var Detector
-     */
-    protected $detector;
-
-    /**
-     * @var Converter
-     */
-    protected $converter;
-
-    /**
-     * @var JsonSchema
+     * @var JsonSchemaInterface
      */
     protected $jsonSchema;
+
+    /**
+     * @var ConfigInterface
+     */
+    protected $config;
 
     /**
      * Only relevant when type is not an aggregate (i.e. when type is neither object nor array)
@@ -60,9 +49,10 @@ class Dto extends \ArrayObject implements DtoInterface
      * Dto constructor.
      *
      * @param mixed $input values filtered against the $template and $meta
-     * @param $jsonSchema JsonSchema|null
+     * @param $jsonSchema JsonSchemaInterface|null
+     * @param $config ConfigInterface|null
      */
-    public function __construct($input = null, JsonSchema $jsonSchema = null)
+    public function __construct($input = null, JsonSchemaInterface $jsonSchema = null, ConfigInterface $config = null)
     {
         $this->setFlags(0);
 
@@ -140,53 +130,6 @@ class Dto extends \ArrayObject implements DtoInterface
 
     }
 
-
-
-
-
-    protected function storeObject($value)
-    {
-        foreach ($value as $k => $v) {
-            $this->offsetSet($k, $v);
-        }
-    }
-
-    protected function storeArray($value)
-    {
-        // append
-    }
-
-    protected function storeString($value)
-    {
-        $this->scalarStorage = $value;
-    }
-
-    protected function storeInteger($value)
-    {
-        $this->scalarStorage = $value;
-    }
-
-    protected function storeNumber($value)
-    {
-        $this->scalarStorage = $value;
-    }
-
-    protected function storeBoolean($value)
-    {
-        $this->scalarStorage = $value;
-    }
-
-    protected function storeNull($value)
-    {
-        $this->scalarStorage = $value;
-    }
-
-    protected function isAggregateType()
-    {
-        $type = $this->getPrimaryType();
-        return ($type === 'object' || $type === 'array');
-    }
-
     /**
      * @param $name string attribute name
      *
@@ -216,7 +159,18 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function append($val)
     {
+        // validate
         $this->offsetSet(null, $val);
+    }
+
+    public function prepend($val)
+    {
+
+    }
+
+    public function slice($offset, $length = null)
+    {
+
     }
     
     /**
@@ -259,19 +213,49 @@ class Dto extends \ArrayObject implements DtoInterface
 
     /**
      * Fill the (empty) root object with data
-     * @param $data
+     * @param $value mixed
      */
-    public function hydrate($data)
+    public function hydrate($value)
     {
-        // TODO: enum
-        $type = $this->getPrimaryType();
-        if (!$this->{'is'.$type}($data)) {
-            $data = $this->{'convertTo'.$type}($data);
+        // ???
+        // $valueType = $this->jsonSchema->detectValueType($value); // object | array | scalar
+        // if $this->jsonSchema->canStoreValueType($valueType);
+        //      $value = $this->jsonSchema->getStoreableValue($value); // TypeConversion
+        //      $this->{'hydrate'.$valueType}($value);
+        // else behavior for hydrate
+
+        if ($this->jsonSchema->isObject()) {
+            $this->hydrateObject($value);
         }
-        // TODO: Validate data
+        elseif($this->jsonSchema->isArray()) {
+            $this->hydrateArray($value);
+        }
+        else {
+            $this->hydrateScalar($value);
+        }
+    }
 
-        $this->{'store'.$type}($data);
+    protected function hydrateObject($value)
+    {
+        foreach ($value as $k => $v) {
+            // TODO: is full? Behavior if full?
+            $this->offsetSet($k, $v);
+        }
+    }
 
+    protected function hydrateArray($value)
+    {
+        // append
+        foreach ($value as $v) {
+            // TODO: is full?  Behavior if full (shift or ignore?)
+            $this->offsetSet(null, $v);
+        }
+    }
+
+    protected function hydrateScalar($value)
+    {
+        // TODO: validate (e.g. minimum/maximum value)
+        $this->scalarStorage = $value;
     }
 
 
@@ -346,7 +330,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function toScalar()
     {
-        if ($this->isAggregateType()) {
+        if ($this->jsonSchema->isScalar()) {
             throw new \Exception('This DTO stores aggregate data and cannot be represented as a scalar value.');
         }
 

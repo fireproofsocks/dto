@@ -1,7 +1,7 @@
 <?php
 namespace Dto;
 
-class Converter
+class TypeConverter implements TypeConverterInterface
 {
 
     public function toObject($value)

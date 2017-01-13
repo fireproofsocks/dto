@@ -2,10 +2,11 @@
 
 namespace Dto;
 
-class Detector
+class TypeDetector implements TypeDetectorInterface
 {
     public function isObject($value)
     {
+        // TODO: allow associative arrays
         return (is_object($value));
     }
 
@@ -13,7 +14,7 @@ class Detector
      * Is True Array?
      *
      * Helps us work around one of PHP's warts: there are no true arrays in PHP.
-     * http://stackoverflow.com/questions/173400/how-to-check-if-php-array-is-associative-or-sequential
+     * @link http://stackoverflow.com/questions/173400/how-to-check-if-php-array-is-associative-or-sequential
      * @param $value mixed
      * @return bool
      */

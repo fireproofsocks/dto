@@ -185,6 +185,7 @@ class JsonSchema implements JsonSchemaInterface
         $this->constructSchema($input);
     }
 
+
     /**
      * Schema data can be loaded in different ways.
      *
@@ -323,5 +324,25 @@ class JsonSchema implements JsonSchemaInterface
         return false;
     }
 
+    protected function isAggregateType()
+    {
+        $type = $this->getPrimaryType();
+        return ($type === 'object' || $type === 'array');
+    }
+
+    public function isObject()
+    {
+
+    }
+
+    public function isArray()
+    {
+
+    }
+
+    public function isScalar()
+    {
+
+    }
 
 }
