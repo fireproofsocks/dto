@@ -51,7 +51,8 @@ Problem: "type" is an array, e.g. a nullable string: `"type": ["string", "null"]
 
 You pass an integer, so it's not a clean match, and you must do a TypeConverter operation.  Which one?
 
-Answer: probably best would be to use the first type that is defined (string in this example)
+Answer: probably best would be to use the first type that is defined (string in this example)... but what about in other cases?
+There should be some way to identify the best guess of which converter to use.
 
 
 Problem: "type" is an array, e.g. a nullable object: `"type": ["object", "null"]`
@@ -60,6 +61,12 @@ Hydration is passed a "null" value.
 
 Answer: store null as a scalar.
 
+Problem: "type" is array, `["string", "array"]`.  You set a string value first, e.g. x=dog.  Then you later append a value to 
+that property.  
+
+You need to make sure that the original scalar value is included in the array.
+
+Solution: store scalar values in 1st position of the ArrayObject.
 
 ------------------------------------
 

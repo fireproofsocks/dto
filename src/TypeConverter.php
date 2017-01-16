@@ -52,10 +52,10 @@ class TypeConverter implements TypeConverterInterface
         }
 
         if (is_object($value)) {
-            // Yes, an empty object is considered false here!
+            // Yes, an empty object is considered false here (unlike in standard PHP)
             return (empty((array) $value)) ? false : true;
         }
-
+        // TODO: support for coercing boolean-like strings e.g. "Off", "On", "Yes", "No" etc.
         return boolval($value);
     }
 

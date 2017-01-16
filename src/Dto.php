@@ -4,9 +4,8 @@ namespace Dto;
 
 use Dto\Exceptions\AppendException;
 use Dto\Exceptions\InvalidDataTypeException;
-use Dto\Exceptions\InvalidLocationException;
-use Dto\Exceptions\InvalidMetaKeyException;
-use Dto\Exceptions\InvalidMutatorException;
+use Dto\Exceptions\InvalidPropertyException;
+use Dto\Exceptions\UnstorableValueException;
 
 /**
  * Class Dto (Data Transfer Object).
@@ -30,41 +29,37 @@ class Dto extends \ArrayObject implements DtoInterface
 
 
     /**
-     * @var JsonSchemaInterface
+     * @var RegulatorInterface
      */
-    protected $jsonSchema;
+    protected $regulator;
 
     /**
      * @var ConfigInterface
      */
     protected $config;
 
+
     /**
-     * Only relevant when type is not an aggregate (i.e. when type is neither object nor array)
-     * @var
+     * @var TypeConverterInterface
      */
-    protected $scalarStorage;
+    protected $converter;
 
     /**
      * Dto constructor.
      *
-     * @param mixed $input values filtered against the $template and $meta
-     * @param $jsonSchema JsonSchemaInterface|null
+     * @param mixed $input value
+     * @param $regulator RegulatorInterface|null
      * @param $config ConfigInterface|null
      */
-    public function __construct($input = null, JsonSchemaInterface $jsonSchema = null, ConfigInterface $config = null)
+    public function __construct($input = null, RegulatorInterface $regulator = null, ConfigInterface $config = null)
     {
         $this->setFlags(0);
 
-        $this->jsonSchema = ($jsonSchema) ? $jsonSchema : new JsonSchema($this->schema);
+        $this->regulator = ($regulator) ? $regulator : new JsonSchema($this->schema);
 
-        // Filter input
-        if ($input === null) {
-            parent::__construct();
-        }
-        else {
-            parent::__construct($input);
-        }
+        $this->config = ($config) ? $config : new Config();
+
+        $this->converter = new TypeConverter();
     }
 
     /**
@@ -83,7 +78,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function __get($name)
     {
-        return $this[$name];
+        return $this->offsetGet($name);
     }
 
 
@@ -92,8 +87,6 @@ class Dto extends \ArrayObject implements DtoInterface
      *
      * @param $name
      * @param $value
-     *
-     * @throws InvalidLocationException
      */
     public function __set($name, $value)
     {
@@ -119,25 +112,31 @@ class Dto extends \ArrayObject implements DtoInterface
      * @param mixed $newval
      * @param bool $bypass filters if true
      *
-     * @throws AppendException
-     * @throws InvalidLocationException
+     * @throws InvalidPropertyException
      */
     final public function offsetSet($index, $newval, $bypass = false)
     {
-        if ($bypass || $this->jsonSchema->isPropertySettable($index)) {
+        if ($bypass) {
             parent::offsetSet($index, $newval);
         }
+        // Does the property name match the regex? etc.
+        $schema = $this->regulator->getSchema($index);
+
+        // TODO: convert value
+        // TODO: validate value
+        // if is object or array?  Loop over keys/values???
+        parent::offsetSet($index, $this->getHydratedChildDto($newval, $schema));
 
     }
 
     /**
-     * @param $name string attribute name
+     * @param $index string attribute name
      *
      * @return bool
      */
-    public function __isset($name)
+    public function __isset($index)
     {
-        return isset($this[$name]);
+        return $this->offsetExists($index);
     }
     
     /**
@@ -153,188 +152,214 @@ class Dto extends \ArrayObject implements DtoInterface
     
     /**
      * Append a value to the end of an array.  Defers to offsetSet to determine if location is valid for appending.
-     * See http://php.net/manual/en/arrayobject.append.php.
-     *
+     * @link http://php.net/manual/en/arrayobject.append.php.
+     * @throws InvalidDataTypeException
      * @param mixed $val
      */
     public function append($val)
     {
-        // validate
+        if ($this->regulator->isArray()) {
+            throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
+        }
+
+        // validate value
+
         $this->offsetSet(null, $val);
     }
 
+    /**
+     * @link https://stackoverflow.com/questions/6875080/php-how-to-array-unshift-on-an-arrayobject
+     * @param $val
+     * @throws InvalidDataTypeException
+     */
     public function prepend($val)
     {
-
+        if ($this->regulator->isArray()) {
+            throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
+        }
+        // TODO
     }
 
+    /**
+     * @link https://stackoverflow.com/questions/6627266/array-slice-or-other-array-functions-on-arrayobject
+     * @param $offset
+     * @param null $length
+     * @throws InvalidDataTypeException
+     */
     public function slice($offset, $length = null)
     {
-
-    }
-    
-    /**
-     * Dot-notation getter: alternative to array and/or object get syntax.
-     * See http://php.net/manual/en/language.references.return.php.
-     *
-     * @param $dotted_key
-     *
-     * @return mixed
-     */
-    public function get($dotted_key)
-    {
-        $parts = explode('.', trim($dotted_key, '.'));
-        
-        $location = $this->{array_shift($parts)}; // prime the pump with the first location
-        
-        foreach ($parts as $k) {
-            $location = $location->{$k};
+        if ($this->regulator->isArray()) {
+            throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
         }
-        
-        return $location;
+        // TODO
     }
-    
+
+    public function get($index)
+    {
+        return $this->offsetGet($index);
+    }
+
+    public function offsetUnset($index)
+    {
+        parent::offsetUnset($index); // TODO: Change the autogenerated stub
+    }
+
+    public function offsetExists($index)
+    {
+        parent::offsetExists($index); // TODO: Change the autogenerated stub
+    }
+
     /**
-     * TODO: make final?
-     *
+     * The not-so-obvious role of this function is to trigger the dynamic deepening of the object structure.
      * @param mixed $index
-     *
      * @return mixed
      *
-     * @throws InvalidLocationException
+     * @throws InvalidPropertyException
      */
     final public function offsetGet($index)
     {
-        // TODO: Verify location
-        return parent::offsetGet($index);
+        // Already has property
+        // this might get weird for "dual" types, e.g. we set it to a string, then try to use it as an object.
+        //if (array_key_exists($index, $this)) {
+        if (parent::offsetExists($index)) {
+            return parent::offsetGet($index);
+        }
 
+        // We only want to deepen the structure if the data type is an object
+        $schema = $this->regulator->getSchema($index);
+
+        $this->deepenStructure($index, $schema);
+        return parent::offsetGet($index);
+    }
+
+    protected function deepenStructure($index, $schema)
+    {
+        $child = $this->getHydratedChildDto($index, $schema);
+        $this->offsetSet($index, $child);
+    }
+
+    protected function getHydratedChildDto($input = null, $schema = []) {
+        // TODO: can we pass a reference to THIS object instead of creating a new instance?
+        $className = get_called_class();
+        return new $className($input, $schema, $this->config);
     }
 
 
     /**
      * Fill the (empty) root object with data
      * @param $value mixed
+     * @throws UnstorableValueException
      */
     public function hydrate($value)
     {
-        // ???
-        // $valueType = $this->jsonSchema->detectValueType($value); // object | array | scalar
-        // if $this->jsonSchema->canStoreValueType($valueType);
-        //      $value = $this->jsonSchema->getStoreableValue($value); // TypeConversion
-        //      $this->{'hydrate'.$valueType}($value);
-        // else behavior for hydrate
+        if (empty($this->regulator->getType())) {
+            return $this->forceHydrate($value);
+        }
 
-        if ($this->jsonSchema->isObject()) {
-            $this->hydrateObject($value);
+        if ($type = $this->regulator->getStorableTypeByValue($value)) {
+
+             $value = $this->converter->{'to' . $type}($value); // perform TypeConversion
+
+             if ('object' === $type) {
+                 $this->hydrateObject($value);
+             }
+             elseif ('array' === $type) {
+                 $this->hydrateArray($value);
+             }
+             else {
+                 $this->hydrateScalar($value);
+             }
         }
-        elseif($this->jsonSchema->isArray()) {
-            $this->hydrateArray($value);
-        }
-        else {
-            $this->hydrateScalar($value);
-        }
+
+         throw new UnstorableValueException('Value type not allowed by current schema.');
     }
 
     protected function hydrateObject($value)
     {
+        // TODO? these may require "post" validation
+//        if (!$this->regulator->isValidObject($value)) {
+//            $this->config->doInvalidValue();
+//        }
+
+        parent::exchangeArray([]);
+
         foreach ($value as $k => $v) {
-            // TODO: is full? Behavior if full?
             $this->offsetSet($k, $v);
         }
     }
 
     protected function hydrateArray($value)
     {
-        // append
+        // TODO? these may require "post" validation
+//        if (!$this->regulator->isValidArray($value)) {
+//
+//        }
+        // clear the array,
+        parent::exchangeArray([]);
+        // append to it
         foreach ($value as $v) {
+            // TODO: $v is valid?
             // TODO: is full?  Behavior if full (shift or ignore?)
             $this->offsetSet(null, $v);
         }
     }
 
+    /**
+     * Scalar values are stored in the zeroth place of the ArrayObject
+     * @param $value
+     */
     protected function hydrateScalar($value)
     {
-        // TODO: validate (e.g. minimum/maximum value)
-        $this->scalarStorage = $value;
+        $this->regulator->checkValidScalar($value);
+
+        parent::offsetSet(0, $value);
     }
 
-
-    protected function getPrimaryType()
+    protected function forceHydrate($value)
     {
-        return (is_array($this->type)) ? $this->type[0] : $this->type;
+        $value = (is_scalar($value) || is_null($value)) ? [$value] : $value;
+        parent::exchangeArray($value);
+        return;
     }
 
-    /**
-     * Convert the specified arrayObj to a stdClass object.  Ultimately, this is a decorator around the toJson() method.
-     * Note that empty arrays do not get represented properly -- the json_decode(json_encode()) trick returns an empty
-     * array.
-     * @param Dto $arrayObj
-     *
-     * @return object stdClass
-     */
-    public function toObject(Dto $arrayObj = null)
+    public function toObject()
     {
-        $result = $this->toJson(false, $arrayObj);
 
-        // Handle case where empty arrays are not converted to objects
-        if ($result === '[]') {
-            $result = new \stdClass();
-        }
-        else {
-            $result = json_decode($this->toJson(false, $arrayObj));
-        }
-
-        return $result;
     }
     
     /**
      * Convert the specified arrayObj to JSON.  Ultimately, this is a decorator around the toArray() method.
      * TODO: consider overriding the serialize() method
      * @param bool $pretty
-     * @param Dto $arrayObj
      *
      * @return string
      */
-    public function toJson($pretty = false, Dto $arrayObj = null)
+    public function toJson($pretty = false)
     {
-        return ($pretty) ? json_encode($this->toArray($arrayObj),
-            JSON_PRETTY_PRINT) : json_encode($this->toArray($arrayObj));
+        // JSON can represent scalars!
+        // json_encode($this->toArray($arrayObj), JSON_PRETTY_PRINT);
     }
     
-    /**
-     * The input allows the injection of a foreign Dto $arrayObj for recursive resolving of children DTOs.
-     *
-     * @param Dto|null $arrayObj
-     *
-     * @return array
-     */
-    public function toArray(Dto $arrayObj = null)
+
+    public function toArray()
     {
-        $arrayObj = ($arrayObj) ? $arrayObj : $this;
-        $output = [];
-        foreach ($arrayObj as $k => $v) {
-            if ($v instanceof self) {
-                $output[$k] = $this->toArray($v);
-            } else {
-                $output[$k] = $v;
-            }
+        if ($this->regulator->isScalar()) {
+            throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
         }
-        
-        return $output;
     }
 
     /**
-     *
+     * Scalar values are stored in the zeroth place of the ArrayObject
      * @return mixed
      * @throws \Exception
      */
     public function toScalar()
     {
-        if ($this->jsonSchema->isScalar()) {
-            throw new \Exception('This DTO stores aggregate data and cannot be represented as a scalar value.');
+        if ($this->regulator->isScalar()) {
+            throw new InvalidDataTypeException('This DTO stores aggregate data and cannot be represented as a scalar value.');
         }
 
-        return $this->scalarStorage;
+        return parent::offsetGet(0);
     }
     
 

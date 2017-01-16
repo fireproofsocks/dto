@@ -18,9 +18,19 @@ class TypeDetectorSpec extends ObjectBehavior
         $this->isObject(new \stdClass())->shouldReturn(true);
     }
 
-    function it_says_an_array_is_not_an_object()
+    function it_says_an_empty_array_is_an_object()
     {
-        $this->isObject([])->shouldReturn(false);
+        $this->isObject([])->shouldReturn(true);
+    }
+
+    function it_says_a_simple_array_is_not_an_object()
+    {
+        $this->isObject(['three', 'blind', 'mice'])->shouldReturn(false);
+    }
+
+    function it_says_an_associative_array_is_an_object()
+    {
+        $this->isObject(['a'=>'apple','b'=>'boy'])->shouldReturn(true);
     }
 
     function it_says_a_string_is_not_an_object()

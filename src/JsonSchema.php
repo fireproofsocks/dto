@@ -2,98 +2,65 @@
 
 namespace Dto;
 
+use Dto\Exceptions\InvalidPropertyException;
 use Dto\Exceptions\JsonSchemaFileNotFoundException;
+use Dto\Exceptions\InvalidScalarValueException;
+use Dto\Validators\NumberValidator;
+use Dto\Validators\StringValidator;
+use Dto\Validators\ValidatorInteface;
 
 /**
  * Class Schema
  *
  * PHP representation of the options available to the JSON-Schema spec.
  *
- * See
- * http://json-schema.org/latest/json-schema-core.html
- * http://json-schema.org/latest/json-schema-validation.html
+ * @link http://json-schema.org/latest/json-schema-core.html
+ * @link http://json-schema.org/latest/json-schema-validation.html
  * @package Dto
  */
-class JsonSchema implements JsonSchemaInterface
+class JsonSchema implements RegulatorInterface
 {
-//    /**
-//     * I.e. the "$schema" keyword, an "absolute" URI
-//     *
-//     * @var string
-//     */
-//    protected $schema = 'http://json-schema.org/draft-04/schema#';
-//
-//    /**
-//     * URI for the schema
-//     * @var string
-//     */
-//    protected $id = '';
-//
-//    protected $title = '';
-//
-//    /**
-//     * Human readable description of your schema
-//     * @var string
-//     */
-//    protected $description = '';
-//
-//    /**
-//     * Defines one type for the data (e.g. "object"), or a list of allowable types (e.g. ["array", "null"])
-//     * string | array
-//     * @var string
-//     */
-//    protected $type = '';
-//
-//    /**
-//     * Only relevant when type=object
-//     * @var array
-//     */
-//    protected $properties = [];
-//
-//    /**
-//     * List of required properties
-//     * @var array
-//     */
-//    protected $required = [];
-//
-//    /**
-//     * Only relevant when type=array, this defines what each array element looks like
-//     * @var array
-//     */
-//    protected $items = [];
-//
-//    /**
-//     * In-line schema definitions
-//     * @var array
-//     */
-//    protected $definitions = [];
-//
-//
-//    protected $patternProperties = [];
-//
-//    /**
-//     * Can additional ad-hoc properties be added?
-//     * @var bool
-//     */
-//    protected $additionalProperties = false;
-//
 
     /**
      * @var array
      */
-    protected $data;
+    protected $schema;
 
+    /**
+     * @var array
+     */
+    protected $default_schema;
 
+    /**
+     * @var TypeDetectorInterface
+     */
     protected $detector;
 
+    /**
+     * @var TypeConverterInterface
+     */
     protected $converter;
 
+    /**
+     * @var FormatterInterface
+     */
     protected $formatter;
+
+    /**
+     * @var ValidatorInteface
+     */
+    protected $stringValidator;
+
+    /**
+     * @var ValidatorInteface
+     */
+    protected $numberValidator;
 
     /**
      *
      * @var array
      */
+    // TODO: move this to its own class
     protected $schema_keywords = [
         // http://json-schema.org/latest/json-schema-core.html
         '$schema' => 'http://json-schema.org/draft-04/schema#',
@@ -182,7 +149,12 @@ class JsonSchema implements JsonSchemaInterface
 
     public function __construct($input = null)
     {
-        $this->constructSchema($input);
+        $this->schema = $this->constructSchema($input);
+        $this->detector = new TypeDetector();
+        $this->converter = new TypeConverter();
+
+        $this->stringValidator = new StringValidator($this);
+        $this->numberValidator = new NumberValidator($this);
     }
 
 
@@ -192,14 +164,19 @@ class JsonSchema implements JsonSchemaInterface
      *  1. PHP Array is injected
      *  2. Name of JSON schema file is injected
      *
-     * @param $input
+     * @param $input mixed
+     * @return array
      */
     protected function constructSchema($input)
     {
-        if (!is_array($input)) {
+        if (is_null($input)) {
+            $input = include 'default_root_schema.php';
+        }
+        elseif (!is_array($input)) {
             $input = $this->getJsonFileContents($input);
         }
-        $this->constructSchemaFromArray($input);
+
+        return $input;
     }
 
     protected function getJsonFileContents($filename_or_url) {
@@ -213,136 +190,180 @@ class JsonSchema implements JsonSchemaInterface
         return $array;
     }
 
-    protected function constructSchemaFromArray(array $input)
+    public function getSchemaArray($propertyName = null)
     {
-        // TODO: filter/validate the schema
-        $this->data = $input;
+        // Root level schema?
+        if (is_null($propertyName)) {
+            return $this->schema;
+        }
+
+        if ($this->propertyExists($propertyName)) {
+            return $this->schema['properties'][$propertyName];
+        }
+
+        $additionalProperties = $this->getAdditionalProperties();
+
+        // If "additionalProperties" is true, validation always succeeds.
+        if ($additionalProperties === true) {
+            return [];
+        }
+
+        $schema = $this->getSchemaByPatternProperties($propertyName);
+
+        // Use the schema defined by patternProperties (which may be an empty array)
+        if (is_array($schema)) {
+            return $schema;
+        }
+
+        // Fall back to additionalProperties if it defines a schema (which may be an empty array)
+        if (is_array($additionalProperties)) {
+            return $additionalProperties;
+        }
+
+        throw new InvalidPropertyException('The property "'.$propertyName.'" is not allowed by the current schema.');
     }
 
-    public function toArray()
+    protected function propertyExists($name)
     {
-        return $this->data;
+        return isset($this->schema['properties'][$name]);
     }
 
-    public function toJson()
+    protected function getSchemaByPatternProperties($name)
     {
-        return json_encode($this->toArray(), JSON_PRETTY_PRINT);
-    }
-
-
-    public function get($key)
-    {
-        return $this->data[$key];
-    }
-
-    public function __isset($key)
-    {
-        return isset($this->data[$key]);
-    }
-
-    public function __get($key)
-    {
-        return $this->data[$key];
-    }
-
-    public function getTypeAsArray()
-    {
-
-    }
-
-    /**
-     * Either the property is explicitly defined in the $properties array, or $additionalProperties is set to true.
-     * @param $index
-     * @return boolean
-     */
-    public function isPropertySettable($index)
-    {
-        return ($this->additionalProperties || array_key_exists($index, $this->properties));
-    }
-
-    public function isAppendable()
-    {
-
-    }
-
-    public function canHoldScalar()
-    {
-
-    }
-
-    /**
-     * @param $value mixed
-     * @return bool
-     */
-    protected function isValueOneOfAllowedTypes($value)
-    {
-        // TODO: enum could be up here?
-
-        // Type is usually a single value, but some may allow multiple types, esp. nullable, e.g. ["string", "null"]
-        $types = (is_array($this->type)) ? $this->type : [$this->type];
-
-        foreach ($types as $t) {
-            switch ($t) {
-                case 'object':
-                    if ($this->detector->isObject($value)) {
-                        return true;
-                    }
-                    break;
-                case 'array':
-                    if ($this->detector->isArray($value)) {
-                        return true;
-                    }
-                    break;
-                case 'string':
-                    if ($this->detector->isString($value)) {
-                        return true;
-                    }
-                    break;
-                case 'integer':
-                    if ($this->detector->isInteger($value)) {
-                        return true;
-                    }
-                    break;
-                case 'number':
-                    if ($this->detector->isNumber($value)) {
-                        return true;
-                    }
-                    break;
-                case 'boolean':
-                    if ($this->detector->isBoolean($value)) {
-                        return true;
-                    }
-                    break;
-                case 'null':
-                    if ($this->detector->isNull($value)) {
-                        return true;
-                    }
-                    break;
+        foreach ($this->getPatternProperties() as $regex => $schema) {
+            if (preg_match('/'.$regex.'/', $name)) {
+                return $schema;
             }
         }
 
         return false;
     }
 
-    protected function isAggregateType()
-    {
-        $type = $this->getPrimaryType();
-        return ($type === 'object' || $type === 'array');
-    }
-
     public function isObject()
     {
-
+        return in_array('object', $this->getTypeAsArray());
     }
 
     public function isArray()
     {
-
+        return in_array('array', $this->getTypeAsArray());
     }
 
     public function isScalar()
     {
-
+        $types = $this->getTypeAsArray();
+        foreach ($types as $t) {
+            if (in_array($t, ['string', 'integer', 'number', 'boolean', 'null'])) {
+                return true;
+            }
+        }
+        return false;
     }
 
+    public function isValidObject($object)
+    {
+        // TODO: Implement isValidObject() method.
+    }
+
+    public function isValidArray($array)
+    {
+        // TODO: Implement isValidArray() method.
+    }
+
+    public function checkValidScalar($scalar)
+    {
+
+        if (is_string($scalar)) {
+            return $this->stringValidator->validate($scalar);
+        }
+        elseif (is_int($scalar) || is_float($scalar)) {
+            return $this->numberValidator->validate($scalar);
+        }
+
+        // TODO: check Formatter
+
+        return $scalar;
+    }
+
+
+    public function getMaxLength()
+    {
+        // TODO: The value of this keyword MUST be a non-negative integer.
+        return (isset($this->schema['maxLength'])) ? $this->schema['maxLength'] : false;
+    }
+
+    public function getMinLength()
+    {
+        // TODO: The value of this keyword MUST be an integer. This integer MUST be greater than, or equal to, 0.
+        return (isset($this->schema['minLength'])) ? $this->schema['minLength'] : false;
+    }
+
+    public function getPattern()
+    {
+        return (isset($this->schema['pattern'])) ? $this->schema['pattern'] : false;
+    }
+
+    public function getMultipleOf()
+    {
+        // TODO: The value of "multipleOf" MUST be a number, strictly greater than 0.
+        return (isset($this->schema['multipleOf'])) ? $this->schema['multipleOf'] : false;
+    }
+
+    public function getMaximum()
+    {
+        return (isset($this->schema['maximum'])) ? $this->schema['maximum'] : false;
+    }
+
+    public function getExclusiveMaximum()
+    {
+        return (isset($this->schema['exclusiveMaximum'])) ? $this->schema['exclusiveMaximum'] : false;
+    }
+
+    public function getMinimum()
+    {
+        return (isset($this->schema['minimum'])) ? $this->schema['minimum'] : false;
+    }
+
+    public function getExclusiveMinimum()
+    {
+        return (isset($this->schema['exclusiveMinimum'])) ? $this->schema['exclusiveMinimum'] : false;
+    }
+
+    public function getStorableTypeByValue($value)
+    {
+        $types = $this->getTypeAsArray();
+        foreach ($types as $t) {
+            if ($this->detector->{'is' . $t}($value)) {
+                return $t;
+            }
+        }
+
+        return false;
+    }
+
+    protected function getAdditionalProperties()
+    {
+        return (array_key_exists('additionalProperties', $this->schema)) ? $this->schema['additionalProperties'] : [];
+    }
+
+    protected function getPatternProperties()
+    {
+        return (array_key_exists('patternProperties', $this->schema)) ? $this->schema['patternProperties'] : [];
+    }
+
+    protected function getTypeAsArray()
+    {
+        $type = $this->getType();
+
+        return (is_array($type)) ? $type : [$type];
+    }
+
+    /**
+     * No type infers no constraints!
+     * @return mixed|string
+     */
+    public function getType()
+    {
+        return (isset($this->schema['type'])) ? $this->schema['type'] : '';
+    }
 }

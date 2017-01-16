@@ -6,29 +6,12 @@ class TypeDetector implements TypeDetectorInterface
 {
     public function isObject($value)
     {
-        // TODO: allow associative arrays
-        return (is_object($value));
+        return (is_object($value) || $this->isAssociativeArray($value));
     }
 
-    /**
-     * Is True Array?
-     *
-     * Helps us work around one of PHP's warts: there are no true arrays in PHP.
-     * @link http://stackoverflow.com/questions/173400/how-to-check-if-php-array-is-associative-or-sequential
-     * @param $value mixed
-     * @return bool
-     */
     public function isArray($value)
     {
-        if (!is_array($value)) {
-            return false;
-        }
-
-        if (empty($value)) {
-            return true;
-        }
-
-        return array_keys($value) === range(0, count($value) - 1);
+        return $this->isTrueArray($value);
     }
 
     public function isString($value)
@@ -55,5 +38,39 @@ class TypeDetector implements TypeDetectorInterface
     public function isNull($value)
     {
         return ($value === null);
+    }
+
+    /**
+     * Is True Array?
+     *
+     * Helps us work around one of PHP's warts: there are no true arrays in PHP.
+     * @link http://stackoverflow.com/questions/173400/how-to-check-if-php-array-is-associative-or-sequential
+     * @param $value mixed
+     * @return bool
+     */
+    protected function isTrueArray($value)
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+
+        if (empty($value)) {
+            return true;
+        }
+
+        return array_keys($value) === range(0, count($value) - 1);
+    }
+
+    protected function isAssociativeArray($value)
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+
+        if (empty($value)) {
+            return true;
+        }
+
+        return array_keys($value) !== range(0, count($value) - 1);
     }
 }
