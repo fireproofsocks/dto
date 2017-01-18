@@ -136,7 +136,7 @@ class Dto extends \ArrayObject implements DtoInterface
         // TODO: convert value
         // TODO: validate value
         // if is object or array?  Loop over keys/values???
-        parent::offsetSet($index, $this->getHydratedChil dDto($newval, $schema));
+        parent::offsetSet($index, $this->getHydratedChildDto($newval, $schema));
 
     }
 
