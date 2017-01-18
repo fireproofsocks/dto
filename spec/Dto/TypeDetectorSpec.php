@@ -12,6 +12,22 @@ class TypeDetectorSpec extends ObjectBehavior
         $this->shouldHaveType(TypeDetector::class);
     }
 
+    // -------------------------- getType ----------------------------
+    function it_detects_an_object_as_an_object()
+    {
+        $this->getType(new \stdClass())->shouldReturn('object');
+    }
+
+    function it_detects_an_associative_array_as_an_object()
+    {
+        $this->getType(['a' => 'b'])->shouldReturn('object');
+    }
+
+    function it_detects_an_empty_array_as_an_object()
+    {
+        $this->getType([])->shouldReturn('object');
+    }
+
     //-------------------------- isObject ----------------------------
     function it_says_an_object_is_an_object()
     {

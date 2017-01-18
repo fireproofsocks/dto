@@ -22,49 +22,57 @@ class JsonSchemaSpec extends ObjectBehavior
     // --------------------- __construct() / getSchema() -------------------------
     function it_should_return_a_default_schema_for_getSchema()
     {
-        $this->getSchemaArray()->shouldReturn($this->getDefaultSchema());
+        $this->getPropertySchemaAsArray()->shouldReturn($this->getDefaultSchema());
     }
 
     function it_should_ignore_the_default_schema_what_provided_with_inputs()
     {
         $this->beConstructedWith(['type'=>'array']);
-        $this->getSchemaArray()->shouldReturn(['type'=>'array']);
+        $this->getPropertySchemaAsArray()->shouldReturn(['type'=>'array']);
     }
 
     function it_should_accept_string_filepaths_for_json_schema()
     {
         $this->beConstructedWith(__DIR__ . '/example-integer-spec.json');
-        $this->getSchemaArray()->shouldReturn(['type'=>'integer']);
+        $this->getPropertySchemaAsArray()->shouldReturn(['type'=>'integer']);
     }
 
     function it_should_return_the_property_schema_for_explicitly_defined_properties()
     {
         $this->beConstructedWith(['properties' => ['foo'=> ['description' => 'yogurt']]]);
-        $this->getSchemaArray('foo')->shouldReturn(['description' => 'yogurt']);
+        $this->getPropertySchemaAsArray('foo')->shouldReturn(['description' => 'yogurt']);
     }
 
     function it_should_return_an_empty_schema_when_additionalProperties_is_true()
     {
         $this->beConstructedWith(['additionalProperties' => true]);
-        $this->getSchemaArray('foo')->shouldReturn([]);
+        $this->getPropertySchemaAsArray('foo')->shouldReturn([]);
     }
 
     function it_should_return_the_schema_when_additionalProperties_defines_a_schema_and_no_other_properties_are_matched()
     {
         $this->beConstructedWith(['additionalProperties' => ['description' => 'ostrich']]);
-        $this->getSchemaArray('foo')->shouldReturn(['description' => 'ostrich']);
+        $this->getPropertySchemaAsArray('foo')->shouldReturn(['description' => 'ostrich']);
     }
 
     function it_should_return_the_schema_matched_by_patternProperties_when_no_explicit_or_additionalProperties_are_defined()
     {
         $this->beConstructedWith(['patternProperties' => ['^S' => ['description' => 'starts with S']]]);
-        $this->getSchemaArray('Something')->shouldReturn(['description' => 'starts with S']);
+        $this->getPropertySchemaAsArray('Something')->shouldReturn(['description' => 'starts with S']);
     }
     function it_should_throw_exception_when_getting_schema_for_property_not_covered_explicity_by_properties_or_additionalProperties()
     {
         $this->beConstructedWith(['additionalProperties' => false]);
-        $this->shouldThrow(InvalidPropertyException::class)->duringGetSchemaArray('does-not-exist');
+        $this->shouldThrow(InvalidPropertyException::class)->duringGetPropertySchemaAsArray('does-not-exist');
     }
+
+    // ------------------------ getItemSchemaAsArray ---------------------
+    function it_returns_the_item_schema_when_only_one_item_schema_exists()
+    {
+        $this->beConstructedWith(['items' => ['type' => 'string', 'description' => 'test']]);
+        $this->getItemSchemaAsArray(0)->shouldReturn(['type' => 'string', 'description' => 'test']);
+    }
+
 
 
     // -------------------- isObject ---------------------------

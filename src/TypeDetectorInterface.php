@@ -4,6 +4,8 @@ namespace Dto;
 
 interface TypeDetectorInterface
 {
+    public function getType($value);
+
     public function isObject($value);
 
     public function isArray($value);

@@ -14,7 +14,7 @@ interface RegulatorInterface
      * @param $propertyName string
      * @return array
      */
-    public function getSchemaArray($propertyName = null);
+    public function getPropertySchemaAsArray($propertyName = null);
 
     /**
      * Get the data type possible for the given property.

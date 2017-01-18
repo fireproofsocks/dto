@@ -2,7 +2,7 @@
 
 namespace Dto\Validators;
 
-interface ValidatorInteface
+interface ValidatorInterface
 {
     public function validate($value);
 }

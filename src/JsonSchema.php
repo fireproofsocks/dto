@@ -2,12 +2,12 @@
 
 namespace Dto;
 
+use Dto\Exceptions\InvalidItemException;
 use Dto\Exceptions\InvalidPropertyException;
 use Dto\Exceptions\JsonSchemaFileNotFoundException;
-use Dto\Exceptions\InvalidScalarValueException;
 use Dto\Validators\NumberValidator;
 use Dto\Validators\StringValidator;
-use Dto\Validators\ValidatorInteface;
+use Dto\Validators\ValidatorInterface;
 
 /**
  * Class Schema
@@ -47,12 +47,12 @@ class JsonSchema implements RegulatorInterface
     protected $formatter;
 
     /**
-     * @var ValidatorInteface
+     * @var ValidatorInterface
      */
     protected $stringValidator;
 
     /**
-     * @var ValidatorInteface
+     * @var ValidatorInterface
      */
     protected $numberValidator;
 
@@ -190,7 +190,7 @@ class JsonSchema implements RegulatorInterface
         return $array;
     }
 
-    public function getSchemaArray($propertyName = null)
+    public function getPropertySchemaAsArray($propertyName = null)
     {
         // Root level schema?
         if (is_null($propertyName)) {
@@ -221,6 +221,70 @@ class JsonSchema implements RegulatorInterface
         }
 
         throw new InvalidPropertyException('The property "'.$propertyName.'" is not allowed by the current schema.');
+    }
+
+    /**
+     * For defining array schemas
+     * If "items" is an array of schemas, it defines a "tuple" where the first item in the array must validate against
+     * the first schema in "items", the 2nd item in the array against the 2nd schema, etc.
+     * If the length of the array being stored is longer than the array of items, then we fall back to additionalItems.
+     * When additionalItems is a schema, all additional values being stored are validated against that schema.
+     *
+     * @param null $index
+     * @return array
+     * @throws InvalidItemException
+     */
+    public function getItemSchemaAsArray($index = null)
+    {
+        $items = $this->getItems();
+
+        if (empty($items)) {
+            return $items; // empty schema
+        }
+
+        // Is this a true array of schemas? i.e. is this a tuple?
+        if ($this->detector->isArray($items)) {
+            if (isset($items[$index])) {
+                return $items[$index];
+            }
+            // We're past the length of the defined
+            $additionalItems = $this->getAdditionalItems();
+            if ($additionalItems === false) {
+                throw new InvalidItemException('The '.$index.'th item is not allowed by the current schema.');
+            }
+            // Section 5.9 seems like a smelly part of the schema:
+            // "if the value of "additionalItems" is boolean value true or an object, validation of the instance always succeeds;"
+            // Instead, what would make more sense(?) for cases where additionalItems contained a schema, would be that
+            // all additional items have to be validated against that schema.
+            elseif ($additionalItems === true) {
+                return []; // empty schema (no restrictions)
+            }
+            else {
+                return $additionalItems; // the schema
+            }
+        }
+        else {
+            return $items;
+        }
+
+    }
+
+    public function isTuple()
+    {
+
+    }
+
+    public function getAdditionalItems()
+    {
+        // If this keyword is absent, it may be considered present with an empty schema.
+        return isset($this->schema['additionalItems']) ? $this->schema['additionalItems'] : [];
+    }
+
+
+    public function getItems()
+    {
+        // The value of "items" MUST be either a schema or array of schemas.
+        return (array) (isset($this->schema['items'])) ? $this->schema['items'] : [];
     }
 
     protected function propertyExists($name)
@@ -365,5 +429,10 @@ class JsonSchema implements RegulatorInterface
     public function getType()
     {
         return (isset($this->schema['type'])) ? $this->schema['type'] : '';
+    }
+
+    public function isSingleType()
+    {
+        return (is_array($this->getType())) ? false : true;
     }
 }

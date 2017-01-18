@@ -3,7 +3,7 @@ namespace Dto\Validators;
 
 use Dto\Exceptions\InvalidScalarValueException;
 
-class StringValidator extends AbstractValidator implements ValidatorInteface
+class StringValidator extends AbstractValidator implements ValidatorInterface
 {
     public function validate($string) {
     // A string instance is valid against this keyword if its length is less than, or equal to, the value of this keyword.

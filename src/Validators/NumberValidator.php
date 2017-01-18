@@ -4,7 +4,7 @@ namespace Dto\Validators;
 
 use Dto\Exceptions\InvalidScalarValueException;
 
-class NumberValidator extends AbstractValidator implements ValidatorInteface
+class NumberValidator extends AbstractValidator implements ValidatorInterface
 {
     /**
      * Check multipleOf, maximum, exclusiveMaximum, minimum, exclusiveMinimum
