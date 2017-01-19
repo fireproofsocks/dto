@@ -2,6 +2,7 @@
 
 namespace spec\Dto;
 
+use Dto\Exceptions\InvalidItemException;
 use Dto\Exceptions\InvalidPropertyException;
 use Dto\Exceptions\InvalidScalarValueException;
 use Dto\JsonSchema;
@@ -71,6 +72,39 @@ class JsonSchemaSpec extends ObjectBehavior
     {
         $this->beConstructedWith(['items' => ['type' => 'string', 'description' => 'test']]);
         $this->getItemSchemaAsArray(0)->shouldReturn(['type' => 'string', 'description' => 'test']);
+    }
+
+    function it_returns_the_second_item_schema_when_only_multiple_schemas_exists_and_we_ask_for_the_second()
+    {
+        $this->beConstructedWith(['items' => [
+            ['type' => 'string', 'description' => 'test'],
+            ['type' => 'integer', 'description' => 'integer test']
+        ]]);
+        $this->getItemSchemaAsArray(1)->shouldReturn(['type' => 'integer', 'description' => 'integer test']);
+    }
+
+    function it_returns_the_schema_from_additionalItems_when_we_ask_for_an_index_that_is_larger_than_the_items_array()
+    {
+        $this->beConstructedWith(['items' =>
+            [
+                ['type' => 'string', 'description' => 'test'],
+                ['type' => 'integer', 'description' => 'integer test']
+            ],
+            'additionalItems' => ['type' => 'boolean', 'description' => 'boolean test']
+        ]);
+        $this->getItemSchemaAsArray(2)->shouldReturn(['type' => 'boolean', 'description' => 'boolean test']);
+    }
+
+    function it_throws_an_exception_additionalItems_is_false_and_we_ask_for_an_index_that_is_larger_than_the_items_array()
+    {
+        $this->beConstructedWith(['items' =>
+            [
+                ['type' => 'string', 'description' => 'test'],
+                ['type' => 'integer', 'description' => 'integer test']
+            ],
+            'additionalItems' => false
+        ]);
+        $this->shouldThrow(InvalidItemException::class)->duringGetItemSchemaAsArray(2);
     }
 
 

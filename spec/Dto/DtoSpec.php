@@ -91,12 +91,47 @@ class DtoSpec extends ObjectBehavior
         $this->toArray()->shouldBeLike(['one', 'two', 'three']);
     }
 
-
-
     function it_can_store_an_array_of_arrays()
     {
         $this->beConstructedWith([['a1','a2'],['b1','b2'],['c1','c2']]);
         $this->toArray()->shouldBeLike([['a1','a2'],['b1','b2'],['c1','c2']]);
+    }
+
+    // ----------------------- store tuples ---------------------------
+    // getItemSchemaAsArray
+    function it_can_store_a_tuple_and_perform_typecasting_for_each_defined_type()
+    {
+        $this->beConstructedWith(['123', 456, 0], new JsonSchema([
+            'type' => 'array',
+            'items' => [
+                ['type' => 'integer'],
+                ['type' => 'string'],
+                ['type' => 'boolean'],
+            ]
+        ]));
+        $this->toArray()->shouldReturn([123, '456', false]);
+    }
+
+    function it_can_store_an_array_of_tuples_and_perform_typecasting_for_each_defined_type()
+    {
+        $this->beConstructedWith([
+            ['123', 456, 0],
+            ['456', 789, 1]
+        ], new JsonSchema([
+            'type' => 'array',
+            'items' => [
+                'type' => 'array',
+                'items' => [
+                    ['type' => 'integer'],
+                    ['type' => 'string'],
+                    ['type' => 'boolean'],
+                ]
+            ]
+        ]));
+        $this->toArray()->shouldReturn([
+            [123, '456', false],
+            [456, '789', true],
+        ]);
     }
 
 
@@ -169,20 +204,102 @@ class DtoSpec extends ObjectBehavior
         $this->toArray()->shouldBeLike([['a' => 'apple'],['a' => 'apricot'],['a' => 'amber']]);
     }
 
-//    function it_can_be_represented_as_an_array()
-//    {
-//        $this->toArray()->shouldReturn([]);
-//    }
-//
-//    function it_can_be_represented_as_json()
-//    {
-//        $this->toJson()->shouldReturn('[]');
-//    }
-//
-//    function it_can_be_represented_as_an_object()
-//    {
-//        // For some reason, shouldReturn and others do not pass the test.
-//        $this->toObject()->shouldBeLike(new \stdClass());
-//    }
+    function it_can_be_represented_as_an_array_if_it_is_storing_an_array()
+    {
+        $this->beConstructedWith([]);
+        $this->toArray()->shouldReturn([]);
+    }
 
+    function it_can_be_represented_as_json()
+    {
+        $this->toJson()->shouldReturn("null");
+    }
+
+    function it_can_be_represented_as_an_object_if_it_is_storing_an_array()
+    {
+        $this->beConstructedWith([]);
+        $this->toObject()->shouldBeLike(new \stdClass());
+    }
+
+    // --------------------------- checkValidObject----------------------
+    // See ObjectValidatorSpec
+    // --------------------------- checkValidArray----------------------
+    // See ArrayValidatorSpec
+
+    // TODO: --------------------------- enum -------------------------
+    // TODO: --------------------------- required ---------------------
+    // TODO: --------------------------- anyOf ----------------------------
+    // TODO: --------------------------- oneOf ----------------------------
+    // see https://spacetelescope.github.io/understanding-json-schema/reference/combining.html#oneof
+    //function it_can_store_a_mixed_array_where_each_item_matches_oneOf_a_list_of_possible_schemas()
+    function it_can_a_value_that_matches_oneOf_a_list_of_possible_schemas()
+    {
+        $this->beConstructedWith(10, new JsonSchema([
+            'oneOf' => [
+                ['type' => 'number', 'multipleOf' => 5],
+                ['type' => 'number', 'multipleOf' => 3],
+            ]
+        ]));
+        $this->toScalar()->shouldReturn(10);
+    }
+
+    function it_can_a_value_that_matches_a_different_schema_from_a_list_of_possible_schemas()
+    {
+        $this->beConstructedWith(9, new JsonSchema([
+            'oneOf' => [
+                ['type' => 'number', 'multipleOf' => 5],
+                ['type' => 'number', 'multipleOf' => 3],
+            ]
+        ]));
+        $this->toScalar()->shouldReturn(9);
+    }
+
+    function it_rejects_values_that_do_not_match_oneOf_a_list_of_possible_schemas()
+    {
+        $this->beConstructedWith(2, new JsonSchema([
+            'oneOf' => [
+                ['type' => 'number', 'multipleOf' => 5],
+                ['type' => 'number', 'multipleOf' => 3],
+            ]
+        ]));
+        $this->shouldThrow(\InvalidArgumentException::class)->duringHydrate(2);
+    }
+
+
+    // TODO: --------------------------- $ref ----------------------------
+
+
+    // --------------------------- default ----------------------------
+    function it_returns_default_values_when_they_are_defined()
+    {
+        $this->beConstructedWith(null, new JsonSchema(['default' => ['a','b','c']]));
+        $this->toArray()->shouldBeLike(['a','b','c']);
+    }
+
+    function it_merges_default_values_with_constructed_values_for_array_defaults()
+    {
+        $this->beConstructedWith(['a' => 'awesome'], new JsonSchema(['default' => ['a' => 'apple','b' => 'boy','c' => 'cat']]));
+        $this->toArray()->shouldBeLike(['a' => 'awesome','b' => 'boy','c' => 'cat']);
+    }
+
+    function it_defers_to_the_input_value_for_scalar_defaults()
+    {
+        $this->beConstructedWith('hot', new JsonSchema(['default' => 'rats']));
+        $this->toScalar()->shouldReturn('hot');
+    }
+
+    function it_should_throw_an_exception_when_the_default_is_an_array_hydrated_with_a_scalar()
+    {
+        $this->beConstructedWith(null, new JsonSchema(['default' => ['hot', 'rats']]));
+        $this->shouldThrow(\InvalidArgumentException::class)->duringHydrate('hot');
+    }
+
+    function it_should_throw_an_exception_when_the_default_is_a_scalar_hydrated_with_an_array()
+    {
+        $this->beConstructedWith(null, new JsonSchema(['default' => 'hot']));
+        $this->shouldThrow(\InvalidArgumentException::class)->duringHydrate(['hot', 'rats']);
+    }
+
+    // TODO: --------------------------- set ----------------------------
+    // TODO: --------------------------- offsetSet ----------------------------
 }

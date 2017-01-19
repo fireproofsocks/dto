@@ -5,7 +5,9 @@ namespace Dto;
 use Dto\Exceptions\InvalidItemException;
 use Dto\Exceptions\InvalidPropertyException;
 use Dto\Exceptions\JsonSchemaFileNotFoundException;
+use Dto\Validators\ArrayValidator;
 use Dto\Validators\NumberValidator;
+use Dto\Validators\ObjectValidator;
 use Dto\Validators\StringValidator;
 use Dto\Validators\ValidatorInterface;
 
@@ -57,94 +59,104 @@ class JsonSchema implements RegulatorInterface
     protected $numberValidator;
 
     /**
+     * @var ValidatorInterface
+     */
+    protected $objectValidator;
+
+    /**
+     * @var ValidatorInterface
+     */
+    protected $arrayValidator;
+
+    /**
      *
      * @var array
      */
     // TODO: move this to its own class
-    protected $schema_keywords = [
-        // http://json-schema.org/latest/json-schema-core.html
-        '$schema' => 'http://json-schema.org/draft-04/schema#',
-        'id' => '',
-
-
-        // http://json-schema.org/latest/json-schema-validation.html
-
-        // http://json-schema.org/latest/json-schema-validation.html#rfc.section.5.1
-        'multipleOf' => 1,
-        'maximum' => 0, // !!!
-        'exclusiveMaximum' => true, // !!!
-        'minimum' => 0, // !!!
-        'exclusiveMinimum' => true, // !!!
-        'maxLength' => 0, // !!!
-
-        'minLength' => 0, // if absent, may be considered as being present with integer value 0.
-        'pattern' => '', // !!!
-
-        'additionalItems' => '', // MUST be either a boolean or an object
-        'items' => [],
-
-        'maxItems' => 0, // !!!
-        'minItems' => 0, // !!!
-
-        'uniqueItems' => false,
-
-        'maxProperties' => 0, // !!!
-        'minProperties' => 0,
-
-        'required' => [], // !!! This array MUST have at least one element, must be unique
-
-        'properties' => [],
-
-        'patternProperties' => '',
-
-        'additionalProperties' => '', // !!! MUST be a boolean or a schema.
-
-        'dependencies' => [], // !!!
-        'enum' => [], // !!!
-
-        // http://json-schema.org/latest/json-schema-core.html#rfc.section.4.2
-        'type' => '', // !!! can be an array
-        'allOf' => [], // !!!
-        'anyOf' => [], // !!!
-        'oneOf' => [], // !!!
-        'not' => [], // !!! schema
-
-        // 5.26
-        'definitions' => [],
-
-        // Meta Data Keywords
-        // http://json-schema.org/latest/json-schema-validation.html#rfc.section.6
-        'title' => '',
-        'description' => '',
-        // http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2
-        'default' => [],
-
-        // Semantic Validation with "format"
-        // http://json-schema.org/latest/json-schema-validation.html#rfc.section.7
-        'format' => '', // see $this->formats
-    ];
+//    protected $schema_keywords = [
+//        // http://json-schema.org/latest/json-schema-core.html
+//        '$schema' => 'http://json-schema.org/draft-04/schema#',
+//        'id' => '',
+//
+//
+//        // http://json-schema.org/latest/json-schema-validation.html
+//
+//        // http://json-schema.org/latest/json-schema-validation.html#rfc.section.5.1
+//        'multipleOf' => 1,
+//        'maximum' => 0, // !!!
+//        'exclusiveMaximum' => true, // !!!
+//        'minimum' => 0, // !!!
+//        'exclusiveMinimum' => true, // !!!
+//        'maxLength' => 0, // !!!
+//
+//        'minLength' => 0, // if absent, may be considered as being present with integer value 0.
+//        'pattern' => '', // !!!
+//
+//        'additionalItems' => '', // MUST be either a boolean or an object
+//        'items' => [],
+//
+//        'maxItems' => 0, // !!!
+//        'minItems' => 0, // !!!
+//
+//        'uniqueItems' => false,
+//
+//        'maxProperties' => 0, // !!!
+//        'minProperties' => 0,
+//
+//        'required' => [], // !!! This array MUST have at least one element, must be unique
+//
+//        'properties' => [],
+//
+//        'patternProperties' => '',
+//
+//        'additionalProperties' => '', // !!! MUST be a boolean or a schema.
+//
+//        'dependencies' => [], // !!!
+//        'enum' => [], // !!!
+//
+//        // http://json-schema.org/latest/json-schema-core.html#rfc.section.4.2
+//        'type' => '', // !!! can be an array
+//        'allOf' => [], // !!!
+//        'anyOf' => [], // !!!
+//        'oneOf' => [], // !!!
+//        'not' => [], // !!! schema
+//
+//        // 5.26
+//        'definitions' => [],
+//
+//        // Meta Data Keywords
+//        // http://json-schema.org/latest/json-schema-validation.html#rfc.section.6
+//        'title' => '',
+//        'description' => '',
+//        // http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2
+//        'default' => [],
+//
+//        // Semantic Validation with "format"
+//        // http://json-schema.org/latest/json-schema-validation.html#rfc.section.7
+//        'format' => '', // see $this->formats
+//    ];
 
     // for "type"
-    protected $valid_types = [
-        'null',
-        'boolean',
-        'object',
-        'array',
-        'number',
-        'string',
-        'integer' // integer JSON numbers SHOULD NOT be encoded with a fractional part.
-    ];
-
-    // for "format"
-    protected $valid_formats = [
-        'date-time',
-        'email',
-        'hostname',
-        'ipv4',
-        'ipv6',
-        'uri',
-        'uriref'
-    ];
+//    protected $valid_types = [
+//        'null',
+//        'boolean',
+//        'object',
+//        'array',
+//        'number',
+//        'string',
+//        'integer' // integer JSON numbers SHOULD NOT be encoded with a fractional part.
+//    ];
+//
+//    // for "format"
+//    protected $valid_formats = [
+//        'date-time',
+//        'email',
+//        'hostname',
+//        'ipv4',
+//        'ipv6',
+//        'uri',
+//        'uriref'
+//    ];
 
 
     public function __construct($input = null)
@@ -155,6 +167,8 @@ class JsonSchema implements RegulatorInterface
 
         $this->stringValidator = new StringValidator($this);
         $this->numberValidator = new NumberValidator($this);
+        $this->objectValidator = new ObjectValidator($this);
+        $this->arrayValidator = new ArrayValidator($this);
     }
 
 
@@ -196,6 +210,8 @@ class JsonSchema implements RegulatorInterface
         if (is_null($propertyName)) {
             return $this->schema;
         }
+
+        // TODO: check for $ref
 
         if ($this->propertyExists($propertyName)) {
             return $this->schema['properties'][$propertyName];
@@ -269,11 +285,6 @@ class JsonSchema implements RegulatorInterface
 
     }
 
-    public function isTuple()
-    {
-
-    }
-
     public function getAdditionalItems()
     {
         // If this keyword is absent, it may be considered present with an empty schema.
@@ -284,7 +295,7 @@ class JsonSchema implements RegulatorInterface
     public function getItems()
     {
         // The value of "items" MUST be either a schema or array of schemas.
-        return (array) (isset($this->schema['items'])) ? $this->schema['items'] : [];
+        return (isset($this->schema['items'])) ? $this->schema['items'] : [];
     }
 
     protected function propertyExists($name)
@@ -336,7 +347,6 @@ class JsonSchema implements RegulatorInterface
 
     public function checkValidScalar($scalar)
     {
-
         if (is_string($scalar)) {
             return $this->stringValidator->validate($scalar);
         }
@@ -349,6 +359,13 @@ class JsonSchema implements RegulatorInterface
         return $scalar;
     }
 
+    public function checkValidObject($value) {
+        return $this->objectValidator->validate($value);
+    }
+
+    public function checkValidArray($value) {
+        return $this->arrayValidator->validate($value);
+    }
 
     public function getMaxLength()
     {
@@ -360,6 +377,36 @@ class JsonSchema implements RegulatorInterface
     {
         // TODO: The value of this keyword MUST be an integer. This integer MUST be greater than, or equal to, 0.
         return (isset($this->schema['minLength'])) ? $this->schema['minLength'] : false;
+    }
+
+    public function getMaxProperties()
+    {
+        // TODO: The value of this keyword MUST be an integer. This integer MUST be greater than, or equal to, 0.
+        return (isset($this->schema['maxProperties'])) ? $this->schema['maxProperties'] : false;
+    }
+
+    public function getMinProperties()
+    {
+        // TODO: The value of this keyword MUST be an integer. This integer MUST be greater than, or equal to, 0.
+        return (isset($this->schema['minProperties'])) ? $this->schema['minProperties'] : false;
+    }
+
+    public function getMaxItems()
+    {
+        // TODO: The value of this keyword MUST be an integer. This integer MUST be greater than, or equal to, 0.
+        return (isset($this->schema['maxItems'])) ? $this->schema['maxItems'] : false;
+    }
+
+    public function getMinItems()
+    {
+        // TODO: The value of this keyword MUST be an integer. This integer MUST be greater than, or equal to, 0.
+        return (isset($this->schema['minItems'])) ? $this->schema['minItems'] : false;
+    }
+
+    public function getUniqueItems()
+    {
+        // TODO: The value of this keyword MUST be a boolean.
+        return (bool) (isset($this->schema['uniqueItems'])) ? $this->schema['uniqueItems'] : false;
     }
 
     public function getPattern()
@@ -434,5 +481,10 @@ class JsonSchema implements RegulatorInterface
     public function isSingleType()
     {
         return (is_array($this->getType())) ? false : true;
+    }
+
+    public function getDefault()
+    {
+        return (isset($this->schema['default'])) ? $this->schema['default'] : null;
     }
 }

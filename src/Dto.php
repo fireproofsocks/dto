@@ -118,10 +118,6 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     final public function offsetSet($index, $newval, $bypass = false)
     {
-        if ($bypass) {
-            parent::offsetSet($index, $newval);
-        }
-
         // Does the property name match the regex? etc.
         if (is_null($index)) {
             // array -- retrieve the schema for the item, not for the index
@@ -132,10 +128,6 @@ class Dto extends \ArrayObject implements DtoInterface
             $schema = $this->regulator->getPropertySchemaAsArray($index);
         }
 
-
-        // TODO: convert value
-        // TODO: validate value
-        // if is object or array?  Loop over keys/values???
         parent::offsetSet($index, $this->getHydratedChildDto($newval, $schema));
 
     }
@@ -260,7 +252,43 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function hydrate($value)
     {
-        // Get the declared type(s)
+        $value = $this->mergeInputWithDefault($value);
+        $type = $this->getStorableDataType($value);
+        $value = $this->convertValueToType($value, $type);
+        $this->storeDataAsType($value, $type);
+    }
+
+
+    /**
+     * if input is null, use default
+     * if input is scalar and default is scalar, use input
+     * if input is array and default is array, merge arrays
+     * @param $value
+     * @return mixed|null
+     */
+    protected function mergeInputWithDefault($value)
+    {
+        $default = $this->regulator->getDefault();
+
+        if (is_null($value)) {
+            return $default;
+        }
+        elseif (is_null($default)) {
+            return $value;
+        }
+        elseif (is_scalar($value) && is_scalar($default)) {
+            return $value;
+        }
+        elseif (is_array($value) && is_array($default)) {
+            return array_merge($default, $value);
+        }
+
+        throw new \InvalidArgumentException('Input data type conflicts with data type of schema default.');
+    }
+
+    protected function getStorableDataType($value)
+    {
+        // TODO: check for $ref? oneOf, allOf etc...
         if ($type = $this->regulator->getType()) {
             // Now check that the incoming value can be stored as one of those types
             if (!$this->regulator->isSingleType() && !$type = $this->regulator->getStorableTypeByValue($value)) {
@@ -272,25 +300,32 @@ class Dto extends \ArrayObject implements DtoInterface
             $type = $this->detector->getType($value);
         }
 
-         $value = $this->converter->{'to' . $type}($value); // perform TypeConversion
-
-         if ('object' === $type) {
-             $this->hydrateObject($value);
-         }
-         elseif ('array' === $type) {
-             $this->hydrateArray($value);
-         }
-         else {
-             $this->hydrateScalar($value);
-         }
+        return $type;
     }
+
+
+    protected function convertValueToType($value, $type)
+    {
+        return $this->converter->{'to' . $type}($value); // perform TypeConversion
+    }
+
+    protected function storeDataAsType($value, $type)
+    {
+        if ('object' === $type) {
+            $this->hydrateObject($value);
+        }
+        elseif ('array' === $type) {
+            $this->hydrateArray($value);
+        }
+        else {
+            $this->hydrateScalar($value);
+        }
+    }
+
 
     protected function hydrateObject($value)
     {
-        // TODO? these may require "post" validation
-//        if (!$this->regulator->isValidObject($value)) {
-//            $this->config->doInvalidValue();
-//        }
+        $this->regulator->checkValidObject($value);
 
         parent::exchangeArray([]);
 
@@ -301,16 +336,12 @@ class Dto extends \ArrayObject implements DtoInterface
 
     protected function hydrateArray($value)
     {
-        // TODO? these may require "post" validation
-//        if (!$this->regulator->isValidArray($value)) {
-//
-//        }
+        $this->regulator->checkValidArray($value);
+
         // clear the array,
         parent::exchangeArray([]);
         // append to it
         foreach ($value as $v) {
-            // TODO: $v is valid?
-            // TODO: is full?  Behavior if full (shift or ignore?)
             $this->offsetSet(null, $v);
         }
     }

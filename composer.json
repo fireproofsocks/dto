@@ -1,6 +1,6 @@
 {
   "name": "dto/dto",
-  "description": "Data Transfer Object: quickly create structured objects to hold loosely typed data",
+  "description": "Data Transfer Object: define object structures using the JSON Schema spec to hold structured data",
   "type": "project",
   "license": "MIT",
   "minimum-stability": "stable",
@@ -8,8 +8,8 @@
     "php": ">=5.5.9"
   },
   "require-dev": {
-    "phpunit/phpunit": "^4.8",
-    "phpspec/phpspec": "^3.2"
+    "phpspec/phpspec": "^3.2",
+    "phpunit/phpunit": "^5.7"
   },
   "autoload": {
     "psr-4": {
