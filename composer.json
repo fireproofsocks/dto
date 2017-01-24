@@ -7,9 +7,17 @@
   "require": {
     "php": ">=5.5.9"
   },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/sqills/PhpSpecCodeCoverageExtension"
+    }
+  ],
   "require-dev": {
     "phpspec/phpspec": "^3.2",
-    "phpunit/phpunit": "^5.7"
+    "phpunit/phpunit": "^5.7",
+    "sqills/phpspec-code-coverage": "^3.0",
+    "phpunit/php-code-coverage": "^4.0"
   },
   "autoload": {
     "psr-4": {

@@ -136,16 +136,6 @@ class JsonSchema implements RegulatorInterface
 //        'format' => '', // see $this->formats
 //    ];
 
-    // for "type"
-//    protected $valid_types = [
-//        'null',
-//        'boolean',
-//        'object',
-//        'array',
-//        'number',
-//        'string',
-//        'integer' // integer JSON numbers SHOULD NOT be encoded with a fractional part.
-//    ];
 //
 //    // for "format"
 //    protected $valid_formats = [
@@ -486,5 +476,10 @@ class JsonSchema implements RegulatorInterface
     public function getDefault()
     {
         return (isset($this->schema['default'])) ? $this->schema['default'] : null;
+    }
+
+    public function getEnum()
+    {
+        return (isset($this->schema['enum'])) ? $this->schema['enum'] : false;
     }
 }

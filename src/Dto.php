@@ -72,6 +72,11 @@ class Dto extends \ArrayObject implements DtoInterface
         $this->hydrate($input);
     }
 
+    protected function setUpServiceContainer()
+    {
+        // TODO
+    }
+
     /**
      * Used for object notation, e.g. print $dto->foo
      *
@@ -253,6 +258,14 @@ class Dto extends \ArrayObject implements DtoInterface
     public function hydrate($value)
     {
         $value = $this->mergeInputWithDefault($value);
+
+        // load virtual schema (resolve $ref's, anything else?) -> load validator (choose enum, allOf, type, etc) -> validate
+        // point of entry can either be $ref (remote or inline definitions),
+        // getValidator ... enum, $ref, allOf, oneOf, anyOf, not, type
+        //      --> detect type
+        //      --> convert type
+        // store data
+
         $type = $this->getStorableDataType($value);
         $value = $this->convertValueToType($value, $type);
         $this->storeDataAsType($value, $type);
