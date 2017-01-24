@@ -1,4 +1,5 @@
 <?php
+
 namespace DtoTest;
 
 use Dto\Dto;

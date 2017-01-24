@@ -5,19 +5,13 @@
   "license": "MIT",
   "minimum-stability": "stable",
   "require": {
-    "php": ">=5.5.9"
+    "php": ">=5.5.9",
+    "pimple/pimple": "^3.0"
   },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/sqills/PhpSpecCodeCoverageExtension"
-    }
-  ],
   "require-dev": {
     "phpspec/phpspec": "^3.2",
-    "phpunit/phpunit": "^5.7",
-    "sqills/phpspec-code-coverage": "^3.0",
-    "phpunit/php-code-coverage": "^4.0"
+    "phpunit/phpunit": "5.6.8",
+    "mockery/mockery": "^0.9.7"
   },
   "autoload": {
     "psr-4": {
@@ -25,6 +19,8 @@
     }
   },
   "autoload-dev": {
-    "psr-4": { "DtoTest\\": "tests/" }
+    "psr-4": {
+      "DtoTest\\": "tests/"
+    }
   }
 }

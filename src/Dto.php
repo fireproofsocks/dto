@@ -2,7 +2,6 @@
 
 namespace Dto;
 
-use Dto\Exceptions\AppendException;
 use Dto\Exceptions\InvalidDataTypeException;
 use Dto\Exceptions\InvalidPropertyException;
 use Dto\Exceptions\UnstorableValueException;
@@ -29,52 +28,50 @@ class Dto extends \ArrayObject implements DtoInterface
 
 
     /**
-     * @var RegulatorInterface
+     * @var \ArrayAccess
      */
-    protected $regulator;
+    protected $serviceContainer;
 
     /**
-     * @var TypeConverterInterface
-     */
-    protected $converter;
-
-    /**
-     * @var TypeDetector
-     */
-    protected $detector;
-
-    /**
-     * @var string scalar | array | object
-     */
-    protected $type;
-
-    /**
+     * Tracks which index of the array we are writing to
      * @var integer
      */
     protected $array_index = 0;
 
     /**
+     * @var string
+     */
+    protected $type;
+
+    /**
      * Dto constructor.
      *
      * @param mixed $input value
-     * @param $regulator RegulatorInterface|null
+     * @param mixed $schema
+     * @param mixed $serviceContainer
      */
-    public function __construct($input = null, RegulatorInterface $regulator = null)
+    public function __construct($input = null, $schema = null, \ArrayAccess $serviceContainer = null)
     {
         $this->setFlags(0);
 
-        $this->regulator = ($regulator) ? $regulator : new JsonSchema($this->schema);
+        $this->serviceContainer = $this->getServiceContainer($serviceContainer);
 
-        $this->converter = new TypeConverter();
-
-        $this->detector = new TypeDetector();
+        $this->serviceContainer[RegulatorInterface::class]->setSchema((is_null($schema)) ? $this->schema : $schema);
 
         $this->hydrate($input);
     }
 
-    protected function setUpServiceContainer()
+    /**
+     * @param mixed $container
+     * @return \ArrayAccess
+     */
+    protected function getServiceContainer($container)
     {
-        // TODO
+        if (is_null($container)) {
+           $container = include 'container.php';
+        }
+
+        return $container;
     }
 
     /**
@@ -123,17 +120,18 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     final public function offsetSet($index, $newval, $bypass = false)
     {
-        // Does the property name match the regex? etc.
-        if (is_null($index)) {
-            // array -- retrieve the schema for the item, not for the index
-            $schema = $this->regulator->getItemSchemaAsArray($this->array_index);
-            $this->array_index = $this->array_index + 1;
-        }
-        else {
-            $schema = $this->regulator->getPropertySchemaAsArray($index);
-        }
-
-        parent::offsetSet($index, $this->getHydratedChildDto($newval, $schema));
+        // TODO
+//        // Does the property name match the regex? etc.
+//        if (is_null($index)) {
+//            // array -- retrieve the schema for the item, not for the index
+//            $schema = $this->regulator->getItemSchemaAsArray($this->array_index);
+//            $this->array_index = $this->array_index + 1;
+//        }
+//        else {
+//            $schema = $this->regulator->getPropertySchemaAsArray($index);
+//        }
+//
+//        parent::offsetSet($index, $this->getHydratedChildDto($newval, $schema));
 
     }
 
@@ -163,7 +161,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function append($val)
     {
-        if ($this->regulator->isArray()) {
+        if ($this->serviceContainer[RegulatorInterface::class]->isArray()) {
             throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
         }
 
@@ -179,7 +177,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function prepend($val)
     {
-        if ($this->regulator->isArray()) {
+        if ($this->serviceContainer[RegulatorInterface::class]->isArray()) {
             throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
         }
         // TODO
@@ -193,7 +191,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function slice($offset, $length = null)
     {
-        if ($this->regulator->isArray()) {
+        if ($this->serviceContainer[RegulatorInterface::class]->isArray()) {
             throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
         }
         // TODO
@@ -223,18 +221,19 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     final public function offsetGet($index)
     {
-        // Already has property
-        // this might get weird for "dual" types, e.g. we set it to a string, then try to use it as an object.
-        //if (array_key_exists($index, $this)) {
-        if (parent::offsetExists($index)) {
-            return parent::offsetGet($index);
-        }
-
-        // We only want to deepen the structure if the data type is an object
-        $schema = $this->regulator->getPropertySchemaAsArray($index);
-
-        $this->deepenStructure($index, $schema);
-        return parent::offsetGet($index);
+        // TODO
+//        // Already has property
+//        // this might get weird for "dual" types, e.g. we set it to a string, then try to use it as an object.
+//        //if (array_key_exists($index, $this)) {
+//        if (parent::offsetExists($index)) {
+//            return parent::offsetGet($index);
+//        }
+//
+//        // We only want to deepen the structure if the data type is an object
+//        $schema = $this->regulator->getPropertySchemaAsArray($index);
+//
+//        $this->deepenStructure($index, $schema);
+//        return parent::offsetGet($index);
     }
 
     protected function deepenStructure($index, $schema)
@@ -246,7 +245,7 @@ class Dto extends \ArrayObject implements DtoInterface
     protected function getHydratedChildDto($input = null, $schema = []) {
         // TODO: can we pass a reference to THIS object instead of creating a new instance?
         $className = get_called_class();
-        return new $className($input, new JsonSchema($schema));
+        return new $className($input, new JsonSchema($schema), $this->serviceContainer);
     }
 
 
@@ -257,82 +256,32 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function hydrate($value)
     {
-        $value = $this->mergeInputWithDefault($value);
+        $value = $this->serviceContainer[RegulatorInterface::class]->getDefault($value);
 
-        // load virtual schema (resolve $ref's, anything else?) -> load validator (choose enum, allOf, type, etc) -> validate
-        // point of entry can either be $ref (remote or inline definitions),
-        // getValidator ... enum, $ref, allOf, oneOf, anyOf, not, type
-        //      --> detect type
-        //      --> convert type
-        // store data
+        $value = $this->serviceContainer[RegulatorInterface::class]->validate($value);
 
-        $type = $this->getStorableDataType($value);
-        $value = $this->convertValueToType($value, $type);
-        $this->storeDataAsType($value, $type);
-    }
-
-
-    /**
-     * if input is null, use default
-     * if input is scalar and default is scalar, use input
-     * if input is array and default is array, merge arrays
-     * @param $value
-     * @return mixed|null
-     */
-    protected function mergeInputWithDefault($value)
-    {
-        $default = $this->regulator->getDefault();
-
-        if (is_null($value)) {
-            return $default;
-        }
-        elseif (is_null($default)) {
-            return $value;
-        }
-        elseif (is_scalar($value) && is_scalar($default)) {
-            return $value;
-        }
-        elseif (is_array($value) && is_array($default)) {
-            return array_merge($default, $value);
-        }
-
-        throw new \InvalidArgumentException('Input data type conflicts with data type of schema default.');
-    }
-
-    protected function getStorableDataType($value)
-    {
-        // TODO: check for $ref? oneOf, allOf etc...
-        if ($type = $this->regulator->getType()) {
-            // Now check that the incoming value can be stored as one of those types
-            if (!$this->regulator->isSingleType() && !$type = $this->regulator->getStorableTypeByValue($value)) {
-                throw new UnstorableValueException('Value type not allowed by current schema.');
-            }
-        }
-        // Fallback to detecting the type
-        else {
-            $type = $this->detector->getType($value);
-        }
-
-        return $type;
-    }
-
-
-    protected function convertValueToType($value, $type)
-    {
-        return $this->converter->{'to' . $type}($value); // perform TypeConversion
-    }
-
-    protected function storeDataAsType($value, $type)
-    {
-        if ('object' === $type) {
+        if ('object' === $this->serviceContainer[RegulatorInterface::class]->isObject()) {
             $this->hydrateObject($value);
         }
-        elseif ('array' === $type) {
+        elseif ('array' === $this->serviceContainer[RegulatorInterface::class]->isArray()) {
             $this->hydrateArray($value);
         }
         else {
             $this->hydrateScalar($value);
         }
+
+//        $value = $this->mergeInputWithDefault($value);
+//
+//        // load virtual schema (resolve $ref's, anything else?) -> load validator (choose enum, allOf, type, etc) -> validate
+//        // point of entry can either be $ref (remote or inline definitions),
+//        // getValidator ... enum, $ref, allOf, oneOf, anyOf, not, type
+//        //      --> detect type
+//        //      --> convert type
+//        // store data
+//
+//        $type = $this->getStorableDataType($value);
+//        $value = $this->convertValueToType($value, $type);
+//        $this->storeDataAsType($value, $type);
     }
 
 
@@ -366,7 +315,7 @@ class Dto extends \ArrayObject implements DtoInterface
     protected function hydrateScalar($value)
     {
         $this->type = 'scalar';
-        $this->regulator->checkValidScalar($value);
+        //$this->regulator->checkValidScalar($value);
         parent::offsetSet(0, $value);
     }
 
