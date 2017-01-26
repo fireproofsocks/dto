@@ -5,11 +5,31 @@ namespace Dto;
 interface RegulatorInterface
 {
     /**
+     * @param mixed $value
+     * @return mixed
+     */
+    public function filter($value);
+
+    /**
      * Get the default value considering the $input value
      * @param mixed|null $input
      * @return mixed
      */
     public function getDefault($input = null);
+
+    /**
+     * For getting the sub-schema corresponding to an array index
+     * @param $index
+     * @return array
+     */
+    public function getSchemaAtIndex($index);
+
+    /**
+     * For getting the sub-schema corresponding to an object key
+     * @param $key string
+     * @return array
+     */
+    public function getSchemaAtKey($key);
 
     /**
      * Is the entity being regulated an object?
@@ -35,11 +55,5 @@ interface RegulatorInterface
      * @return mixed
      */
     public function setSchema($schema = null);
-
-    /**
-     * @param mixed $value
-     * @return mixed
-     */
-    public function validate($value);
 
 }

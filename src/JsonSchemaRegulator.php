@@ -14,6 +14,24 @@ class JsonSchemaRegulator implements RegulatorInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function filter($value)
+    {
+        // TODO: Implement validate() method.
+        // de-reference root schema
+        // detect primary validator (enum, oneOf, allOf, type
+        // validate
+        // filter
+
+    }
+
+    protected function dereferenceSchema()
+    {
+
+    }
+
+    /**
      * if input is null, use default
      * if input is scalar and default is scalar, use input
      * if input is array and default is array, merge arrays
@@ -23,6 +41,13 @@ class JsonSchemaRegulator implements RegulatorInterface
     public function getDefault($input = null)
     {
         $default = $this->serviceContainer[JsonSchemaAcessorInterface::class]->getDefault();
+
+        if ($input instanceof DtoInterface) {
+            $input = ($input->isScalar()) ? $input->toScalar() : $input->toArray();
+        }
+        elseif (is_object($input)) {
+            $input = (array) $input;
+        }
 
         if (is_null($input)) {
             return $default;
@@ -38,6 +63,26 @@ class JsonSchemaRegulator implements RegulatorInterface
         }
 
         throw new \InvalidArgumentException('Input data type conflicts with data type of schema default.');
+    }
+
+    /**
+     * For getting the sub-schema corresponding to an array index
+     * @param $index
+     * @return array
+     */
+    public function getSchemaAtIndex($index)
+    {
+        return [];
+    }
+
+    /**
+     * For getting the sub-schema corresponding to an object key
+     * @param $key string
+     * @return array
+     */
+    public function getSchemaAtKey($key)
+    {
+        return [];
     }
 
     /**
@@ -78,6 +123,7 @@ class JsonSchemaRegulator implements RegulatorInterface
         if (is_null($schema)) {
             $schema = include 'default_root_schema.php';
         }
+        // TODO: load PHP class?
         elseif (!is_array($schema)) {
             $schema = $this->getJsonFileContents($schema);
         }
@@ -86,7 +132,7 @@ class JsonSchemaRegulator implements RegulatorInterface
     }
 
     protected function getJsonFileContents($filename_or_url) {
-        $contents = file_get_contents($filename_or_url);
+        $contents = @file_get_contents($filename_or_url);
         if ($contents === false) {
             throw new JsonSchemaFileNotFoundException('JSON Schema not found: '. $filename_or_url);
         }
@@ -94,14 +140,6 @@ class JsonSchemaRegulator implements RegulatorInterface
         $array = json_decode($contents, true);
         // Errors?
         return $array;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function validate($value)
-    {
-        // TODO: Implement validate() method.
     }
 
 }

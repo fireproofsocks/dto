@@ -2,35 +2,42 @@
 
 namespace DtoTest\Base;
 
-use Dto\Dto;
-use Dto\DtoInterface;
+use DtoTest\TestCase;
 use Dto\JsonSchemaAccessor;
 use Dto\JsonSchemaAcessorInterface;
 use Dto\JsonSchemaRegulator;
 use Dto\RegulatorInterface;
-use DtoTest\TestCase;
 use Pimple\Container;
 
-class DtoTest extends TestCase
+class DtoTestCase extends TestCase
 {
-    protected function getMockServiceContainer()
+    protected function getMockServiceContainer($filtered_value = null, $type = 'object')
     {
         $container = new Container();
 
-        $container[RegulatorInterface::class] = function ($c) {
+        $container[RegulatorInterface::class] = function ($c) use ($filtered_value, $type) {
+
+            $isObject = ($type === 'object') ? true : false;
+            $isArray = ($type === 'array') ? true : false;
+            $isScalar = ($type === 'scalar') ? true : false;
+
             return \Mockery::mock(JsonSchemaRegulator::class)
                 ->shouldReceive('setSchema')
                 ->andReturn(null)
                 ->shouldReceive('getDefault')
                 ->andReturn(null)
-                ->shouldReceive('validate')
+                ->shouldReceive('getSchemaAtIndex')
                 ->andReturn(null)
+                ->shouldReceive('getSchemaAtKey')
+                ->andReturn(null)
+                ->shouldReceive('filter')
+                ->andReturn($filtered_value)
                 ->shouldReceive('isObject')
-                ->andReturn(null)
+                ->andReturn($isObject)
                 ->shouldReceive('isArray')
-                ->andReturn(null)
+                ->andReturn($isArray)
                 ->shouldReceive('isScalar')
-                ->andReturn(null)
+                ->andReturn($isScalar)
                 ->getMock();
         };
 
@@ -39,11 +46,5 @@ class DtoTest extends TestCase
         };
 
         return $container;
-    }
-
-    public function testInstantiation()
-    {
-        $dto = new Dto(null, null, $this->getMockServiceContainer());
-        $this->assertInstanceOf(DtoInterface::class, $dto);
     }
 }

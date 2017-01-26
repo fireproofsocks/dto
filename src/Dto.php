@@ -98,15 +98,16 @@ class Dto extends \ArrayObject implements DtoInterface
     }
     
     /**
-     * Alternative setter: Expose the $bypass flag to skip any checks/data-typing
      *
      * @param $index mixed
      * @param $value mixed
-     * @param bool $bypass filters
+     * @throws InvalidDataTypeException
      */
-    public function set($index, $value, $bypass = false)
+    public function set($index, $value)
     {
-        $this->offsetSet($index, $value, $bypass);
+        if ($this->isScalar()) {
+            throw new InvalidDataTypeException('The set() method cannot be used on scalar objects.  Use hydrate() instead.');
+        }
     }
     
     /**
@@ -114,11 +115,10 @@ class Dto extends \ArrayObject implements DtoInterface
      *
      * @param mixed $index
      * @param mixed $newval
-     * @param bool $bypass filters if true
      *
      * @throws InvalidPropertyException
      */
-    final public function offsetSet($index, $newval, $bypass = false)
+    final public function offsetSet($index, $newval)
     {
         // TODO
 //        // Does the property name match the regex? etc.
@@ -245,7 +245,7 @@ class Dto extends \ArrayObject implements DtoInterface
     protected function getHydratedChildDto($input = null, $schema = []) {
         // TODO: can we pass a reference to THIS object instead of creating a new instance?
         $className = get_called_class();
-        return new $className($input, new JsonSchema($schema), $this->serviceContainer);
+        return new $className($input, $schema, $this->serviceContainer);
     }
 
 
@@ -258,12 +258,12 @@ class Dto extends \ArrayObject implements DtoInterface
     {
         $value = $this->serviceContainer[RegulatorInterface::class]->getDefault($value);
 
-        $value = $this->serviceContainer[RegulatorInterface::class]->validate($value);
+        $value = $this->serviceContainer[RegulatorInterface::class]->filter($value);
 
-        if ('object' === $this->serviceContainer[RegulatorInterface::class]->isObject()) {
+        if ($this->serviceContainer[RegulatorInterface::class]->isObject()) {
             $this->hydrateObject($value);
         }
-        elseif ('array' === $this->serviceContainer[RegulatorInterface::class]->isArray()) {
+        elseif ($this->serviceContainer[RegulatorInterface::class]->isArray()) {
             $this->hydrateArray($value);
         }
         else {
@@ -287,24 +287,34 @@ class Dto extends \ArrayObject implements DtoInterface
 
     protected function hydrateObject($value)
     {
-        $this->regulator->checkValidObject($value);
+        $this->type = 'object';
 
         parent::exchangeArray([]);
 
         foreach ($value as $k => $v) {
-            $this->offsetSet($k, $v);
+
+            parent::offsetSet(
+                $k,
+                $this->getHydratedChildDto($v, $this->serviceContainer[RegulatorInterface::class]->getgetSchemaAtKey($k))
+            );
         }
     }
 
     protected function hydrateArray($value)
     {
-        $this->regulator->checkValidArray($value);
+        $this->type = 'array';
 
         // clear the array,
         parent::exchangeArray([]);
         // append to it
         foreach ($value as $v) {
-            $this->offsetSet(null, $v);
+            parent::offsetSet(
+                null,
+                $this->getHydratedChildDto($v,
+                    $this->serviceContainer[RegulatorInterface::class]->getgetSchemaAtIndex($this->array_index)
+                )
+            );
+            $this->array_index = $this->array_index + 1;
         }
     }
 
@@ -347,6 +357,7 @@ class Dto extends \ArrayObject implements DtoInterface
             return json_encode(parent::offsetGet(0), JSON_PRETTY_PRINT);
         }
         else {
+            // Disambiguate for empty arrays vs empty objects: [] vs {}
             return json_encode($this->toArray(), JSON_PRETTY_PRINT);
         }
     }
