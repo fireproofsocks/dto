@@ -2,9 +2,24 @@
 
 namespace Dto;
 
+use Dto\Exceptions\InvalidKeyException;
+use Dto\Exceptions\InvalidReferenceException;
+use Dto\Exceptions\JsonSchemaFileNotFoundException;
+
 class JsonSchemaAccessor implements JsonSchemaAcessorInterface
 {
+    protected $serviceContainer;
+
     protected $schema;
+
+    public function __construct(\ArrayAccess $serviceContainer, $schema = null)
+    {
+        $this->serviceContainer = $serviceContainer;
+
+        if (!is_null($schema)) {
+            $this->set($schema);
+        }
+    }
 
     public function set(array $schema)
     {
@@ -122,5 +137,43 @@ class JsonSchemaAccessor implements JsonSchemaAcessorInterface
     public function getEnum()
     {
         return (isset($this->schema['enum'])) ? $this->schema['enum'] : false;
+    }
+
+    public function getRef()
+    {
+        return (isset($this->schema['$ref'])) ? $this->serviceContainer[DereferencerInterface::class]->resolveReference($this->schema['$ref']) : false;
+//        if (!isset($this->schema['$ref'])) {
+//            return false;
+//        }
+//        if (!is_string($this->schema['$ref'])) {
+//            throw new InvalidReferenceException('The "$ref" parameter must store a string.');
+//        }
+//        // Get local definition
+//        if ('#' === substr($this->schema['$ref'], 0, 1)) {
+//            return $this->getLocalReference($this->schema['ref']);
+//        }
+//        elseif (class_exists($this->schema['$ref'])) {
+//            return $this->getPhpReference($this->schema['ref']);
+//        }
+//
+//        return $this->getRemoteReference($this->schema['ref']);
+//        // is PHP classname?
+//        // is JSON file?
+//        //$this->schema['$ref'];
+    }
+
+    public function getDescription()
+    {
+        return (isset($this->schema['description'])) ? $this->schema['description'] : '';
+    }
+
+    public function get($key)
+    {
+        if (!is_string($key)) {
+            throw new InvalidKeyException('get() requires a string key.');
+        }
+        if (!array_key_exists($key, $this->schema)) {
+            throw new InvalidKeyException('The key "'.$key.'" does not exist in this schema.');
+        }
     }
 }

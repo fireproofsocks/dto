@@ -10,6 +10,8 @@ interface DtoInterface
 
     public function get($index);
 
+    public function getSchema();
+
     public function toObject();
 
     public function toArray();

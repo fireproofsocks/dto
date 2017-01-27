@@ -85,6 +85,11 @@ class JsonSchemaRegulator implements RegulatorInterface
         return [];
     }
 
+    public function getSchema()
+    {
+
+    }
+
     /**
      * @inheritDoc
      */

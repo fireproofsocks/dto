@@ -5,6 +5,10 @@ use Dto\RegulatorInterface;
 use Dto\JsonSchemaRegulator;
 use Dto\JsonSchemaAcessorInterface;
 use Dto\JsonSchemaAccessor;
+use Dto\JsonDecoderInterface;
+use Dto\JsonDecoder;
+use Dto\DereferencerInterface;
+use Dto\Dereferencer;
 
 $container = new Container();
 
@@ -13,7 +17,15 @@ $container[RegulatorInterface::class] = function ($c) {
 };
 
 $container[JsonSchemaAcessorInterface::class] = function ($c) {
-    return new JsonSchemaAccessor();
+    return new JsonSchemaAccessor($c);
+};
+
+$container[JsonDecoderInterface::class] = function ($c) {
+    return new JsonDecoder();
+};
+
+$container[DereferencerInterface::class] = function ($c) {
+    return new Dereferencer($c);
 };
 
 //$container['TypeDetector'] = function ($c) {

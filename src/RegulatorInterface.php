@@ -32,6 +32,11 @@ interface RegulatorInterface
     public function getSchemaAtKey($key);
 
     /**
+     * @return mixed
+     */
+    public function getSchema();
+
+    /**
      * Is the entity being regulated an object?
      * @return boolean
      */

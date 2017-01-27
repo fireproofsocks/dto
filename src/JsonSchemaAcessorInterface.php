@@ -53,4 +53,12 @@ interface JsonSchemaAcessorInterface
 
     public function getEnum();
 
+    public function getRef();
+
+    //public function getDefinitions();
+
+    public function getDescription();
+
+    public function get($key);
+
 }
