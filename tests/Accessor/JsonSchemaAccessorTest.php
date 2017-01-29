@@ -37,38 +37,16 @@ class JsonSchemaAccessorTest extends TestCase
     public function testGetRefThrowsExceptionForNonStringArguments()
     {
         $j = $this->getInstance(['$ref'=>[]]);
-        $j->getRef([]);
+        $j->getRef();
     }
 
-    public function testGetRemoteReference()
+    public function testGetDefinition()
     {
-        $j = $this->getInstance();
-        $schema = $this->callProtectedMethod($j, 'getRemoteReference', [__DIR__.'/data/sample.json']);
-        $this->assertInstanceOf(JsonSchemaAcessorInterface::class, $schema);
-        $this->assertEquals($schema->getDescription(), 'Test test');
+        $j = $this->getInstance(['definitions'=>[
+            'foo' => ['title' => 'bar']
+        ]]);
+        $result = $j->getDefinition('foo');
+        $this->assertEquals($result, ['title' => 'bar']);
     }
 
-    /**
-     * @expectedException \Dto\Exceptions\JsonSchemaFileNotFoundException
-     */
-    public function testGetRemoteReferenceOfMissingFileThrowsException()
-    {
-        $j = $this->getInstance();
-        $this->callProtectedMethod($j, 'getRemoteReference', [__DIR__.'/data/does_not_exist.json']);
-    }
-
-    /**
-     * @expectedException \Dto\Exceptions\JsonDecoderException
-     */
-    public function testGetRemoteReferenceOfMalformedJsonThrowsException()
-    {
-        $j = $this->getInstance();
-        $this->callProtectedMethod($j, 'getRemoteReference', [__DIR__.'/data/bad.json']);
-    }
-
-    public function testGetPhpReference()
-    {
-        $j = $this->getInstance();
-        $this->callProtectedMethod($j, 'getPhpReference', [__DIR__.'/data/bad.json']);
-    }
 }

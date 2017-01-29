@@ -1,0 +1,4 @@
+{
+  "description": "Schema A",
+  "$ref": "ref_b.json"
+}

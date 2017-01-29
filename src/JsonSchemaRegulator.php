@@ -2,15 +2,19 @@
 
 namespace Dto;
 
-use Dto\Exceptions\JsonSchemaFileNotFoundException;
 
 class JsonSchemaRegulator implements RegulatorInterface
 {
     protected $serviceContainer;
 
+    protected $schemaAccessor;
+
     public function __construct(\ArrayAccess $serviceContainer)
     {
         $this->serviceContainer = $serviceContainer;
+
+        // TODO DI
+        $this->schemaAccessor = $serviceContainer[JsonSchemaAcessorInterface::class];
     }
 
     /**
@@ -26,11 +30,6 @@ class JsonSchemaRegulator implements RegulatorInterface
 
     }
 
-    protected function dereferenceSchema()
-    {
-
-    }
-
     /**
      * if input is null, use default
      * if input is scalar and default is scalar, use input
@@ -40,7 +39,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function getDefault($input = null)
     {
-        $default = $this->serviceContainer[JsonSchemaAcessorInterface::class]->getDefault();
+        $default = $this->schemaAccessor->getDefault();
 
         if ($input instanceof DtoInterface) {
             $input = ($input->isScalar()) ? $input->toScalar() : $input->toArray();
@@ -87,7 +86,7 @@ class JsonSchemaRegulator implements RegulatorInterface
 
     public function getSchema()
     {
-
+        // Dereference
     }
 
     /**
@@ -128,23 +127,11 @@ class JsonSchemaRegulator implements RegulatorInterface
         if (is_null($schema)) {
             $schema = include 'default_root_schema.php';
         }
-        // TODO: load PHP class?
-        elseif (!is_array($schema)) {
-            $schema = $this->getJsonFileContents($schema);
-        }
 
-        $this->serviceContainer[JsonSchemaAcessorInterface::class]->set($schema);
+        $schema = $this->serviceContainer[ResolverInterface::class]->resolveSchema($schema);
+        $this->schemaAccessor->set($schema);
+        return $schema;
     }
 
-    protected function getJsonFileContents($filename_or_url) {
-        $contents = @file_get_contents($filename_or_url);
-        if ($contents === false) {
-            throw new JsonSchemaFileNotFoundException('JSON Schema not found: '. $filename_or_url);
-        }
-
-        $array = json_decode($contents, true);
-        // Errors?
-        return $array;
-    }
 
 }

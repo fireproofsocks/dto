@@ -7,8 +7,8 @@ use Dto\JsonSchemaAcessorInterface;
 use Dto\JsonSchemaAccessor;
 use Dto\JsonDecoderInterface;
 use Dto\JsonDecoder;
-use Dto\DereferencerInterface;
-use Dto\Dereferencer;
+use Dto\ResolverInterface;
+use Dto\Resolver;
 
 $container = new Container();
 
@@ -21,11 +21,13 @@ $container[JsonSchemaAcessorInterface::class] = function ($c) {
 };
 
 $container[JsonDecoderInterface::class] = function ($c) {
-    return new JsonDecoder();
+    $decoder = new \Webmozart\Json\JsonDecoder();
+    $decoder->setObjectDecoding(1); // associative array
+    return new JsonDecoder($decoder);
 };
 
-$container[DereferencerInterface::class] = function ($c) {
-    return new Dereferencer($c);
+$container[ResolverInterface::class] = function ($c) {
+    return new Resolver($c);
 };
 
 //$container['TypeDetector'] = function ($c) {

@@ -2,6 +2,7 @@
 
 namespace Dto;
 
+use Dto\Exceptions\DefinitionNotFoundException;
 use Dto\Exceptions\InvalidKeyException;
 use Dto\Exceptions\InvalidReferenceException;
 use Dto\Exceptions\JsonSchemaFileNotFoundException;
@@ -24,6 +25,11 @@ class JsonSchemaAccessor implements JsonSchemaAcessorInterface
     public function set(array $schema)
     {
         $this->schema = $schema;
+    }
+
+    public function getAllOf()
+    {
+        return isset($this->schema['allOf']) ? $this->schema['allOf'] : [];
     }
 
     public function getAdditionalItems()
@@ -141,7 +147,13 @@ class JsonSchemaAccessor implements JsonSchemaAcessorInterface
 
     public function getRef()
     {
-        return (isset($this->schema['$ref'])) ? $this->serviceContainer[DereferencerInterface::class]->resolveReference($this->schema['$ref']) : false;
+        $ref = (isset($this->schema['$ref'])) ? $this->schema['$ref'] : false;
+
+        if ($ref !== false && !is_string($ref)) {
+            throw new InvalidReferenceException('"$ref" must contain a string.');
+        }
+
+        return $ref;
 //        if (!isset($this->schema['$ref'])) {
 //            return false;
 //        }
@@ -175,5 +187,19 @@ class JsonSchemaAccessor implements JsonSchemaAcessorInterface
         if (!array_key_exists($key, $this->schema)) {
             throw new InvalidKeyException('The key "'.$key.'" does not exist in this schema.');
         }
+    }
+
+    public function getDefinition($name)
+    {
+        if (isset($this->schema['definitions'][$name])) {
+            return $this->schema['definitions'][$name];
+        }
+
+        throw new DefinitionNotFoundException('"'.$name.'" not found in schema definitions.');
+    }
+
+    public function getSchema()
+    {
+        return $this->schema;
     }
 }

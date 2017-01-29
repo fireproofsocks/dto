@@ -1,0 +1,5 @@
+{
+  "title": "php schema",
+  "description": "For testing only... usually you'd only reference PHP classnames from within a PHP DTO",
+  "$ref": "\\DtoTest\\Resolver\\data\\SampleDto"
+}

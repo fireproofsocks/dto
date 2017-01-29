@@ -13,6 +13,8 @@ interface JsonSchemaAcessorInterface
 {
     public function set(array $schema);
 
+    public function getAllOf();
+
     public function getAdditionalItems();
 
     public function getItems();
@@ -61,4 +63,11 @@ interface JsonSchemaAcessorInterface
 
     public function get($key);
 
+    public function getDefinition($name);
+
+    /**
+     * Get root level schema
+     * @return array
+     */
+    public function getSchema();
 }

@@ -28,9 +28,9 @@ class Dto extends \ArrayObject implements DtoInterface
 
 
     /**
-     * @var \ArrayAccess
+     * @var RegulatorInterface
      */
-    protected $serviceContainer;
+    protected $regulator;
 
     /**
      * Tracks which index of the array we are writing to
@@ -48,30 +48,32 @@ class Dto extends \ArrayObject implements DtoInterface
      *
      * @param mixed $input value
      * @param mixed $schema
-     * @param mixed $serviceContainer
+     * @param mixed $regulator
      */
-    public function __construct($input = null, $schema = null, \ArrayAccess $serviceContainer = null)
+    public function __construct($input = null, $schema = null, RegulatorInterface $regulator = null)
     {
         $this->setFlags(0);
 
-        $this->serviceContainer = $this->getServiceContainer($serviceContainer);
+        $this->regulator = $this->getDefaultRegulator($regulator);
 
-        $this->serviceContainer[RegulatorInterface::class]->setSchema((is_null($schema)) ? $this->schema : $schema);
+        // ResolveSchema
+        $this->schema = $this->regulator->setSchema((is_null($schema)) ? $this->schema : $schema);
 
         $this->hydrate($input);
     }
 
     /**
-     * @param mixed $container
-     * @return \ArrayAccess
+     * @param mixed $regulator
+     * @return RegulatorInterface
      */
-    protected function getServiceContainer($container)
+    protected function getDefaultRegulator($regulator)
     {
-        if (is_null($container)) {
+        if (is_null($regulator)) {
            $container = include 'container.php';
+           return new JsonSchemaRegulator($container);
         }
 
-        return $container;
+        return $regulator;
     }
 
     /**
@@ -161,7 +163,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function append($val)
     {
-        if ($this->serviceContainer[RegulatorInterface::class]->isArray()) {
+        if ($this->regulator->isArray()) {
             throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
         }
 
@@ -177,7 +179,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function prepend($val)
     {
-        if ($this->serviceContainer[RegulatorInterface::class]->isArray()) {
+        if ($this->regulator->isArray()) {
             throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
         }
         // TODO
@@ -191,7 +193,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function slice($offset, $length = null)
     {
-        if ($this->serviceContainer[RegulatorInterface::class]->isArray()) {
+        if ($this->regulator->isArray()) {
             throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
         }
         // TODO
@@ -250,7 +252,7 @@ class Dto extends \ArrayObject implements DtoInterface
     protected function getHydratedChildDto($input = null, $schema = []) {
         // TODO: can we pass a reference to THIS object instead of creating a new instance?
         $className = get_called_class();
-        return new $className($input, $schema, $this->serviceContainer);
+        return new $className($input, $schema, $this->regulator);
     }
 
 
@@ -261,14 +263,14 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function hydrate($value)
     {
-        $value = $this->serviceContainer[RegulatorInterface::class]->getDefault($value);
+        $value = $this->regulator->getDefault($value);
 
-        $value = $this->serviceContainer[RegulatorInterface::class]->filter($value);
-
-        if ($this->serviceContainer[RegulatorInterface::class]->isObject()) {
+        $value = $this->regulator->filter($value);
+        
+        if ($this->regulator->isObject()) {
             $this->hydrateObject($value);
         }
-        elseif ($this->serviceContainer[RegulatorInterface::class]->isArray()) {
+        elseif ($this->regulator->isArray()) {
             $this->hydrateArray($value);
         }
         else {
@@ -300,7 +302,7 @@ class Dto extends \ArrayObject implements DtoInterface
 
             parent::offsetSet(
                 $k,
-                $this->getHydratedChildDto($v, $this->serviceContainer[RegulatorInterface::class]->getgetSchemaAtKey($k))
+                $this->getHydratedChildDto($v, $this->regulator->getgetSchemaAtKey($k))
             );
         }
     }
@@ -316,7 +318,7 @@ class Dto extends \ArrayObject implements DtoInterface
             parent::offsetSet(
                 null,
                 $this->getHydratedChildDto($v,
-                    $this->serviceContainer[RegulatorInterface::class]->getgetSchemaAtIndex($this->array_index)
+                    $this->regulator->getSchemaAtIndex($this->array_index)
                 )
             );
             $this->array_index = $this->array_index + 1;
