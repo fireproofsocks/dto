@@ -4,6 +4,7 @@ namespace DtoTest\Base;
 
 use Dto\Dto;
 use Dto\DtoInterface;
+use Dto\RegulatorInterface;
 
 class DtoHydrateTest extends DtoTestCase
 {
@@ -20,16 +21,18 @@ class DtoHydrateTest extends DtoTestCase
         $this->assertEquals('kitty', $dto->toScalar());
     }
 
-    public function testSetAndRetrieveArray()
-    {
-        $dto_a = new Dto(null, null, $this->getMockRegulator('a', 'scalar'));
-        $dto_b = new Dto(null, null, $this->getMockRegulator('b', 'scalar'));
-        $dto_c = new Dto(null, null, $this->getMockRegulator('c', 'scalar'));
-
-        $dto = new Dto(null, null, $this->getMockRegulator(null, 'array', [$dto_a, $dto_b, $dto_c]));
-
-        //$this->assertEquals(['a', 'b', 'c'], $dto->toArray());
-    }
+    // this fails because we are trying to reuse the same mock for the hydrated Children Dtos,
+    // so it gets stuck in trying to write everything as arrays
+//    public function testSetAndRetrieveArray()
+//    {
+//        $dto_a = new PartialMockScalarDto('a');
+//        $dto_b = new PartialMockScalarDto('b');
+//        $dto_c = new PartialMockScalarDto('c');
+//
+//        $dto = new Dto([], null, $this->getMockRegulator([$dto_a, $dto_b, $dto_c], 'array'));
+//
+//        //$this->assertEquals(['a', 'b', 'c'], $dto->toArray());
+//    }
 
 //    public function testSetAndRetrieveObject()
 //    {
@@ -46,4 +49,25 @@ class DtoHydrateTest extends DtoTestCase
 //        $dto->hydrate('overridden-by-regulators-filter-method');
 //        $this->assertEquals('kitty', $dto->toScalar());
 //    }
+}
+
+class PartialMockScalarDto extends Dto
+{
+    protected $value;
+
+    public function __construct($input = null, $schema = null, $regulator = null)
+    {
+        // ssh... don't call the parent
+        $this->value = $input;
+    }
+
+    public function isScalar()
+    {
+        return true;
+    }
+
+    public function toScalar()
+    {
+        return $this->value;
+    }
 }

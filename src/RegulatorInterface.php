@@ -32,11 +32,6 @@ interface RegulatorInterface
     public function getSchemaAtKey($key);
 
     /**
-     * @return mixed
-     */
-    public function getSchema();
-
-    /**
      * Is the entity being regulated an object?
      * @return boolean
      */
@@ -55,10 +50,10 @@ interface RegulatorInterface
     public function isScalar();
 
     /**
-     * Set the regulator schema
+     * Resolve schema references and return the compiled array
      * @param mixed|null $schema
-     * @return mixed
+     * @return array
      */
-    public function setSchema($schema = null);
+    public function compileSchema($schema = null);
 
 }

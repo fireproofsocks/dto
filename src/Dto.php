@@ -57,7 +57,7 @@ class Dto extends \ArrayObject implements DtoInterface
         $this->regulator = $this->getDefaultRegulator($regulator);
 
         // ResolveSchema
-        $this->schema = $this->regulator->setSchema((is_null($schema)) ? $this->schema : $schema);
+        $this->schema = $this->regulator->compileSchema((is_null($schema)) ? $this->schema : $schema);
 
         $this->hydrate($input);
     }
@@ -266,7 +266,7 @@ class Dto extends \ArrayObject implements DtoInterface
         $value = $this->regulator->getDefault($value);
 
         $value = $this->regulator->filter($value);
-        
+
         if ($this->regulator->isObject()) {
             $this->hydrateObject($value);
         }
@@ -302,7 +302,7 @@ class Dto extends \ArrayObject implements DtoInterface
 
             parent::offsetSet(
                 $k,
-                $this->getHydratedChildDto($v, $this->regulator->getgetSchemaAtKey($k))
+                $this->getHydratedChildDto($v, $this->regulator->getSchemaAtKey($k))
             );
         }
     }

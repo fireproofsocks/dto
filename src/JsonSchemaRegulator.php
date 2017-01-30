@@ -9,12 +9,19 @@ class JsonSchemaRegulator implements RegulatorInterface
 
     protected $schemaAccessor;
 
+    protected $isObject;
+
+    protected $isArray;
+
+    protected $isScalar;
+
+
     public function __construct(\ArrayAccess $serviceContainer)
     {
         $this->serviceContainer = $serviceContainer;
 
         // TODO DI
-        $this->schemaAccessor = $serviceContainer[JsonSchemaAcessorInterface::class];
+        $this->schemaAccessor = $serviceContainer[JsonSchemaAccessorInterface::class];
     }
 
     /**
@@ -34,7 +41,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      * if input is null, use default
      * if input is scalar and default is scalar, use input
      * if input is array and default is array, merge arrays
-     * @param $input mixed
+     * @param $input mixed passed from DTO constructor
      * @return mixed|null
      */
     public function getDefault($input = null)
@@ -84,17 +91,14 @@ class JsonSchemaRegulator implements RegulatorInterface
         return [];
     }
 
-    public function getSchema()
-    {
-        // Dereference
-    }
-
     /**
      * @inheritDoc
      */
     public function isObject()
     {
+        // This is only known after filter() has completed
         // TODO: Implement isObject() method.
+        return $this->isObject;
     }
 
     /**
@@ -102,7 +106,9 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function isArray()
     {
+        // This is only known after filter() has completed
         // TODO: Implement isArray() method.
+        return $this->isArray;
     }
 
     /**
@@ -110,24 +116,20 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function isScalar()
     {
+        // This is only known after filter() has completed
         // TODO: Implement isScalar() method.
+        return $this->isScalar;
     }
 
     /**
-     * Schema data can be loaded in different ways.
-     *
-     *  1. PHP Array is injected
-     *  2. Name of JSON schema file is injected
+     * Let the resolver class handle how the Schema is resolved.  This
+     * is set when the DTO is instantiated because the DTO contains the schema.
      *
      * @param $schema mixed
      * @return array
      */
-    public function setSchema($schema = null)
+    public function compileSchema($schema = null)
     {
-        if (is_null($schema)) {
-            $schema = include 'default_root_schema.php';
-        }
-
         $schema = $this->serviceContainer[ResolverInterface::class]->resolveSchema($schema);
         $this->schemaAccessor->set($schema);
         return $schema;

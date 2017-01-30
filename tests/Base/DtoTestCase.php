@@ -4,7 +4,7 @@ namespace DtoTest\Base;
 
 use DtoTest\TestCase;
 use Dto\JsonSchemaAccessor;
-use Dto\JsonSchemaAcessorInterface;
+use Dto\JsonSchemaAccessorInterface;
 use Dto\JsonSchemaRegulator;
 use Dto\RegulatorInterface;
 use Pimple\Container;

@@ -3,7 +3,7 @@
 use Pimple\Container;
 use Dto\RegulatorInterface;
 use Dto\JsonSchemaRegulator;
-use Dto\JsonSchemaAcessorInterface;
+use Dto\JsonSchemaAccessorInterface;
 use Dto\JsonSchemaAccessor;
 use Dto\JsonDecoderInterface;
 use Dto\JsonDecoder;
@@ -16,7 +16,7 @@ $container[RegulatorInterface::class] = function ($c) {
     return new JsonSchemaRegulator($c);
 };
 
-$container[JsonSchemaAcessorInterface::class] = function ($c) {
+$container[JsonSchemaAccessorInterface::class] = function ($c) {
     return new JsonSchemaAccessor($c);
 };
 

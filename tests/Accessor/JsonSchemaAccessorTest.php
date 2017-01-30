@@ -3,7 +3,7 @@
 namespace DtoTest;
 
 use Dto\JsonSchemaAccessor;
-use Dto\JsonSchemaAcessorInterface;
+use Dto\JsonSchemaAccessorInterface;
 
 class JsonSchemaAccessorTest extends TestCase
 {
@@ -13,16 +13,16 @@ class JsonSchemaAccessorTest extends TestCase
 
         // return new JsonSchemaAccessor($container, $schema);
         if (!is_null($schema)) {
-            $container[JsonSchemaAcessorInterface::class]->set($schema);
+            $container[JsonSchemaAccessorInterface::class]->set($schema);
         }
 
-        return $container[JsonSchemaAcessorInterface::class];
+        return $container[JsonSchemaAccessorInterface::class];
     }
 
     public function testInstantiation()
     {
         $j = $this->getInstance();
-        $this->assertInstanceOf(JsonSchemaAcessorInterface::class, $j);
+        $this->assertInstanceOf(JsonSchemaAccessorInterface::class, $j);
     }
 
     public function testEmptyReferenceReturnsFalse()

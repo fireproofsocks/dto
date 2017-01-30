@@ -3,13 +3,13 @@
 namespace Dto;
 
 /**
- * Interface JsonSchemaAcessorInterface
+ * Interface JsonSchemaAccessorInterface
  *
  * For interacting with a JSON Schema object, useful because some schema attributes infer different default values.
  *
  * @package Dto
  */
-interface JsonSchemaAcessorInterface
+interface JsonSchemaAccessorInterface
 {
     public function set(array $schema);
 

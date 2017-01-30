@@ -7,7 +7,7 @@ use Dto\Exceptions\InvalidKeyException;
 use Dto\Exceptions\InvalidReferenceException;
 use Dto\Exceptions\JsonSchemaFileNotFoundException;
 
-class JsonSchemaAccessor implements JsonSchemaAcessorInterface
+class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 {
     protected $serviceContainer;
 

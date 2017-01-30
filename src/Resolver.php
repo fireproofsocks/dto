@@ -11,7 +11,7 @@ class Resolver implements ResolverInterface
     protected $serviceContainer;
 
     /**
-     * @var JsonSchemaAcessorInterface
+     * @var JsonSchemaAccessorInterface
      */
     protected $schemaAccessor;
 
@@ -24,7 +24,7 @@ class Resolver implements ResolverInterface
     {
         $this->serviceContainer = $serviceContainer;
 
-        $this->schemaAccessor = $serviceContainer[JsonSchemaAcessorInterface::class];
+        $this->schemaAccessor = $serviceContainer[JsonSchemaAccessorInterface::class];
 
     }
 
