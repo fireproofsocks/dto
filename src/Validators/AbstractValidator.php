@@ -2,14 +2,28 @@
 
 namespace Dto\Validators;
 
-use Dto\JsonSchema;
-
 abstract class AbstractValidator
 {
-    protected $schema;
+    protected $container;
 
-    public function __construct(JsonSchema $schema)
+    protected $schemaAccessor;
+
+    protected $isFiltered;
+
+    protected $value;
+
+    public function __construct(\ArrayAccess $container)
     {
-        $this->schema = $schema;
+        $this->container = $container;
+    }
+
+    public function isFilteredValue()
+    {
+        return $this->isFiltered;
+    }
+
+    public function getFilteredValue()
+    {
+        return $this->value;
     }
 }

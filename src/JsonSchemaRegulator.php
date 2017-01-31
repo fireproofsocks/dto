@@ -7,6 +7,11 @@ class JsonSchemaRegulator implements RegulatorInterface
 {
     protected $serviceContainer;
 
+    /**
+     * @var array
+     */
+    protected $schema = [];
+
     protected $schemaAccessor;
 
     protected $isObject;
@@ -30,11 +35,47 @@ class JsonSchemaRegulator implements RegulatorInterface
     public function filter($value)
     {
         // TODO: Implement validate() method.
-        // de-reference root schema
-        // detect primary validator (enum, oneOf, allOf, type
-        // validate
-        // filter
+        // de-reference root schema (done already in compileSchema)
 
+        $value = $this->unwrapValue($value);
+
+        // detect primary validator (enum, oneOf, allOf, type
+        $validators = $this->serviceContainer[ValidatorSelectorInterface::class]->selectValidators($this->schema);
+
+        // can we do any filtering?
+
+        // throws Exceptions on errors
+        foreach ($validators as $v) {
+            $result = $v->validate($value);
+            // TODO: feels smelly
+            if ($v->isFilteredValue()) {
+                $value = $v->getFilteredValue();
+            }
+        }
+
+
+        // filter -- is any filtering required before storage?
+
+        // set storage type: isObject, isArray, isScalar
+        
+        return $value;
+    }
+
+    /**
+     * Normalize the internal data type: convert DTOs to scalars/arrays, objects to arrays
+     * @param $value
+     * @return array
+     */
+    protected function unwrapValue($value)
+    {
+        if ($value instanceof DtoInterface) {
+            $value = ($value->isScalar()) ? $value->toScalar() : $value->toArray();
+        }
+        elseif (is_object($value)) {
+            $value = (array) $value;
+        }
+
+        return $value;
     }
 
     /**
@@ -48,12 +89,7 @@ class JsonSchemaRegulator implements RegulatorInterface
     {
         $default = $this->schemaAccessor->getDefault();
 
-        if ($input instanceof DtoInterface) {
-            $input = ($input->isScalar()) ? $input->toScalar() : $input->toArray();
-        }
-        elseif (is_object($input)) {
-            $input = (array) $input;
-        }
+        $input = $this->unwrapValue($input);
 
         if (is_null($input)) {
             return $default;
@@ -130,9 +166,9 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function compileSchema($schema = null)
     {
-        $schema = $this->serviceContainer[ResolverInterface::class]->resolveSchema($schema);
-        $this->schemaAccessor->set($schema);
-        return $schema;
+        $this->schema = $this->serviceContainer[ResolverInterface::class]->resolveSchema($schema);
+        $this->schemaAccessor->load($this->schema);
+        return $this->schema;
     }
 
 

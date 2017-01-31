@@ -1,17 +1,23 @@
 <?php
-namespace Dto\Validators;
+namespace Dto\Validators\Types;
 
 use Dto\Exceptions\InvalidArrayValueException;
+use Dto\JsonSchemaAccessorInterface;
+use Dto\Validators\AbstractValidator;
+use Dto\Validators\ValidatorInterface;
 
 class ArrayValidator extends AbstractValidator implements ValidatorInterface
 {
     /**
      * maxItems, minItems, uniqueItems
-     * @param $value
+     * @param $value mixed
+     * @param $schema array
      * @return boolean
      */
-    public function validate($value)
+    public function validate($value, array $schema)
     {
+        $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
+
         $this->checkMaxItems($value);
         $this->checkMinItems($value);
         $this->checkUniqueItems($value);
@@ -21,7 +27,7 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
 
     protected function checkMaxItems($value)
     {
-        $max = $this->schema->getMaxItems();
+        $max = $this->schemaAccessor->getMaxItems();
         if ($max !== false) {
             if (count($value) > $max) {
                 throw new InvalidArrayValueException('Arrays with more than '.$max.' items disallowed by "maxItems".');
@@ -31,7 +37,7 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
 
     protected function checkMinItems($value)
     {
-        $min = $this->schema->getMinItems();
+        $min = $this->schemaAccessor->getMinItems();
         if ($min !== false) {
             if (count($value) < $min) {
                 throw new InvalidArrayValueException('Arrays with fewer than '.$min.' items disallowed by "minItems".');
@@ -41,7 +47,7 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
 
     protected function checkUniqueItems($value)
     {
-        if ($this->schema->getUniqueItems()) {
+        if ($this->schemaAccessor->getUniqueItems()) {
             if (count($value) !== count(array_unique($value))) {
                 throw new InvalidArrayValueException('Arrays with duplicate values are not allowed when "uniqueItems" is true.');
             }

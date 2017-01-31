@@ -56,7 +56,7 @@ class Dto extends \ArrayObject implements DtoInterface
 
         $this->regulator = $this->getDefaultRegulator($regulator);
 
-        // ResolveSchema
+        // Resolve Schema references
         $this->schema = $this->regulator->compileSchema((is_null($schema)) ? $this->schema : $schema);
 
         $this->hydrate($input);

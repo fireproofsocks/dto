@@ -5,7 +5,6 @@ namespace Dto;
 use Dto\Exceptions\DefinitionNotFoundException;
 use Dto\Exceptions\InvalidKeyException;
 use Dto\Exceptions\InvalidReferenceException;
-use Dto\Exceptions\JsonSchemaFileNotFoundException;
 
 class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 {
@@ -22,14 +21,27 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
         }
     }
 
-    public function set(array $schema)
+    /**
+     * Support fluid interface for greater clarity
+     * @param array $schema
+     * @return $this
+     */
+    public function load(array $schema)
     {
         $this->schema = $schema;
+
+        return $this;
     }
 
     public function getAllOf()
     {
         return isset($this->schema['allOf']) ? $this->schema['allOf'] : [];
+    }
+
+    public function getAnyOf()
+    {
+        // TODO: This keyword's value MUST be an array. This array MUST have at least one element.
+        return isset($this->schema['anyOf']) ? $this->schema['anyOf'] : false;
     }
 
     public function getAdditionalItems()
@@ -128,11 +140,11 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
     }
 
     /**
-     * @return mixed | string | array
+     * @return mixed | string | array | boolean
      */
     public function getType()
     {
-        return (isset($this->schema['type'])) ? $this->schema['type'] : '';
+        return (isset($this->schema['type'])) ? $this->schema['type'] : false;
     }
 
     public function getDefault()
@@ -142,6 +154,7 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 
     public function getEnum()
     {
+        // TODO: must be an array
         return (isset($this->schema['enum'])) ? $this->schema['enum'] : false;
     }
 

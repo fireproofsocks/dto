@@ -11,9 +11,11 @@ namespace Dto;
  */
 interface JsonSchemaAccessorInterface
 {
-    public function set(array $schema);
+    public function load(array $schema);
 
     public function getAllOf();
+
+    public function getAnyOf();
 
     public function getAdditionalItems();
 
