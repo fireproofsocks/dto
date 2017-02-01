@@ -103,6 +103,11 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
         return (isset($this->schema['pattern'])) ? $this->schema['pattern'] : false;
     }
 
+    public function getProperties()
+    {
+        return (isset($this->schema['properties'])) ? $this->schema['properties'] : [];
+    }
+
     public function getMultipleOf()
     {
         // TODO: The value of "multipleOf" MUST be a number, strictly greater than 0.
@@ -185,6 +190,11 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 //        // is PHP classname?
 //        // is JSON file?
 //        //$this->schema['$ref'];
+    }
+
+    public function getRequired()
+    {
+        return (isset($this->schema['required'])) ? $this->schema['required'] : [];
     }
 
     public function getDescription()

@@ -2,8 +2,10 @@
 
 namespace Dto\Validators\Types;
 
+use Dto\Exceptions\InvalidNumberValueException;
 use Dto\Exceptions\InvalidScalarValueException;
 use Dto\JsonSchemaAccessorInterface;
+use Dto\TypeDetectorInterface;
 use Dto\Validators\AbstractValidator;
 use Dto\Validators\ValidatorInterface;
 
@@ -21,6 +23,7 @@ class NumberValidator extends AbstractValidator implements ValidatorInterface
     {
         $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
 
+        $this->checkDataType($number);
         $this->checkMultipleOf($number);
         $this->checkMaximum($number);
         $this->checkMinimum($number);
@@ -28,6 +31,12 @@ class NumberValidator extends AbstractValidator implements ValidatorInterface
         return true;
     }
 
+    protected function checkDataType($number)
+    {
+        if (!$this->container[TypeDetectorInterface::class]->isNumber($number)) {
+            throw new InvalidNumberValueException('Value is not numeric.');
+        }
+    }
 
     protected function checkMultipleOf($number)
     {

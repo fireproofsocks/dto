@@ -7,7 +7,7 @@ use Dto\Exceptions\InvalidDataTypeException;
 class TypeDetector implements TypeDetectorInterface
 {
     /**
-     * Our application specific version of gettype()
+     * Our version of gettype() with considerations given for PHP "warts"
      * @param $value
      * @return mixed
      * @throws InvalidDataTypeException

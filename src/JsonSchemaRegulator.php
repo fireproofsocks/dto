@@ -57,12 +57,12 @@ class JsonSchemaRegulator implements RegulatorInterface
         // filter -- is any filtering required before storage?
 
         // set storage type: isObject, isArray, isScalar
-        
+
         return $value;
     }
 
     /**
-     * Normalize the internal data type: convert DTOs to scalars/arrays, objects to arrays
+     * Normalize the internal data type: convert DTOs to scalars/arrays, PHP stdClass objects to PHP associative arrays
      * @param $value
      * @return array
      */

@@ -37,6 +37,8 @@ interface JsonSchemaAccessorInterface
 
     public function getPattern();
 
+    public function getProperties();
+
     public function getMultipleOf();
 
     public function getMaximum();
@@ -58,6 +60,8 @@ interface JsonSchemaAccessorInterface
     public function getEnum();
 
     public function getRef();
+
+    public function getRequired();
 
     //public function getDefinitions();
 

@@ -57,18 +57,25 @@ $container[\Dto\TypeConverterInterface::class] = function ($c) {
     return new \Dto\TypeConverter();
 };
 // Specific type-validators: {$typename} . 'Validator'
-$container['stringValidator'] = function ($c) {
-    return new \Dto\Validators\Types\StringValidator($c);
-};
-$container['numberValidator'] = function ($c) {
-    return new \Dto\Validators\Types\NumberValidator($c);
-};
 $container['objectValidator'] = function ($c) {
     return new \Dto\Validators\Types\ObjectValidator($c);
 };
 $container['arrayValidator'] = function ($c) {
     return new \Dto\Validators\Types\ArrayValidator($c);
 };
+$container['stringValidator'] = function ($c) {
+    return new \Dto\Validators\Types\StringValidator($c);
+};
+$container['integerValidator'] = function ($c) {
+    return new \Dto\Validators\Types\IntegerValidator($c);
+};
+$container['numberValidator'] = function ($c) {
+    return new \Dto\Validators\Types\NumberValidator($c);
+};
+$container['nullValidator'] = function ($c) {
+    return new \Dto\Validators\Types\NullValidator($c);
+};
+
 
 
 return $container;

@@ -4,6 +4,7 @@ namespace Dto\Validators;
 use Dto\Exceptions\InvalidTypeException;
 use Dto\JsonSchemaAccessorInterface;
 use Dto\TypeConverterInterface;
+use Dto\TypeDetectorInterface;
 
 class TypeValidator extends AbstractValidator implements ValidatorInterface
 {
@@ -29,7 +30,7 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
             $value = $this->typeCast($value, $type);
         }
 
-        $this->loadSpecificValidator($value, (array) $type, $schema);
+        $this->tryAllDefinedTypes($value, (array) $type, $schema);
 
         return true;
     }
@@ -78,11 +79,30 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
         return $this->value;
     }
 
-    protected function loadSpecificValidator($value, array $types, array $schema)
+    protected function tryAllDefinedTypes($value, array $types, array $schema)
     {
-        // must match one of the types
-        foreach ($types as $t) {
+        // Option 1: we detect the type, then shove it through the corresponding validator, e.g.
+        // $dectected_type = $this->container[TypeDetectorInterface::class]->getType($value);
 
+        // Option 2: we don't detect anything, we just shove the value through the validators corresponding to the defined type(s)
+        // If exhaust the defined types without coming clean, then throw an exception
+        // must match one of the types
+        $passed_validation = false;
+        foreach ($types as $t) {
+            try {
+                $this->container[$t . 'Validator']->validate($value, $schema);
+                $passed_validation = true;
+                return;
+            }
+            catch (\Exception $e) {
+                // ignore for now
+            }
+        }
+
+        // If we didn't pass validation, we (re)throw the last Exception
+        if (!$passed_validation) {
+            throw $e;
+            //throw new InvalidTypeException('Value could not be validated against any available type(s): '.implode(',', $types));
         }
     }
 

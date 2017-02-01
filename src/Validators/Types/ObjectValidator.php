@@ -3,6 +3,8 @@ namespace Dto\Validators\Types;
 
 use Dto\Exceptions\InvalidObjectValueException;
 use Dto\JsonSchemaAccessorInterface;
+use Dto\RegulatorInterface;
+use Dto\TypeDetectorInterface;
 use Dto\Validators\AbstractValidator;
 use Dto\Validators\ValidatorInterface;
 
@@ -18,10 +20,20 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
     {
         $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
 
+        $this->checkDataType($value);
         $this->checkMaxProperties($value);
         $this->checkMinProperties($value);
+        $this->checkRequired($value);
+        $this->validateProperties($value);
 
         return true;
+    }
+
+    protected function checkDataType($value)
+    {
+        if (!$this->container[TypeDetectorInterface::class]->isObject($value)) {
+            throw new InvalidObjectValueException('Value is not an object.');
+        }
     }
 
     protected function checkMaxProperties($value)
@@ -40,6 +52,30 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
         if ($min !== false) {
             if (count($value) < $min) {
                 throw new InvalidObjectValueException('Objects with fewer than '.$min.' properties disallowed by "minProperties".');
+            }
+        }
+    }
+
+    protected function checkRequired($value)
+    {
+        $required = $this->schemaAccessor->getRequired();
+        foreach ($required as $r) {
+            if (!array_key_exists($r, $value)) {
+                throw new InvalidObjectValueException('Object is missing required value: '. $r);
+            }
+        }
+    }
+
+    protected function validateProperties($object)
+    {
+        $properties = $this->schemaAccessor->getProperties();
+
+        foreach ($object as $k => $v) {
+            if (array_key_exists($k, $properties)) {
+                // $properties[$k];
+                // ValidatorSelectorInterface :: selectValidators($schema)
+                // RegulatorInterface -> filter
+                $this->container[RegulatorInterface::class]->filter($v);
             }
         }
     }
