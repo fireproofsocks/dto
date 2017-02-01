@@ -11,7 +11,7 @@ use Pimple\Container;
 
 class DtoTestCase extends TestCase
 {
-    protected function getMockRegulator($filter = null, $type = 'object', $default = null)
+    protected function getMockRegulator($filter = null, $type = 'object', $default = null, $schema = [])
     {
         $isObject = ($type === 'object') ? true : false;
         $isArray = ($type === 'array') ? true : false;
@@ -22,6 +22,8 @@ class DtoTestCase extends TestCase
             ->andReturn(['title' => 'Testy test'])
             ->shouldReceive('getDefault')
             ->andReturn($default)
+            ->shouldReceive('compileSchema')
+            ->andReturn($schema)
             ->shouldReceive('filter')
             ->andReturn($filter)
             ->shouldReceive('isObject')

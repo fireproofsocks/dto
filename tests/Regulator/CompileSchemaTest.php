@@ -18,6 +18,8 @@ class SetSchemaTest extends TestCase
         $container = new Container();
         $container[JsonSchemaAccessorInterface::class] = function ($c) {
             return \Mockery::mock(JsonSchemaAccessor::class)
+                ->shouldReceive('load')
+                ->andReturn(null)
                 ->shouldReceive('getDefault')
                 ->andReturn(null)
                 ->shouldReceive('set')

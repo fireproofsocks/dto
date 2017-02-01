@@ -38,7 +38,7 @@ class Resolver implements ResolverInterface
     public function resolveSchema($schema = null, $path_prefix = '')
     {
         $schema = $this->convertToArray($schema);
-        $this->schemaAccessor->set($schema);
+        $this->schemaAccessor->load($schema);
         // $schema = $this->compileAllOf($schema);
 
         return $this->resolveReference($schema, $path_prefix);
