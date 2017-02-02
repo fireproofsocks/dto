@@ -4,7 +4,7 @@ namespace Dto;
 
 use Dto\Exceptions\InvalidReferenceException;
 use Dto\Exceptions\InvalidSchemaException;
-use Dto\Exceptions\JsonSchemaFileNotFoundException;
+
 
 class Resolver implements ResolverInterface
 {

@@ -40,4 +40,11 @@ class TestCase extends \PHPUnit_Framework_TestCase
         $reflectionProperty->setAccessible(true);
         $reflectionProperty->setValue($obj, $newVal);
     }
+
+    public function test()
+    {
+        // For some reason, this test class sometimes is executed independently.
+        // Without any tests in it, PHPUnit issues a warning.
+        $this->assertTrue(true);
+    }
 }

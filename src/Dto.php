@@ -265,7 +265,7 @@ class Dto extends \ArrayObject implements DtoInterface
     {
         $value = $this->regulator->getDefault($value);
 
-        $value = $this->regulator->filter($value);
+        $value = $this->regulator->filter($value, $this->schema);
 
         if ($this->regulator->isObject()) {
             $this->hydrateObject($value);

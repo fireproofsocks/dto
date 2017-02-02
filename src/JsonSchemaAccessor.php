@@ -105,6 +105,7 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 
     public function getProperties()
     {
+        // TODO: the value must be an associative array
         return (isset($this->schema['properties'])) ? $this->schema['properties'] : [];
     }
 
@@ -139,6 +140,10 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
         return (array_key_exists('additionalProperties', $this->schema)) ? $this->schema['additionalProperties'] : [];
     }
 
+    /**
+     * @link http://json-schema.org/example2.html
+     * @return array
+     */
     public function getPatternProperties()
     {
         return (array_key_exists('patternProperties', $this->schema)) ? $this->schema['patternProperties'] : [];

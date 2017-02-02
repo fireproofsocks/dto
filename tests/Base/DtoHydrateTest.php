@@ -21,6 +21,12 @@ class DtoHydrateTest extends DtoTestCase
         $this->assertEquals('kitty', $dto->toScalar());
     }
 
+    public function testHydrateAssociativeArray()
+    {
+        $dto = new Dto(null, null, $this->getMockRegulator(['foo' => 'bar'], 'object'));
+        $this->assertEquals(['foo' => 'bar'], $dto->toArray());
+    }
+
     // this fails because we are trying to reuse the same mock for the hydrated Children Dtos,
     // so it gets stuck in trying to write everything as arrays
 //    public function testSetAndRetrieveArray()

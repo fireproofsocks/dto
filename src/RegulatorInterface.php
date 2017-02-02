@@ -5,10 +5,13 @@ namespace Dto;
 interface RegulatorInterface
 {
     /**
+     * Validate/filter the given $value against the given $schema
+     *
      * @param mixed $value
+     * @param array $schema
      * @return mixed
      */
-    public function filter($value);
+    public function filter($value, array $schema = []);
 
     /**
      * Get the default value considering the $input value

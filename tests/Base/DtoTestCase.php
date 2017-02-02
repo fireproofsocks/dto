@@ -34,6 +34,8 @@ class DtoTestCase extends TestCase
             ->andReturn($isScalar)
             ->shouldReceive('getSchemaAtIndex')
             ->andReturn([])
+            ->shouldReceive('getSchemaAtKey')
+            ->andReturn(['type' => 'string'])
 
             ->getMock();
     }

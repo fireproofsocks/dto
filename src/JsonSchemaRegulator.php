@@ -3,6 +3,8 @@
 namespace Dto;
 
 
+use Dto\Exceptions\InvalidKeyException;
+
 class JsonSchemaRegulator implements RegulatorInterface
 {
     protected $serviceContainer;
@@ -32,7 +34,7 @@ class JsonSchemaRegulator implements RegulatorInterface
     /**
      * @inheritDoc
      */
-    public function filter($value)
+    public function filter($value, array $schema = [])
     {
         // TODO: Implement validate() method.
         // de-reference root schema (done already in compileSchema)
@@ -40,7 +42,7 @@ class JsonSchemaRegulator implements RegulatorInterface
         $value = $this->unwrapValue($value);
 
         // detect primary validator (enum, oneOf, allOf, type
-        $validators = $this->serviceContainer[ValidatorSelectorInterface::class]->selectValidators($this->schema);
+        $validators = $this->serviceContainer[ValidatorSelectorInterface::class]->selectValidators($schema);
 
         // can we do any filtering?
 
@@ -56,7 +58,7 @@ class JsonSchemaRegulator implements RegulatorInterface
 
         // filter -- is any filtering required before storage?
 
-        // set storage type: isObject, isArray, isScalar
+        // TODO: set storage type: isObject, isArray, isScalar
 
         return $value;
     }
@@ -87,7 +89,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function getDefault($input = null)
     {
-        $default = $this->schemaAccessor->getDefault();
+        $default = $this->schemaAccessor->load($this->schema)->getDefault();
 
         $input = $this->unwrapValue($input);
 
@@ -121,10 +123,36 @@ class JsonSchemaRegulator implements RegulatorInterface
      * For getting the sub-schema corresponding to an object key
      * @param $key string
      * @return array
+     * @throws InvalidKeyException
      */
     public function getSchemaAtKey($key)
     {
-        return [];
+        $accessor = $this->schemaAccessor->load($this->schema);
+
+        $properties = $accessor->getProperties();
+
+        if (array_key_exists($key, $properties)) {
+            return $properties[$key];
+        }
+
+        if($patternProperties = $accessor->getPatternProperties()) {
+            foreach ($patternProperties as $regex => $schema) {
+                if (preg_match('/'.$regex.'/', $key)) {
+                    return $schema;
+                }
+            }
+        }
+
+        $additionalProperties = $accessor->getAdditionalProperties();
+
+        if ($additionalProperties === true) {
+            return []; // empty schema: anything goes
+        }
+        elseif (is_array($additionalProperties)) {
+            return $additionalProperties; // as a schema
+        }
+
+        throw new InvalidKeyException('Key not allowed by "properties", "patternProperties", or "additionalProperties": '.$key);
     }
 
     /**
@@ -167,8 +195,9 @@ class JsonSchemaRegulator implements RegulatorInterface
     public function compileSchema($schema = null)
     {
         $this->schema = $this->serviceContainer[ResolverInterface::class]->resolveSchema($schema);
-        $this->schemaAccessor->load($this->schema);
         return $this->schema;
+        //$this->schemaAccessor->load($this->schema);
+        //return $this->schema;
     }
 
 
