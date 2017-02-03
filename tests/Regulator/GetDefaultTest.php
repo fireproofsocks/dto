@@ -10,13 +10,15 @@ use Dto\RegulatorInterface;
 use DtoTest\TestCase;
 use Pimple\Container;
 
-class CompileSchemaTest extends TestCase
+class GetDefaultTest extends TestCase
 {
     protected function getMockContainer($default = null)
     {
         $container = new Container();
         $container[JsonSchemaAccessorInterface::class] = function ($c) use ($default) {
             return \Mockery::mock(JsonSchemaAccessor::class)
+                ->shouldReceive('load')
+                ->andReturnSelf()
                 ->shouldReceive('getDefault')
                 ->andReturn($default)
                 ->getMock();

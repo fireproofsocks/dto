@@ -47,6 +47,7 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
                 throw new InvalidTypeException('"type" "'.$t.'" is not one of the allowed types: '. implode(',', $this->valid_types));
             }
         }
+
         return true;
     }
 

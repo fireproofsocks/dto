@@ -2,6 +2,7 @@
 
 namespace Dto;
 
+use Dto\Exceptions\InvalidArrayOperationException;
 use Dto\Exceptions\InvalidDataTypeException;
 use Dto\Exceptions\InvalidPropertyException;
 use Dto\Exceptions\UnstorableValueException;
@@ -100,40 +101,58 @@ class Dto extends \ArrayObject implements DtoInterface
     }
     
     /**
-     *
-     * @param $index mixed
+     * This deals ONLY with objects (not arrays).
+     * @param $key mixed
      * @param $value mixed
      * @throws InvalidDataTypeException
      */
-    public function set($index, $value)
+    public function set($key, $value)
     {
         if ($this->isScalar()) {
             throw new InvalidDataTypeException('The set() method cannot be used on scalar objects.  Use hydrate() instead.');
         }
+
+        if (parent::offsetExists($key)) {
+            parent::offsetGet($key)->hydrate($value);
+        }
+        else {
+            parent::offsetSet($key, $this->getHydratedChildDto($value, $this->regulator->getSchemaAtKey($key)));
+        }
     }
     
     /**
-     *
+     * Called by array access.
      *
      * @param mixed $index
-     * @param mixed $newval
+     * @param mixed $value
      *
-     * @throws InvalidPropertyException
+     * @throws InvalidArrayOperationException
      */
-    final public function offsetSet($index, $newval)
+    final public function offsetSet($index, $value)
     {
-        // TODO
-//        // Does the property name match the regex? etc.
-//        if (is_null($index)) {
-//            // array -- retrieve the schema for the item, not for the index
-//            $schema = $this->regulator->getItemSchemaAsArray($this->array_index);
-//            $this->array_index = $this->array_index + 1;
-//        }
-//        else {
-//            $schema = $this->regulator->getPropertySchemaAsArray($index);
-//        }
-//
-//        parent::offsetSet($index, $this->getHydratedChildDto($newval, $schema));
+        // TODO: restrict this to arrays only
+        if ($this->type !== 'array') {
+            throw new InvalidArrayOperationException('This operation is reserved for arrays only.');
+        }
+
+        //    parent::offsetSet($index, $this->getHydratedChildDto($value, $this->regulator->getSchemaAtIndex($index)));
+
+
+        // Does the property name match the regex? etc.
+        if (is_null($index)) {
+            // array -- retrieve the schema for the item, not for the index
+            $schema = $this->regulator->getSchemaAtIndex($this->array_index);
+            $this->array_index = $this->array_index + 1;
+        }
+        elseif (parent::offsetExists($index)) {
+            parent::offsetGet($index)->hydrate($value);
+            return;
+        }
+        else {
+            $schema = $this->regulator->getSchemaAtIndex($index);
+        }
+
+        parent::offsetSet($index, $this->getHydratedChildDto($value, $schema));
 
     }
 
@@ -257,7 +276,7 @@ class Dto extends \ArrayObject implements DtoInterface
 
 
     /**
-     * Fill the (empty) root object with data
+     * Fill the current object with data
      * @param $value mixed
      * @throws UnstorableValueException
      */
@@ -276,19 +295,6 @@ class Dto extends \ArrayObject implements DtoInterface
         else {
             $this->hydrateScalar($value);
         }
-
-//        $value = $this->mergeInputWithDefault($value);
-//
-//        // load virtual schema (resolve $ref's, anything else?) -> load validator (choose enum, allOf, type, etc) -> validate
-//        // point of entry can either be $ref (remote or inline definitions),
-//        // getValidator ... enum, $ref, allOf, oneOf, anyOf, not, type
-//        //      --> detect type
-//        //      --> convert type
-//        // store data
-//
-//        $type = $this->getStorableDataType($value);
-//        $value = $this->convertValueToType($value, $type);
-//        $this->storeDataAsType($value, $type);
     }
 
 
@@ -332,7 +338,6 @@ class Dto extends \ArrayObject implements DtoInterface
     protected function hydrateScalar($value)
     {
         $this->type = 'scalar';
-        //$this->regulator->checkValidScalar($value);
         parent::offsetSet(0, $value);
     }
 
@@ -368,15 +373,18 @@ class Dto extends \ArrayObject implements DtoInterface
             return json_encode($this->toArray(), JSON_PRETTY_PRINT);
         }
     }
-    
 
+
+    /**
+     * return (array) $this; // is too simplistic, unfortunately
+     * @return array
+     * @throws InvalidDataTypeException
+     */
     public function toArray()
     {
         if ($this->isScalar()) {
             throw new InvalidDataTypeException('Array representation is not possible for scalar values.');
         }
-
-        //return (array) $this; // too simplistic, unfortunately
 
         $output = [];
         foreach ($this as $k => $v) {

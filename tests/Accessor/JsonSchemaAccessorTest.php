@@ -13,7 +13,7 @@ class JsonSchemaAccessorTest extends TestCase
 
         // return new JsonSchemaAccessor($container, $schema);
         if (!is_null($schema)) {
-            $container[JsonSchemaAccessorInterface::class]->set($schema);
+            $container[JsonSchemaAccessorInterface::class]->load($schema);
         }
 
         return $container[JsonSchemaAccessorInterface::class];

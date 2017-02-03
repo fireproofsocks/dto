@@ -66,7 +66,7 @@ class ResolverTest extends TestCase
     {
         $d = $this->getInstance();
         $regulator = \Mockery::mock(RegulatorInterface::class)
-            ->shouldReceive('setSchema')
+            ->shouldReceive('compileSchema')
             ->andReturn(['title' => 'Testy test'])
             ->shouldReceive('getDefault')
             ->andReturn(null)

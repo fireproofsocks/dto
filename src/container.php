@@ -11,6 +11,8 @@ use Dto\ResolverInterface;
 use Dto\Resolver;
 use Dto\ValidatorSelectorInterface;
 use Dto\ValidatorSelector;
+use Dto\TypeDetectorInterface;
+use Dto\TypeDetector;
 
 $container = new Container();
 
@@ -49,13 +51,14 @@ $container[\Dto\Validators\TypeValidator::class] = function ($c) {
 };
 
 
-$container[\Dto\TypeDetectorInterface::class] = function ($c) {
-    new \Dto\TypeDetector();
+$container[TypeDetectorInterface::class] = function ($c) {
+    return new TypeDetector();
 };
 
 $container[\Dto\TypeConverterInterface::class] = function ($c) {
     return new \Dto\TypeConverter();
 };
+
 // Specific type-validators: {$typename} . 'Validator'
 $container['objectValidator'] = function ($c) {
     return new \Dto\Validators\Types\ObjectValidator($c);

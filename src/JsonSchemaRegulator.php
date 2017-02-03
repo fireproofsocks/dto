@@ -3,11 +3,13 @@
 namespace Dto;
 
 
+use Dto\Exceptions\InvalidIndexException;
+use Dto\Exceptions\InvalidIntegerValueException;
 use Dto\Exceptions\InvalidKeyException;
 
 class JsonSchemaRegulator implements RegulatorInterface
 {
-    protected $serviceContainer;
+    protected $container;
 
     /**
      * @var array
@@ -23,12 +25,12 @@ class JsonSchemaRegulator implements RegulatorInterface
     protected $isScalar;
 
 
-    public function __construct(\ArrayAccess $serviceContainer)
+    public function __construct(\ArrayAccess $container)
     {
-        $this->serviceContainer = $serviceContainer;
+        $this->container = $container;
 
         // TODO DI
-        $this->schemaAccessor = $serviceContainer[JsonSchemaAccessorInterface::class];
+        $this->schemaAccessor = $container[JsonSchemaAccessorInterface::class];
     }
 
     /**
@@ -42,13 +44,13 @@ class JsonSchemaRegulator implements RegulatorInterface
         $value = $this->unwrapValue($value);
 
         // detect primary validator (enum, oneOf, allOf, type
-        $validators = $this->serviceContainer[ValidatorSelectorInterface::class]->selectValidators($schema);
+        $validators = $this->container[ValidatorSelectorInterface::class]->selectValidators($schema);
 
         // can we do any filtering?
 
         // throws Exceptions on errors
         foreach ($validators as $v) {
-            $result = $v->validate($value);
+            $result = $v->validate($value, $schema);
             // TODO: feels smelly
             if ($v->isFilteredValue()) {
                 $value = $v->getFilteredValue();
@@ -59,6 +61,7 @@ class JsonSchemaRegulator implements RegulatorInterface
         // filter -- is any filtering required before storage?
 
         // TODO: set storage type: isObject, isArray, isScalar
+        $this->setStorageType($value);
 
         return $value;
     }
@@ -78,6 +81,24 @@ class JsonSchemaRegulator implements RegulatorInterface
         }
 
         return $value;
+    }
+
+    protected function setStorageType($value)
+    {
+        $this->isObject = false;
+        $this->isScalar = false;
+        $this->isArray = false;
+
+
+        if ($this->container[TypeDetectorInterface::class]->isObject($value)) {
+            $this->isObject = true;
+        }
+        elseif ($this->container[TypeDetectorInterface::class]->isArray($value)) {
+            $this->isArray = true;
+        }
+        else {
+            $this->isScalar = true;
+        }
     }
 
     /**
@@ -111,12 +132,40 @@ class JsonSchemaRegulator implements RegulatorInterface
 
     /**
      * For getting the sub-schema corresponding to an array index
+     * @link https://spacetelescope.github.io/understanding-json-schema/reference/array.html
+     * @link http://json-schema.org/latest/json-schema-validation.html#rfc.section.5.9
      * @param $index
      * @return array
+     * @throws InvalidIndexException
      */
     public function getSchemaAtIndex($index)
     {
-        return [];
+        $accessor = $this->schemaAccessor->load($this->schema);
+
+        $items = $accessor->getItems();
+
+        // Is it a regular schema?  Each item must validate against this schema.
+        if ($this->container[TypeDetectorInterface::class]->isObject($items)) {
+            return $items;
+        }
+
+        // Is a tuple (an array of schemas)?
+        if ($this->container[TypeDetectorInterface::class]->isArray($items)) {
+            if (isset($items[$index])) {
+                return $items[$index];
+            }
+        }
+
+        // We have exceeded the number of schemas defining the tuple...
+        $additionalItems = $accessor->getAdditionalItems();
+        if ($this->container[TypeDetectorInterface::class]->isBoolean($additionalItems)) {
+            return [];
+        }
+        if ($this->container[TypeDetectorInterface::class]->isObject($additionalItems)) {
+            return $additionalItems;
+        }
+
+        throw new InvalidIndexException('Index not allowed by "items" and/or "additionalItems": '.$index);
     }
 
     /**
@@ -160,8 +209,6 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function isObject()
     {
-        // This is only known after filter() has completed
-        // TODO: Implement isObject() method.
         return $this->isObject;
     }
 
@@ -170,8 +217,6 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function isArray()
     {
-        // This is only known after filter() has completed
-        // TODO: Implement isArray() method.
         return $this->isArray;
     }
 
@@ -180,8 +225,6 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function isScalar()
     {
-        // This is only known after filter() has completed
-        // TODO: Implement isScalar() method.
         return $this->isScalar;
     }
 
@@ -194,7 +237,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function compileSchema($schema = null)
     {
-        $this->schema = $this->serviceContainer[ResolverInterface::class]->resolveSchema($schema);
+        $this->schema = $this->container[ResolverInterface::class]->resolveSchema($schema);
         return $this->schema;
         //$this->schemaAccessor->load($this->schema);
         //return $this->schema;

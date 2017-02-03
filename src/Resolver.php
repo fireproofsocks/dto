@@ -84,7 +84,6 @@ class Resolver implements ResolverInterface
             return $schema;
         }
 
-
         // Get local definition
         if ('#' === substr($ref, 0, 1)) {
             $schema = $this->getInlineSchema($ref);

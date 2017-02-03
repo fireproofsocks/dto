@@ -11,7 +11,7 @@ use Dto\ResolverInterface;
 use DtoTest\TestCase;
 use Pimple\Container;
 
-class SetSchemaTest extends TestCase
+class CompileSchemaTest extends TestCase
 {
     protected function getMockContainer($schema = [])
     {
