@@ -34,6 +34,7 @@ class JsonSchemaRegulator implements RegulatorInterface
     }
 
     /**
+     * What is this function doing really?  It's doing high-level validation and filtering to determine a storage type.
      * @inheritDoc
      */
     public function filter($value, array $schema = [])
@@ -47,28 +48,22 @@ class JsonSchemaRegulator implements RegulatorInterface
         // detect primary validator (enum, oneOf, allOf, type
         $validators = $this->container[ValidatorSelectorInterface::class]->selectValidators($schema);
 
+        // print count($validators);
+
         // can we do any filtering?
 
         // throws Exceptions on errors
         foreach ($validators as $v) {
-
-            $result = $v->validate($value, $schema);
-            // $schema goes out of scope here!!!
-            //print __LINE__; print_r($this->schema); exit;
-            //print __LINE__; print_r($schema); exit;
-            // TODO: feels smelly
-//            if ($v->isFilteredValue()) {
-//                $value = $v->getFilteredValue();
-//            }
+            //print get_class($v); exit;
+            $value = $v->validate($value, $schema);
         }
 
 
         // filter -- is any filtering required before storage?
 
         // TODO: set storage type: isObject, isArray, isScalar
-        print "--------------------\n";
-        print 'setStorageType '; print_r($value); print "\n"; print_r($schema); print "\n";
-        print $this->setStorageType($value, $schema); print "\n";
+//        patternProperties
+        $this->setStorageType($value, $schema);
 
         return $value;
     }
@@ -95,10 +90,10 @@ class JsonSchemaRegulator implements RegulatorInterface
         $this->isObject = false;
         $this->isScalar = false;
         $this->isArray = false;
-//print_r($schema); exit;
+
         $this->schemaAccessor->load($schema);
         $type = $this->schemaAccessor->getType();
-//print __LINE__; print ' getType:'; print_r($type); exit;
+
         if (!is_array($type)) {
             if ($type === 'object') {
                 $this->isObject = true;
@@ -162,12 +157,13 @@ class JsonSchemaRegulator implements RegulatorInterface
      * @link https://spacetelescope.github.io/understanding-json-schema/reference/array.html
      * @link http://json-schema.org/latest/json-schema-validation.html#rfc.section.5.9
      * @param $index
+     * @pararm $schema array
      * @return array
      * @throws InvalidIndexException
      */
-    public function getSchemaAtIndex($index)
+    protected function getSchemaAtIndex($index, $schema)
     {
-        $accessor = $this->schemaAccessor->load($this->schema);
+        $accessor = $this->schemaAccessor->load($schema);
 
         $items = $accessor->getItems();
 
@@ -198,12 +194,13 @@ class JsonSchemaRegulator implements RegulatorInterface
     /**
      * For getting the sub-schema corresponding to an object key
      * @param $key string
+     * @param $schema array
      * @return array
      * @throws InvalidKeyException
      */
-    public function getSchemaAtKey($key)
+    protected function getSchemaAtKey($key, $schema)
     {
-        $accessor = $this->schemaAccessor->load($this->schema);
+        $accessor = $this->schemaAccessor->load($schema);
 
         $properties = $accessor->getProperties();
 
@@ -266,9 +263,25 @@ class JsonSchemaRegulator implements RegulatorInterface
     {
         $this->schema = $this->container[ResolverInterface::class]->resolveSchema($schema);
         return $this->schema;
-        //$this->schemaAccessor->load($this->schema);
-        //return $this->schema;
     }
 
+    public function getFilteredValueForIndex($value, $index, array $schema)
+    {
+        return new Dto($value, $this->getSchemaAtIndex($index, $schema), $this);
+    }
 
+    public function getFilteredValueForKey($value, $key, array $schema)
+    {
+        return new Dto($value, $this->getSchemaAtKey($key, $schema), $this);
+    }
+
+    public function filterArray($value, $schema)
+    {
+        return $this->container['arrayValidator']->validate($value, $schema);
+    }
+
+    public function filterObject($value, $schema)
+    {
+        return $this->container['objectValidator']->validate($value, $schema);
+    }
 }

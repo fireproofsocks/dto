@@ -18,7 +18,7 @@ class EnumValidator extends AbstractValidator implements ValidatorInterface
             }
         }
 
-        return true;
+        return $value;
     }
 
 }

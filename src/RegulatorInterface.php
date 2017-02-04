@@ -21,20 +21,6 @@ interface RegulatorInterface
     public function getDefault($input = null);
 
     /**
-     * For getting the sub-schema corresponding to an array index
-     * @param $index
-     * @return array
-     */
-    public function getSchemaAtIndex($index);
-
-    /**
-     * For getting the sub-schema corresponding to an object key
-     * @param $key string
-     * @return array
-     */
-    public function getSchemaAtKey($key);
-
-    /**
      * Is the entity being regulated an object?
      * @return boolean
      */
@@ -58,5 +44,37 @@ interface RegulatorInterface
      * @return array
      */
     public function compileSchema($schema = null);
+
+    /**
+     * return the $value validated/filtered for the given $index in the array
+     * @param $value
+     * @param $index
+     * @param $schema array
+     * @return mixed
+     */
+    public function getFilteredValueForIndex($value, $index, array $schema);
+
+    /**
+     * return the $value validated/filtered for the given $key in the object
+     * @param $value
+     * @param $key
+     * @param $schema array
+     * @return mixed
+     */
+    public function getFilteredValueForKey($value, $key, array $schema);
+
+    /**
+     * @param $value
+     * @param $schema
+     * @return mixed
+     */
+    public function filterArray($value, $schema);
+
+    /**
+     * @param $value
+     * @param $schema
+     * @return mixed
+     */
+    public function filterObject($value, $schema);
 
 }

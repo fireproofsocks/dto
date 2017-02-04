@@ -15,6 +15,6 @@ class BooleanValidator extends AbstractValidator implements ValidatorInterface
             throw new InvalidBooleanValueException('Value is not a boolean.');
         }
 
-        return true;
+        return $value;
     }
 }

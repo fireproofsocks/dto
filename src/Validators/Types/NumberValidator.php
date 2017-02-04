@@ -16,7 +16,7 @@ class NumberValidator extends AbstractValidator implements ValidatorInterface
      * @link http://json-schema.org/latest/json-schema-validation.html#rfc.section.5.1
      * @param $number number
      * @param $schema array
-     * @return bool
+     * @return mixed
      * @throws InvalidScalarValueException
      */
     public function validate($number, array $schema)
@@ -28,7 +28,7 @@ class NumberValidator extends AbstractValidator implements ValidatorInterface
         $this->checkMaximum($number);
         $this->checkMinimum($number);
 
-        return true;
+        return $number;
     }
 
     protected function checkDataType($number)

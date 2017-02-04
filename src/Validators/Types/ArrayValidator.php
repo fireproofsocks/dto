@@ -3,6 +3,7 @@ namespace Dto\Validators\Types;
 
 use Dto\Exceptions\InvalidArrayValueException;
 use Dto\JsonSchemaAccessorInterface;
+use Dto\RegulatorInterface;
 use Dto\Validators\AbstractValidator;
 use Dto\Validators\ValidatorInterface;
 
@@ -22,7 +23,8 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
         $this->checkMinItems($value);
         $this->checkUniqueItems($value);
 
-        return true;
+        return $this->validateItems($value, $schema);
+
     }
 
     protected function checkMaxItems($value)
@@ -52,5 +54,14 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
                 throw new InvalidArrayValueException('Arrays with duplicate values are not allowed when "uniqueItems" is true.');
             }
         }
+    }
+
+    protected function validateItems($array, $schema)
+    {
+        foreach ($array as $index => $v) {
+            $array[$index] = $this->container[RegulatorInterface::class]->getFilteredValueForIndex($v, $index, $schema);
+        }
+
+        return $array;
     }
 }

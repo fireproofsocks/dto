@@ -29,10 +29,10 @@ class StringValidator extends AbstractValidator implements ValidatorInterface
         }
         if ($pattern = $this->schemaAccessor->getPattern()) {
             if (!preg_match('/'.$pattern.'/', $string)) {
-                throw new InvalidScalarValueException('Valud of string failed regular expression in "pattern".');
+                throw new InvalidScalarValueException('Validation of string failed regular expression in "pattern".');
             }
         }
 
-        return true;
+        return $string;
     }
 }

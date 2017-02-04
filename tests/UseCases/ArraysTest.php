@@ -60,4 +60,69 @@ class ArraysTest extends TestCase
         $this->assertEquals([['a' => 'apple', 'b' => 'banjo'], ['a' => 'ask', 'b' => 'bork']], $dto->toArray());
     }
 
+    /**
+     * @expectedException \Dto\Exceptions\InvalidArrayValueException
+     */
+    public function testMinItemsEnforced()
+    {
+        $schema = [
+            'type' => 'array',
+            'items' => [
+                'type' => 'string'
+            ],
+            'minItems' => 2
+        ];
+
+        $dto = new Dto(['one'], $schema);
+    }
+
+    public function testReplaceExistingIndex()
+    {
+        $schema = [
+            'type' => 'array',
+            'items' => [
+                'type' => 'string'
+            ]
+        ];
+
+        $dto = new Dto(['foo', 'bar'], $schema);
+        $dto[0] = 'full';
+
+        $this->assertEquals(['full', 'bar'], $dto->toArray());
+    }
+
+    /**
+     * @expectedException \Dto\Exceptions\InvalidIndexException
+     */
+    public function testReplaceNonExistingIndexFails()
+    {
+        $schema = [
+            'type' => 'array',
+            'items' => [
+                'type' => 'string'
+            ]
+        ];
+
+        $dto = new Dto(['foo', 'bar'], $schema);
+        $dto[3] = 'full';
+
+        $this->assertEquals(['full', 'bar'], $dto->toArray());
+    }
+
+
+    public function test()
+    {
+        $schema = [
+            'type' => 'array',
+            'items' => [
+                'type' => 'string'
+            ]
+        ];
+
+        $dto = new Dto(['foo', 'bar'], $schema);
+        $dto[] = 'see';
+
+        print_r($dto);
+    }
+
 }

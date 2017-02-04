@@ -15,6 +15,6 @@ class NullValidator extends AbstractValidator implements ValidatorInterface
             throw new InvalidNullValueException('"type":"null" allows only null values. Pass a literal null or define your "type" as an array of types.');
         }
 
-        return true;
+        return $value;
     }
 }

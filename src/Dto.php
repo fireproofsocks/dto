@@ -4,6 +4,7 @@ namespace Dto;
 
 use Dto\Exceptions\InvalidArrayOperationException;
 use Dto\Exceptions\InvalidDataTypeException;
+use Dto\Exceptions\InvalidIndexException;
 use Dto\Exceptions\InvalidPropertyException;
 use Dto\Exceptions\UnstorableValueException;
 
@@ -116,7 +117,7 @@ class Dto extends \ArrayObject implements DtoInterface
             parent::offsetGet($key)->hydrate($value);
         }
         else {
-            parent::offsetSet($key, $this->getHydratedChildDto($value, $this->regulator->getSchemaAtKey($key)));
+            parent::offsetSet($key, $this->regulator->getFilteredValueForKey($value, $key));
         }
     }
     
@@ -127,48 +128,29 @@ class Dto extends \ArrayObject implements DtoInterface
      * @param mixed $value
      *
      * @throws InvalidArrayOperationException
+     * @throws InvalidIndexException
      */
     final public function offsetSet($index, $value)
     {
-        //print '>>>: '; var_dump($index); var_dump($value); print "\n";
-        //print var_dump($this->regulator->isArray()); print "\n";
-        //print var_dump($this->regulator->isScalar()); exit;
-        //print var_dump($this->regulator->isArray());
-        //print var_dump($index);
-        //print var_dump($this->regulator->isObject()); exit;
-        // TODO: restrict this to arrays only
-        //if ($this->type !== 'array') {
-//        if (!$this->regulator->isArray()) {
-//            //print var_dump($this->regulator->isScalar()); exit;
-//            //print 'last value: '. var_dump($value); exit;
-//            print 'final: '; var_dump($value); exit;
-//            //print var_dump($this->regulator->isArray()); exit;
-//            //print var_dump($this->regulator->isObject()); exit;
-//            throw new InvalidArrayOperationException('This operation is reserved for arrays only.');
-//        }
+        // Integers + null only?
+        if ($this->type !== 'array') {
+            throw new InvalidArrayOperationException('This operation is reserved for arrays only.');
+        }
 
         //    parent::offsetSet($index, $this->getHydratedChildDto($value, $this->regulator->getSchemaAtIndex($index)));
 
-
         // Does the property name match the regex? etc.
         if (is_null($index)) {
-            // array -- retrieve the schema for the item, not for the index
-            $schema = $this->regulator->getSchemaAtIndex($this->array_index);
+            parent::offsetSet(null, $this->regulator->getFilteredValueForIndex($value, $this->array_index, $this->schema));
             $this->array_index = $this->array_index + 1;
-            parent::offsetSet(null, $this->getHydratedChildDto($value, $schema));
             return;
         }
         elseif (parent::offsetExists($index)) {
             parent::offsetGet($index)->hydrate($value);
             return;
         }
-        else {
-            $schema = $this->regulator->getSchemaAtIndex($index);
-            parent::offsetSet($index, $this->getHydratedChildDto($value, $schema));
-            return;
-        }
 
-
+        throw new InvalidIndexException('Index "'.$index.'" not found in array.');
 
     }
 
@@ -278,18 +260,6 @@ class Dto extends \ArrayObject implements DtoInterface
 //        return parent::offsetGet($index);
     }
 
-    protected function deepenStructure($index, $schema)
-    {
-        $child = $this->getHydratedChildDto($index, $schema);
-        $this->offsetSet($index, $child);
-    }
-
-    protected function getHydratedChildDto($input = null, $schema = []) {
-        // TODO: can we pass a reference to THIS object instead of creating a new instance?
-        $className = get_called_class();
-        return new $className($input, $schema, $this->regulator);
-    }
-
 
     /**
      * Fill the current object with data
@@ -303,18 +273,13 @@ class Dto extends \ArrayObject implements DtoInterface
 
         $value = $this->regulator->filter($value, $this->schema);
 
-        print __FUNCTION__.':'.__LINE__.' value:'; print_r($value); exit;
         if ($this->regulator->isObject()) {
-            //print __LINE__; exit;
             $this->hydrateObject($value);
         }
         elseif ($this->regulator->isArray()) {
-            //print __LINE__; exit;
             $this->hydrateArray($value);
         }
         else {
-            //print_r($value); exit;
-            //print __LINE__; exit;
             $this->hydrateScalar($value);
         }
     }
@@ -323,37 +288,13 @@ class Dto extends \ArrayObject implements DtoInterface
     protected function hydrateObject($value)
     {
         $this->type = 'object';
-
-        parent::exchangeArray([]);
-
-        foreach ($value as $k => $v) {
-
-            //$x = $this->getHydratedChildDto($v, $this->regulator->getSchemaAtKey($k));
-            $x = $this->regulator->getSchemaAtKey($k);
-            print __LINE__; print_r($x); exit;
-            parent::offsetSet(
-                $k,
-                $this->getHydratedChildDto($v, $this->regulator->getSchemaAtKey($k))
-            );
-        }
+        parent::exchangeArray($this->regulator->filterObject($value, $this->schema));
     }
 
     protected function hydrateArray($value)
     {
         $this->type = 'array';
-
-        // clear the array,
-        parent::exchangeArray([]);
-        // append to it
-        foreach ($value as $v) {
-            parent::offsetSet(
-                null,
-                $this->getHydratedChildDto($v,
-                    $this->regulator->getSchemaAtIndex($this->array_index)
-                )
-            );
-            $this->array_index = $this->array_index + 1;
-        }
+        parent::exchangeArray($this->regulator->filterArray($value, $this->schema));
     }
 
     /**
@@ -362,7 +303,6 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     protected function hydrateScalar($value)
     {
-        //print __FUNCTION__.':'.$value; exit;
         $this->type = 'scalar';
         parent::offsetSet(0, $value);
     }

@@ -24,9 +24,8 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
         $this->checkMaxProperties($value);
         $this->checkMinProperties($value);
         $this->checkRequired($value);
-        $this->validateProperties($value);
 
-        return true;
+        return $this->validateProperties($value, $schema);
     }
 
     protected function checkDataType($value)
@@ -66,20 +65,12 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
         }
     }
 
-    protected function validateProperties($object)
+    protected function validateProperties($object, $schema)
     {
-        $properties = $this->schemaAccessor->getProperties();
-
         foreach ($object as $k => $v) {
-            if (array_key_exists($k, $properties)) {
-                // $properties[$k];
-                // ValidatorSelectorInterface :: selectValidators($schema)
-                // RegulatorInterface -> filter
-                // TODO: compile and dereference?!
-                //print __LINE__; print_r($properties[$k]); exit;
-                $schema = $this->container[RegulatorInterface::class]->compileSchema($properties[$k]);
-                $this->container[RegulatorInterface::class]->filter($v, $schema);
-            }
+            $object[$k] = $this->container[RegulatorInterface::class]->getFilteredValueForKey($v, $k, $schema);
         }
+
+        return $object;
     }
 }

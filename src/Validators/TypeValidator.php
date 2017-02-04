@@ -31,7 +31,7 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
 
         $this->tryAllDefinedTypes($value, (array) $type, $schema);
 
-        return true;
+        return $value;
     }
 
     protected function ensureValidType()
@@ -72,11 +72,7 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
      */
     protected function typeCast($value, $type)
     {
-        $converter = $this->container[TypeConverterInterface::class];
-        $this->value = $converter->{'to'.$type}($value);
-        $this->isFiltered = true;
-
-        return $this->value;
+        return $this->container[TypeConverterInterface::class]->{'to'.$type}($value);
     }
 
     protected function tryAllDefinedTypes($value, array $types, array $schema)
