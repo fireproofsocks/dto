@@ -130,10 +130,22 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     final public function offsetSet($index, $value)
     {
+        //print '>>>: '; var_dump($index); var_dump($value); print "\n";
+        //print var_dump($this->regulator->isArray()); print "\n";
+        //print var_dump($this->regulator->isScalar()); exit;
+        //print var_dump($this->regulator->isArray());
+        //print var_dump($index);
+        //print var_dump($this->regulator->isObject()); exit;
         // TODO: restrict this to arrays only
-        if ($this->type !== 'array') {
-            throw new InvalidArrayOperationException('This operation is reserved for arrays only.');
-        }
+        //if ($this->type !== 'array') {
+//        if (!$this->regulator->isArray()) {
+//            //print var_dump($this->regulator->isScalar()); exit;
+//            //print 'last value: '. var_dump($value); exit;
+//            print 'final: '; var_dump($value); exit;
+//            //print var_dump($this->regulator->isArray()); exit;
+//            //print var_dump($this->regulator->isObject()); exit;
+//            throw new InvalidArrayOperationException('This operation is reserved for arrays only.');
+//        }
 
         //    parent::offsetSet($index, $this->getHydratedChildDto($value, $this->regulator->getSchemaAtIndex($index)));
 
@@ -143,6 +155,8 @@ class Dto extends \ArrayObject implements DtoInterface
             // array -- retrieve the schema for the item, not for the index
             $schema = $this->regulator->getSchemaAtIndex($this->array_index);
             $this->array_index = $this->array_index + 1;
+            parent::offsetSet(null, $this->getHydratedChildDto($value, $schema));
+            return;
         }
         elseif (parent::offsetExists($index)) {
             parent::offsetGet($index)->hydrate($value);
@@ -150,9 +164,11 @@ class Dto extends \ArrayObject implements DtoInterface
         }
         else {
             $schema = $this->regulator->getSchemaAtIndex($index);
+            parent::offsetSet($index, $this->getHydratedChildDto($value, $schema));
+            return;
         }
 
-        parent::offsetSet($index, $this->getHydratedChildDto($value, $schema));
+
 
     }
 
@@ -182,7 +198,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function append($val)
     {
-        if ($this->regulator->isArray()) {
+        if (!$this->regulator->isArray()) {
             throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
         }
 
@@ -337,6 +353,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     protected function hydrateScalar($value)
     {
+        //print __FUNCTION__.':'.$value; exit;
         $this->type = 'scalar';
         parent::offsetSet(0, $value);
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace DtoTest\Usage;
+namespace DtoTest\UseCases;
 
 use Dto\Dto;
 use Dto\DtoInterface;

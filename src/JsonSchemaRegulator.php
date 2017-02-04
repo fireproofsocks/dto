@@ -89,6 +89,20 @@ class JsonSchemaRegulator implements RegulatorInterface
         $this->isScalar = false;
         $this->isArray = false;
 
+        $type = $this->schemaAccessor->getType();
+
+        if (!is_array($type)) {
+            if ($type === 'object') {
+                $this->isObject = true;
+            }
+            elseif ($type == 'array') {
+                $this->isArray = true;
+            }
+            else {
+                $this->isScalar = true;
+            }
+            return;
+        }
 
         if ($this->container[TypeDetectorInterface::class]->isObject($value)) {
             $this->isObject = true;
