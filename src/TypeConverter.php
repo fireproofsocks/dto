@@ -6,11 +6,17 @@ class TypeConverter implements TypeConverterInterface
 
     public function toObject($value)
     {
-        if (is_array($value)) {
-            return (object) $value;
+        if (is_object($value)) {
+            $value = (array) $value;
         }
 
-        return (is_object($value)) ? $value : new \stdClass();
+        return (is_array($value)) ? $value : [];
+
+//        if (is_array($value)) {
+//            return (object) $value;
+//        }
+//
+//        return (is_object($value)) ? $value : new \stdClass();
     }
 
     public function toArray($value)

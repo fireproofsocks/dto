@@ -298,17 +298,23 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function hydrate($value)
     {
+
         $value = $this->regulator->getDefault($value);
 
         $value = $this->regulator->filter($value, $this->schema);
 
+        print __FUNCTION__.':'.__LINE__.' value:'; print_r($value); exit;
         if ($this->regulator->isObject()) {
+            //print __LINE__; exit;
             $this->hydrateObject($value);
         }
         elseif ($this->regulator->isArray()) {
+            //print __LINE__; exit;
             $this->hydrateArray($value);
         }
         else {
+            //print_r($value); exit;
+            //print __LINE__; exit;
             $this->hydrateScalar($value);
         }
     }
@@ -322,6 +328,9 @@ class Dto extends \ArrayObject implements DtoInterface
 
         foreach ($value as $k => $v) {
 
+            //$x = $this->getHydratedChildDto($v, $this->regulator->getSchemaAtKey($k));
+            $x = $this->regulator->getSchemaAtKey($k);
+            print __LINE__; print_r($x); exit;
             parent::offsetSet(
                 $k,
                 $this->getHydratedChildDto($v, $this->regulator->getSchemaAtKey($k))

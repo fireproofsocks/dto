@@ -38,6 +38,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function filter($value, array $schema = [])
     {
+
         // TODO: Implement validate() method.
         // de-reference root schema (done already in compileSchema)
 
@@ -50,18 +51,24 @@ class JsonSchemaRegulator implements RegulatorInterface
 
         // throws Exceptions on errors
         foreach ($validators as $v) {
+
             $result = $v->validate($value, $schema);
+            // $schema goes out of scope here!!!
+            //print __LINE__; print_r($this->schema); exit;
+            //print __LINE__; print_r($schema); exit;
             // TODO: feels smelly
-            if ($v->isFilteredValue()) {
-                $value = $v->getFilteredValue();
-            }
+//            if ($v->isFilteredValue()) {
+//                $value = $v->getFilteredValue();
+//            }
         }
 
 
         // filter -- is any filtering required before storage?
 
         // TODO: set storage type: isObject, isArray, isScalar
-        $this->setStorageType($value);
+        print "--------------------\n";
+        print 'setStorageType '; print_r($value); print "\n"; print_r($schema); print "\n";
+        print $this->setStorageType($value, $schema); print "\n";
 
         return $value;
     }
@@ -83,35 +90,41 @@ class JsonSchemaRegulator implements RegulatorInterface
         return $value;
     }
 
-    protected function setStorageType($value)
+    protected function setStorageType($value, array $schema)
     {
         $this->isObject = false;
         $this->isScalar = false;
         $this->isArray = false;
-
+//print_r($schema); exit;
+        $this->schemaAccessor->load($schema);
         $type = $this->schemaAccessor->getType();
-
+//print __LINE__; print ' getType:'; print_r($type); exit;
         if (!is_array($type)) {
             if ($type === 'object') {
                 $this->isObject = true;
+                return 'object';
             }
             elseif ($type == 'array') {
                 $this->isArray = true;
+                return 'array';
             }
             else {
                 $this->isScalar = true;
+                return 'scalar';
             }
-            return;
         }
 
         if ($this->container[TypeDetectorInterface::class]->isObject($value)) {
             $this->isObject = true;
+            return 'object';
         }
         elseif ($this->container[TypeDetectorInterface::class]->isArray($value)) {
             $this->isArray = true;
+            return 'array';
         }
         else {
             $this->isScalar = true;
+            return 'scalar';
         }
     }
 

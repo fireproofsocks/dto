@@ -59,4 +59,5 @@ class ArraysTest extends TestCase
 
         $this->assertEquals([['a' => 'apple', 'b' => 'banjo'], ['a' => 'ask', 'b' => 'bork']], $dto->toArray());
     }
+
 }

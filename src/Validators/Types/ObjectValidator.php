@@ -75,7 +75,10 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
                 // $properties[$k];
                 // ValidatorSelectorInterface :: selectValidators($schema)
                 // RegulatorInterface -> filter
-                $this->container[RegulatorInterface::class]->filter($v);
+                // TODO: compile and dereference?!
+                //print __LINE__; print_r($properties[$k]); exit;
+                $schema = $this->container[RegulatorInterface::class]->compileSchema($properties[$k]);
+                $this->container[RegulatorInterface::class]->filter($v, $schema);
             }
         }
     }

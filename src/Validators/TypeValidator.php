@@ -4,7 +4,6 @@ namespace Dto\Validators;
 use Dto\Exceptions\InvalidTypeException;
 use Dto\JsonSchemaAccessorInterface;
 use Dto\TypeConverterInterface;
-use Dto\TypeDetectorInterface;
 
 class TypeValidator extends AbstractValidator implements ValidatorInterface
 {

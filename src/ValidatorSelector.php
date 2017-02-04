@@ -20,6 +20,7 @@ class ValidatorSelector implements ValidatorSelectorInterface
 
     public function selectValidators(array $schema)
     {
+
         $this->schemaAccessor = $this->schemaAccessor->load($schema);
 
         $validators = [];
@@ -37,6 +38,8 @@ class ValidatorSelector implements ValidatorSelectorInterface
         }
 
         $type = $this->schemaAccessor->getType();
+
+
         if ($type !== false) {
             $validators[] = $this->container[TypeValidator::class];
         }

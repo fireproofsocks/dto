@@ -12,8 +12,8 @@ class StringValidator extends AbstractValidator implements ValidatorInterface
     public function validate($string, array $schema)
     {
         $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
-        if ($this->container[TypeDetectorInterface::class]->isString($value)) {
-
+        if (!$this->container[TypeDetectorInterface::class]->isString($string)) {
+            throw new InvalidScalarValueException('Value is not a string.');
         }
         // A string instance is valid against this keyword if its length is less than, or equal to, the value of this keyword.
         if ($maxLength = $this->schemaAccessor->getMaxLength()) {
