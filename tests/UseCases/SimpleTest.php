@@ -84,21 +84,6 @@ class SimpleTest extends TestCase
         $this->assertEquals(['a' => 'amazing'], $dto->toArray());
     }
 
-    public function testSetUsingArrayNotationAutomaticallyDeepensStructure()
-    {
-        $schema = [
-            'type' => 'object',
-            'properties' => [
-                'a' => ['type' => 'string'],
-                'i' => ['type' => 'integer']
-            ],
-        ];
-        $dto = new Dto(null, $schema);
-        $this->assertInstanceOf(DtoInterface::class, $dto);
-        $dto['a'] = 'amazing';
-
-        $this->assertEquals(['a' => 'amazing'], $dto->toArray());
-    }
 
     public function testX()
     {

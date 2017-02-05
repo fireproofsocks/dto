@@ -37,7 +37,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      * What is this function doing really?  It's doing high-level validation and filtering to determine a storage type.
      * @inheritDoc
      */
-    public function filter($value, array $schema = [])
+    public function preFilter($value, array $schema = [])
     {
 
         // TODO: Implement validate() method.
@@ -63,7 +63,8 @@ class JsonSchemaRegulator implements RegulatorInterface
 
         // TODO: set storage type: isObject, isArray, isScalar
 //        patternProperties
-        $this->setStorageType($value, $schema);
+//        $this->setStorageType($value, $schema);
+        //var_dump($this->setStorageType($value, $schema)); exit;
 
         return $value;
     }
@@ -85,37 +86,43 @@ class JsonSchemaRegulator implements RegulatorInterface
         return $value;
     }
 
-    protected function setStorageType($value, array $schema)
+    public function chooseDataStorageType($value, array $schema)
     {
-        $this->isObject = false;
-        $this->isScalar = false;
-        $this->isArray = false;
+
+        // Polymorphism: all options are possible until we collapse them...
+        $this->isObject = true;
+        $this->isScalar = true;
+        $this->isArray = true;
 
         $this->schemaAccessor->load($schema);
         $type = $this->schemaAccessor->getType();
 
-        if (!is_array($type)) {
+        if ($type && !is_array($type)) {
             if ($type === 'object') {
-                $this->isObject = true;
+                $this->isScalar = false;
+                $this->isArray = false;
                 return 'object';
             }
             elseif ($type == 'array') {
-                $this->isArray = true;
+                $this->isScalar = false;
+                $this->isObject = false;
                 return 'array';
             }
             else {
-                $this->isScalar = true;
+                $this->isObject = false;
+                $this->isArray = false;
                 return 'scalar';
             }
         }
 
-        if ($this->container[TypeDetectorInterface::class]->isObject($value)) {
-            $this->isObject = true;
-            return 'object';
-        }
-        elseif ($this->container[TypeDetectorInterface::class]->isArray($value)) {
+        // Empty arrays are the rub: they are considered arrays by DTO
+        if ($this->container[TypeDetectorInterface::class]->isArray($value)) {
             $this->isArray = true;
             return 'array';
+        }
+        elseif ($this->container[TypeDetectorInterface::class]->isObject($value)) {
+            $this->isObject = true;
+            return 'object';
         }
         else {
             $this->isScalar = true;
@@ -164,6 +171,12 @@ class JsonSchemaRegulator implements RegulatorInterface
     protected function getSchemaAtIndex($index, $schema)
     {
         $accessor = $this->schemaAccessor->load($schema);
+
+        if ($maxItems = $this->schemaAccessor->getMaxItems()) {
+            if (($index + 1) > $maxItems) {
+                throw new InvalidIndexException('Arrays with more than '.$maxItems.' items disallowed by "maxItems".');
+            }
+        }
 
         $items = $accessor->getItems();
 

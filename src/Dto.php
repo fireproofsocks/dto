@@ -43,7 +43,7 @@ class Dto extends \ArrayObject implements DtoInterface
     /**
      * @var string
      */
-    protected $type;
+    protected $storage_type;
 
     /**
      * Dto constructor.
@@ -117,7 +117,7 @@ class Dto extends \ArrayObject implements DtoInterface
             parent::offsetGet($key)->hydrate($value);
         }
         else {
-            parent::offsetSet($key, $this->regulator->getFilteredValueForKey($value, $key));
+            parent::offsetSet($key, $this->regulator->getFilteredValueForKey($value, $key, $this->schema));
         }
     }
     
@@ -133,7 +133,7 @@ class Dto extends \ArrayObject implements DtoInterface
     final public function offsetSet($index, $value)
     {
         // Integers + null only?
-        if ($this->type !== 'array') {
+        if ($this->storage_type !== 'array') {
             throw new InvalidArrayOperationException('This operation is reserved for arrays only.');
         }
 
@@ -189,32 +189,32 @@ class Dto extends \ArrayObject implements DtoInterface
         $this->offsetSet(null, $val);
     }
 
-    /**
+    /*
      * @link https://stackoverflow.com/questions/6875080/php-how-to-array-unshift-on-an-arrayobject
      * @param $val
      * @throws InvalidDataTypeException
      */
-    public function prepend($val)
-    {
-        if ($this->regulator->isArray()) {
-            throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
-        }
-        // TODO
-    }
+//    public function prepend($val)
+//    {
+//        if ($this->regulator->isArray()) {
+//            throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
+//        }
+//        // TODO
+//    }
 
-    /**
+    /*
      * @link https://stackoverflow.com/questions/6627266/array-slice-or-other-array-functions-on-arrayobject
      * @param $offset
      * @param null $length
      * @throws InvalidDataTypeException
      */
-    public function slice($offset, $length = null)
-    {
-        if ($this->regulator->isArray()) {
-            throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
-        }
-        // TODO
-    }
+//    public function slice($offset, $length = null)
+//    {
+//        if ($this->regulator->isArray()) {
+//            throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
+//        }
+//        // TODO
+//    }
 
     public function get($index)
     {
@@ -241,7 +241,7 @@ class Dto extends \ArrayObject implements DtoInterface
      * @param mixed $index
      * @return mixed
      *
-     * @throws InvalidPropertyException
+     * @throws InvalidIndexException
      */
     final public function offsetGet($index)
     {
@@ -249,9 +249,11 @@ class Dto extends \ArrayObject implements DtoInterface
 //        // Already has property
 //        // this might get weird for "dual" types, e.g. we set it to a string, then try to use it as an object.
 //        //if (array_key_exists($index, $this)) {
-//        if (parent::offsetExists($index)) {
-//            return parent::offsetGet($index);
-//        }
+        if (parent::offsetExists($index)) {
+            return parent::offsetGet($index);
+        }
+
+        throw new InvalidIndexException('Index "'.$index.'" not found in array.');
 //
 //        // We only want to deepen the structure if the data type is an object
 //        $schema = $this->regulator->getPropertySchemaAsArray($index);
@@ -271,12 +273,14 @@ class Dto extends \ArrayObject implements DtoInterface
 
         $value = $this->regulator->getDefault($value);
 
-        $value = $this->regulator->filter($value, $this->schema);
+        $value = $this->regulator->preFilter($value, $this->schema);
 
-        if ($this->regulator->isObject()) {
+        $this->storage_type = $this->regulator->chooseDataStorageType($value, $this->schema);
+
+        if ($this->storage_type === 'object') {
             $this->hydrateObject($value);
         }
-        elseif ($this->regulator->isArray()) {
+        elseif ($this->storage_type === 'array') {
             $this->hydrateArray($value);
         }
         else {
@@ -284,17 +288,16 @@ class Dto extends \ArrayObject implements DtoInterface
         }
     }
 
-
     protected function hydrateObject($value)
     {
-        $this->type = 'object';
         parent::exchangeArray($this->regulator->filterObject($value, $this->schema));
     }
 
     protected function hydrateArray($value)
     {
-        $this->type = 'array';
-        parent::exchangeArray($this->regulator->filterArray($value, $this->schema));
+        $array = $this->regulator->filterArray($value, $this->schema);
+        $this->array_index = count($array);
+        parent::exchangeArray($array);
     }
 
     /**
@@ -303,13 +306,12 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     protected function hydrateScalar($value)
     {
-        $this->type = 'scalar';
         parent::offsetSet(0, $value);
     }
 
     public function toObject()
     {
-        if ($this->isScalar()) {
+        if ($this->storage_type === 'scalar') {
             throw new InvalidDataTypeException('Object representation is not possible for scalar values.');
         }
 
@@ -376,6 +378,6 @@ class Dto extends \ArrayObject implements DtoInterface
 
     public function isScalar()
     {
-        return ($this->type === 'scalar');
+        return ($this->storage_type === 'scalar');
     }
 }

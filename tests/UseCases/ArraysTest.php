@@ -7,7 +7,7 @@ use DtoTest\TestCase;
 
 class ArraysTest extends TestCase
 {
-    public function testArrayOfStrings()
+    public function testPushingStringsOntoArray()
     {
         $schema = [
             'type' => 'array',
@@ -110,19 +110,59 @@ class ArraysTest extends TestCase
     }
 
 
-    public function test()
+    /**
+     * @expectedException \Dto\Exceptions\InvalidIndexException
+     */
+    public function testMaxItemsIsEnforcedWhenItemsAreAddedIndividually()
     {
         $schema = [
             'type' => 'array',
-            'items' => [
-                'type' => 'string'
-            ]
+            'maxItems' => 2
+        ];
+
+        $dto = new Dto(null, $schema);
+        $dto[] = 'one';
+        $dto[] = 'two';
+        $dto[] = 'boom';
+    }
+
+    /**
+     * @expectedException \Dto\Exceptions\InvalidIndexException
+     */
+    public function testMaxItemsIsEnforcedWhenItemsAreAddedToAFullArray()
+    {
+        $schema = [
+            'type' => 'array',
+            'maxItems' => 2
         ];
 
         $dto = new Dto(['foo', 'bar'], $schema);
-        $dto[] = 'see';
+        $dto[] = 'boom';
+    }
 
-        print_r($dto);
+    public function testReadFromIndex()
+    {
+        $schema = [
+            'type' => 'array',
+        ];
+
+        $dto = new Dto(['zero', 'one'], $schema);
+
+        $this->assertEquals('one', $dto[1]);
+    }
+
+    /**
+     * @expectedException \Dto\Exceptions\InvalidIndexException
+     */
+    public function testReadFromNonExistantIndexThrowException()
+    {
+        $schema = [
+            'type' => 'array',
+        ];
+
+        $dto = new Dto(['zero', 'one'], $schema);
+
+        $dto[2];
     }
 
 }

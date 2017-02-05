@@ -70,12 +70,14 @@ class ResolverTest extends TestCase
             ->andReturn(['title' => 'Testy test'])
             ->shouldReceive('getDefault')
             ->andReturn(null)
-            ->shouldReceive('filter')
+            ->shouldReceive('preFilter')
             ->andReturn(null)
             ->shouldReceive('isObject')
             ->andReturn(false)
             ->shouldReceive('isArray')
             ->andReturn(false)
+            ->shouldReceive('chooseDataStorageType')
+            ->andReturn('scalar')
             ->getMock();
 
         $schema = $d->resolveSchema(new Dto(null, ['title' => 'Testy test'], $regulator));

@@ -4,6 +4,9 @@ namespace Dto;
 
 interface RegulatorInterface
 {
+
+    public function chooseDataStorageType($value, array $schema);
+
     /**
      * Validate/filter the given $value against the given $schema
      *
@@ -11,7 +14,7 @@ interface RegulatorInterface
      * @param array $schema
      * @return mixed
      */
-    public function filter($value, array $schema = []);
+    public function preFilter($value, array $schema = []);
 
     /**
      * Get the default value considering the $input value
