@@ -2,8 +2,10 @@
 namespace Dto\Validators\Types;
 
 use Dto\Exceptions\InvalidArrayValueException;
+use Dto\Exceptions\InvalidDataTypeException;
 use Dto\JsonSchemaAccessorInterface;
 use Dto\RegulatorInterface;
+use Dto\TypeDetectorInterface;
 use Dto\Validators\AbstractValidator;
 use Dto\Validators\ValidatorInterface;
 
@@ -19,12 +21,20 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
     {
         $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
 
+        $this->checkDataType($value);
         $this->checkMaxItems($value);
         $this->checkMinItems($value);
         $this->checkUniqueItems($value);
 
         return $this->validateItems($value, $schema);
 
+    }
+
+    protected function checkDataType($value)
+    {
+        if (!$this->container[TypeDetectorInterface::class]->isArray($value)) {
+            throw new InvalidDataTypeException('Value is not a true array.');
+        }
     }
 
     protected function checkMaxItems($value)

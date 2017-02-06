@@ -2,6 +2,7 @@
 
 namespace Dto\Validators\Types;
 
+use Dto\Exceptions\InvalidDataTypeException;
 use Dto\Exceptions\InvalidNumberValueException;
 use Dto\Exceptions\InvalidScalarValueException;
 use Dto\JsonSchemaAccessorInterface;
@@ -34,7 +35,7 @@ class NumberValidator extends AbstractValidator implements ValidatorInterface
     protected function checkDataType($number)
     {
         if (!$this->container[TypeDetectorInterface::class]->isNumber($number)) {
-            throw new InvalidNumberValueException('Value is not numeric.');
+            throw new InvalidDataTypeException('Value is not numeric.');
         }
     }
 
@@ -49,6 +50,14 @@ class NumberValidator extends AbstractValidator implements ValidatorInterface
         }
     }
 
+    /**
+     * A numeric instance is valid with regards to maximum if it is lower than, or equal to, this keyword's value.
+     * If exclusiveMaximum is also present and its value is boolean value true, then the numeric instance must be
+     * strictly lower than the value in maximum.
+     *
+     * @param $number
+     * @throws InvalidScalarValueException
+     */
     protected function checkMaximum($number)
     {
         $maximum = $this->schemaAccessor->getMaximum();

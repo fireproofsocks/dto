@@ -1,6 +1,7 @@
 <?php
 namespace Dto\Validators\Types;
 
+use Dto\Exceptions\InvalidDataTypeException;
 use Dto\Exceptions\InvalidObjectValueException;
 use Dto\JsonSchemaAccessorInterface;
 use Dto\RegulatorInterface;
@@ -31,7 +32,7 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
     protected function checkDataType($value)
     {
         if (!$this->container[TypeDetectorInterface::class]->isObject($value)) {
-            throw new InvalidObjectValueException('Value is not an object.');
+            throw new InvalidDataTypeException('Value is not an object.');
         }
     }
 

@@ -54,7 +54,7 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
      * At present, the only reasonably safe condition when we can type-cast the input value is when only ONE type is defined.
      * If type is defined as an array, e.g. "type": ["string","null"] then we cannot reliably know the intention of an input
      * value such as an empty string.
-     *
+     * TODO: enhance for cases where there are multiple types including one scalar and one aggregate, e.g. string, array
      * @param $value
      * @param $type
      * @return bool

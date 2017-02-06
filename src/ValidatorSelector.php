@@ -6,6 +6,11 @@ use Dto\Validators\AnyOfValidator;
 use Dto\Validators\EnumValidator;
 use Dto\Validators\TypeValidator;
 
+/**
+ * Class ValidatorSelector
+ * Finds/collects any top-level validators.
+ * @package Dto
+ */
 class ValidatorSelector implements ValidatorSelectorInterface
 {
     protected $container;
