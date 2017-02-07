@@ -48,10 +48,10 @@ class AnyOfValidatorTest extends TestCase
         $schema = [
             'anyOf' => [
                 [
-                    'type' => ['integer','null']
+                    'type' => 'integer'
                 ],
                 [
-                    'type' => ['string','null']
+                    'type' => 'string'
                 ]
             ]
         ];

@@ -37,7 +37,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      * What is this function doing really?  It's doing high-level validation and filtering to determine a storage type.
      * @inheritDoc
      */
-    public function preFilter($value, array $schema = [])
+    public function preFilter($value, array $schema = [], $do_typecasting = true)
     {
 
         // TODO: Implement validate() method.
@@ -55,7 +55,7 @@ class JsonSchemaRegulator implements RegulatorInterface
         // throws Exceptions on errors
         foreach ($validators as $v) {
             //print get_class($v); exit;
-            $value = $v->validate($value, $schema);
+            $value = $v->validate($value, $schema, $do_typecasting);
         }
 
 

@@ -17,7 +17,7 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
         'integer' // integer JSON numbers SHOULD NOT be encoded with a fractional part.
     ];
 
-    public function validate($value, array $schema)
+    public function validate($value, array $schema, $do_typecasting = true)
     {
         $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
 
@@ -25,7 +25,7 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
 
         $type = $this->schemaAccessor->getType();
 
-        if ($this->canPerformTypeCasting($value, $type)) {
+        if ($do_typecasting && $this->canPerformTypeCasting($value, $type)) {
             $value = $this->typeCast($value, $type);
         }
 
