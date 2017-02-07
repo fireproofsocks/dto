@@ -19,9 +19,10 @@ interface RegulatorInterface
     /**
      * Get the default value considering the $input value
      * @param mixed|null $input
+     * @param array
      * @return mixed
      */
-    public function getDefault($input = null);
+    public function getDefault($input = null, array $schema = []);
 
     /**
      * Is the entity being regulated an object?

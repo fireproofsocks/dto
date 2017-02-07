@@ -18,4 +18,24 @@ class TypeValidatorTest extends TestCase
         $v = $this->getInstance();
         $this->assertInstanceOf(ValidatorInterface::class, $v);
     }
+
+    /**
+     * @expectedException \Dto\Exceptions\InvalidTypeException
+     */
+    public function testEnsureValidDefinition()
+    {
+        $v = $this->getInstance();
+        $v->validate('ignored', [
+            'type' => 'bogus'
+        ]);
+    }
+
+    public function testTypecastingIsPerformedForSingularTypes()
+    {
+        $v = $this->getInstance();
+        $result = $v->validate('42', [
+            'type' => 'integer'
+        ]);
+        $this->assertEquals(42, $result);
+    }
 }

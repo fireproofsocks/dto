@@ -135,11 +135,12 @@ class JsonSchemaRegulator implements RegulatorInterface
      * if input is scalar and default is scalar, use input
      * if input is array and default is array, merge arrays
      * @param $input mixed passed from DTO constructor
+     * @param $schema array
      * @return mixed|null
      */
-    public function getDefault($input = null)
+    public function getDefault($input = null, array $schema = [])
     {
-        $default = $this->schemaAccessor->load($this->schema)->getDefault();
+        $default = $this->schemaAccessor->load($schema)->getDefault();
 
         $input = $this->unwrapValue($input);
 

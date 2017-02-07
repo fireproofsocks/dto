@@ -21,7 +21,7 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
     {
         $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
 
-        $this->ensureValidType();
+        $this->ensureValidDefinition();
 
         $type = $this->schemaAccessor->getType();
 
@@ -34,15 +34,12 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
         return $value;
     }
 
-    protected function ensureValidType()
+    protected function ensureValidDefinition()
     {
         $types = (array) $this->schemaAccessor->getType();
 
         foreach ($types as $t) {
             if (!in_array($t, $this->valid_types)) {
-                if (!is_string($t)) {
-                    throw new InvalidTypeException('"type" must be a string value and one of the following: '. implode(',', $this->valid_types));
-                }
                 throw new InvalidTypeException('"type" "'.$t.'" is not one of the allowed types: '. implode(',', $this->valid_types));
             }
         }
@@ -65,7 +62,6 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
     }
 
     /**
-     * TODO: this feels smelly... filtering AND validating.  Make this behavior configurable?
      * @param $value mixed
      * @param $type string
      * @return mixed
@@ -75,14 +71,17 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
         return $this->container[TypeConverterInterface::class]->{'to'.$type}($value);
     }
 
+    /**
+     * Shove the value through the validators corresponding to the defined type(s).  If we exhaust all possible types,
+     * then we (re)throw the last exception.
+     *
+     * @param $value
+     * @param array $types
+     * @param array $schema
+     * @throws \Exception
+     */
     protected function tryAllDefinedTypes($value, array $types, array $schema)
     {
-        // Option 1: we detect the type, then shove it through the corresponding validator, e.g.
-        // $dectected_type = $this->container[TypeDetectorInterface::class]->getType($value);
-
-        // Option 2: we don't detect anything, we just shove the value through the validators corresponding to the defined type(s)
-        // If exhaust the defined types without coming clean, then throw an exception
-        // must match one of the types
         $passed_validation = false;
         foreach ($types as $t) {
             try {
@@ -98,7 +97,6 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
         // If we didn't pass validation, we (re)throw the last Exception
         if (!$passed_validation) {
             throw $e;
-            //throw new InvalidTypeException('Value could not be validated against any available type(s): '.implode(',', $types));
         }
     }
 

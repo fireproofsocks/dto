@@ -271,7 +271,7 @@ class Dto extends \ArrayObject implements DtoInterface
     public function hydrate($value)
     {
 
-        $value = $this->regulator->getDefault($value);
+        $value = $this->regulator->getDefault($value, $this->schema);
 
         $value = $this->regulator->preFilter($value, $this->schema);
 
