@@ -120,6 +120,16 @@ class MockDto implements DtoInterface
 
     }
 
+    public function forget($index)
+    {
+
+    }
+
+    public function exists($index)
+    {
+
+    }
+
     public function getSchema()
     {
 

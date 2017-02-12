@@ -20,7 +20,6 @@
     <filter>
         <whitelist>
             <directory>./src/</directory>
-            <directory>./spec/</directory>
         </whitelist>
     </filter>
     <logging>

@@ -6,9 +6,13 @@ interface DtoInterface
 {
     public function hydrate($value);
 
+    public function get($index);
+
     public function set($index, $value);
 
-    public function get($index);
+    public function forget($index);
+
+    public function exists($index);
 
     public function getSchema();
 
