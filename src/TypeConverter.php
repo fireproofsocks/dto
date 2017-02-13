@@ -1,6 +1,14 @@
 <?php
 namespace Dto;
 
+/**
+ * Class TypeConverter
+ *
+ * When JSON Schema refers to data a certain "type", this handles the conversion of that data to what the application
+ * works with internally.  E.g. an "object" is not a handled as a PHP stdClass object, but as an associative array.
+ *
+ * @package Dto
+ */
 class TypeConverter implements TypeConverterInterface
 {
 
@@ -12,11 +20,6 @@ class TypeConverter implements TypeConverterInterface
 
         return (is_array($value)) ? $value : [];
 
-//        if (is_array($value)) {
-//            return (object) $value;
-//        }
-//
-//        return (is_object($value)) ? $value : new \stdClass();
     }
 
     public function toArray($value)

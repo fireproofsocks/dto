@@ -2,27 +2,8 @@
 
 namespace Dto;
 
-use Dto\Exceptions\InvalidDataTypeException;
-
 class TypeDetector implements TypeDetectorInterface
 {
-    /**
-     * Our version of gettype() with considerations given for PHP "warts"
-     * @param $value
-     * @return mixed
-     * @throws InvalidDataTypeException
-     */
-    public function getType($value)
-    {
-        foreach (['object', 'array', 'string', 'integer', 'number', 'boolean', 'null'] as $t) {
-            if ($this->{'is' . $t}($value)) {
-                return $t;
-            }
-        }
-
-        throw new InvalidDataTypeException('Could not detect data type of given value.');
-    }
-
     public function isObject($value)
     {
         return (is_object($value) || $this->isAssociativeArray($value));

@@ -39,7 +39,6 @@ class Resolver implements ResolverInterface
     {
         $schema = $this->convertToArray($schema);
         $this->schemaAccessor->load($schema);
-        // $schema = $this->compileAllOf($schema);
 
         return $this->resolveReference($schema, $path_prefix);
     }
@@ -52,7 +51,6 @@ class Resolver implements ResolverInterface
      */
     protected function convertToArray($schema)
     {
-        //print var_dump($schema);
         if ($schema instanceof DtoInterface) {
             $schema = $schema->getSchema();
         }
@@ -61,18 +59,6 @@ class Resolver implements ResolverInterface
         }
         elseif (!is_array($schema)) {
             throw new InvalidSchemaException('Schema could not be resolved.');
-        }
-
-        return $schema;
-    }
-
-    protected function compileAllOf(array $schema)
-    {
-        // TODO: allOf -- what about conflicting schemas?
-        $allOf = $this->schemaAccessor->getAllOf();
-        foreach ($allOf as $s) {
-            // TODO: preserve the root schema's meta data
-            $schema = array_merge_recursive($schema, $this->resolveSchema($s));
         }
 
         return $schema;

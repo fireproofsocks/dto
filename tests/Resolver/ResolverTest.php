@@ -94,6 +94,16 @@ class ResolverTest extends TestCase
         $this->assertEquals(['title' => 'Testy test'], $schema);
     }
 
+    /**
+     * @expectedException \Dto\Exceptions\InvalidReferenceException
+     */
+    public function testPhpClassnamesAsRefMustImplementDtoInterface()
+    {
+        $d = $this->getInstance();
+
+        $d->resolveSchema(['$ref' => '\\DtoTest\\Resolver\\data\\BadSchema']);
+    }
+
     public function testJsonReferencesPhpClassname()
     {
         $d = $this->getInstance();
@@ -102,5 +112,14 @@ class ResolverTest extends TestCase
         $schema = $d->resolveSchema(['$ref' => $file]);
 
         $this->assertEquals(['title' => 'Testy test'], $schema);
+    }
+
+    /**
+     * @expectedException \Dto\Exceptions\InvalidSchemaException
+     */
+    public function testResolvingBadSchema()
+    {
+        $d = $this->getInstance();
+        $d->resolveSchema('not an array!');
     }
 }

@@ -28,7 +28,7 @@ class Formatter implements FormatterInterface
      */
     public function asEmail($value)
     {
-        return filter_var($value, FILTER_VALIDATE_EMAIL);
+        // return filter_var($value, FILTER_VALIDATE_EMAIL);
     }
 
     public function asHostname($value)
@@ -44,7 +44,7 @@ class Formatter implements FormatterInterface
      */
     public function asIpv4($value)
     {
-        return filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+        // return filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
     }
 
     /**
@@ -54,7 +54,7 @@ class Formatter implements FormatterInterface
      */
     public function asIpv6($value)
     {
-        return filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+        // return filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
     }
 
     /**
