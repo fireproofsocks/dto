@@ -87,7 +87,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function __get($name)
     {
-        return $this->offsetGet($name);
+        return $this->get($name);
     }
 
 
@@ -138,8 +138,6 @@ class Dto extends \ArrayObject implements DtoInterface
             throw new InvalidArrayOperationException('This operation is reserved for arrays only.');
         }
 
-        //    parent::offsetSet($index, $this->getHydratedChildDto($value, $this->regulator->getSchemaAtIndex($index)));
-
         // Does the property name match the regex? etc.
         if (is_null($index)) {
             parent::offsetSet(null, $this->regulator->getFilteredValueForIndex($value, $this->array_index, $this->schema));
@@ -185,37 +183,9 @@ class Dto extends \ArrayObject implements DtoInterface
             throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
         }
 
-        // validate value
-
         $this->offsetSet(null, $val);
     }
 
-    /*
-     * @link https://stackoverflow.com/questions/6875080/php-how-to-array-unshift-on-an-arrayobject
-     * @param $val
-     * @throws InvalidDataTypeException
-     */
-//    public function prepend($val)
-//    {
-//        if ($this->regulator->isArray()) {
-//            throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
-//        }
-//        // TODO
-//    }
-
-    /*
-     * @link https://stackoverflow.com/questions/6627266/array-slice-or-other-array-functions-on-arrayobject
-     * @param $offset
-     * @param null $length
-     * @throws InvalidDataTypeException
-     */
-//    public function slice($offset, $length = null)
-//    {
-//        if ($this->regulator->isArray()) {
-//            throw new InvalidDataTypeException('Array operations are not allowed by the current schema.');
-//        }
-//        // TODO
-//    }
 
     public function get($key)
     {
@@ -340,6 +310,12 @@ class Dto extends \ArrayObject implements DtoInterface
         parent::offsetSet(0, $value);
     }
 
+    /**
+     * Returns a (deeply nested) stdClass representation of the data.
+     *
+     * @return \stdClass
+     * @throws InvalidDataTypeException
+     */
     public function toObject()
     {
         if ($this->storage_type === 'scalar') {
@@ -367,10 +343,22 @@ class Dto extends \ArrayObject implements DtoInterface
         if ($this->isScalar()) {
             return json_encode(parent::offsetGet(0), JSON_PRETTY_PRINT);
         }
-        else {
-            // Disambiguate for empty arrays vs empty objects: [] vs {}
-            return json_encode($this->toArray(), JSON_PRETTY_PRINT);
+
+        // Disambiguate between empty arrays [] and empty objects {}
+        $data = $this->toArray();
+
+        if (empty($data)) {
+            if ($this->regulator->isArray()) {
+                return '[]';
+            }
+            return '{}';
         }
+
+        if ($pretty) {
+            return json_encode($data, JSON_PRETTY_PRINT);
+        }
+
+        return json_encode($data);
     }
 
 
