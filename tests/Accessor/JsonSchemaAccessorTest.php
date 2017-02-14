@@ -49,4 +49,48 @@ class JsonSchemaAccessorTest extends TestCase
         $this->assertEquals($result, ['title' => 'bar']);
     }
 
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testInstantiationThrowExceptionWhenNonArrayPassedAsSchema()
+    {
+        $container = include dirname(dirname(__DIR__)).'/src/container.php';
+        $a = new JsonSchemaAccessor($container, 'this is not an array');
+    }
+
+    public function testInstantiationWorksNormallyWhenPassedAnArraySchema()
+    {
+        $container = include dirname(dirname(__DIR__)).'/src/container.php';
+        $a = new JsonSchemaAccessor($container, []);
+        $this->assertEquals([], $a->getSchema());
+    }
+
+    public function testGetAllOf()
+    {
+        $a = $this->getInstance();
+        $this->assertEquals([], $a->getAllOf());
+    }
+
+    public function testGetAdditionalItems()
+    {
+        $a = $this->getInstance();
+        $this->assertEquals([], $a->getAdditionalItems());
+    }
+
+    public function testGetDescription()
+    {
+        $a = $this->getInstance(['description' => 'hi there']);
+        $this->assertEquals('hi there', $a->getDescription());
+    }
+
+    /**
+     * @expectedException \Dto\Exceptions\DefinitionNotFoundException
+     */
+    public function testNonExistantDefinitionThrowsException()
+    {
+        $a = $this->getInstance();
+        $a->getDefinition('does-not-exist');
+    }
+
 }

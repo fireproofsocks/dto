@@ -63,11 +63,7 @@ interface JsonSchemaAccessorInterface
 
     public function getRequired();
 
-    //public function getDefinitions();
-
     public function getDescription();
-
-    public function get($key);
 
     public function getDefinition($name);
 

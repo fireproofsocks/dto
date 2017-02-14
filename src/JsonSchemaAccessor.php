@@ -17,7 +17,12 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
         $this->serviceContainer = $serviceContainer;
 
         if (!is_null($schema)) {
-            $this->set($schema);
+
+            if (!is_array($schema)) {
+                throw new \InvalidArgumentException('$schema must be an array');
+            }
+
+            $this->schema = $schema;
         }
     }
 
@@ -177,24 +182,6 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
         }
 
         return $ref;
-//        if (!isset($this->schema['$ref'])) {
-//            return false;
-//        }
-//        if (!is_string($this->schema['$ref'])) {
-//            throw new InvalidReferenceException('The "$ref" parameter must store a string.');
-//        }
-//        // Get local definition
-//        if ('#' === substr($this->schema['$ref'], 0, 1)) {
-//            return $this->getLocalReference($this->schema['ref']);
-//        }
-//        elseif (class_exists($this->schema['$ref'])) {
-//            return $this->getPhpReference($this->schema['ref']);
-//        }
-//
-//        return $this->getRemoteReference($this->schema['ref']);
-//        // is PHP classname?
-//        // is JSON file?
-//        //$this->schema['$ref'];
     }
 
     public function getRequired()
@@ -205,16 +192,6 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
     public function getDescription()
     {
         return (isset($this->schema['description'])) ? $this->schema['description'] : '';
-    }
-
-    public function get($key)
-    {
-        if (!is_string($key)) {
-            throw new InvalidKeyException('get() requires a string key.');
-        }
-        if (!array_key_exists($key, $this->schema)) {
-            throw new InvalidKeyException('The key "'.$key.'" does not exist in this schema.');
-        }
     }
 
     public function getDefinition($name)

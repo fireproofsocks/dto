@@ -198,11 +198,6 @@ class Dto extends \ArrayObject implements DtoInterface
         }
 
         if (parent::offsetExists($key)) {
-
-            if ($this->isScalar()) {
-                return parent::offsetGet(0);
-            }
-
             return parent::offsetGet($key);
         }
 
