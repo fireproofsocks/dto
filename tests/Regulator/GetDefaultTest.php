@@ -66,7 +66,7 @@ class GetDefaultTest extends TestCase
         $this->assertEquals(['a' => 'apple'], $result);
     }
 
-    public function tesGetDefaultDefersToInput()
+    public function testGetDefaultDefersToInput()
     {
         $r = $this->getInstance('my-default');
         $result = $r->getDefault('override');
