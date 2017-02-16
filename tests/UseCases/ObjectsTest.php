@@ -113,11 +113,4 @@ class ObjectsTest extends TestCase
         $dto = new Dto(null, $schema);
         $dto['a'] = 123;
     }
-
-//    public function testX()
-//    {
-//        $dto = new Dto();
-//        //$dto['a'] = 123;
-//        $dto->a = 'asdf';
-//    }
 }
