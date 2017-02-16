@@ -28,11 +28,11 @@ class AnyOfValidator extends AbstractValidator implements ValidatorInterface
                     $storage_type = $this->regulator->chooseDataStorageType($value, $schema_candidate);
 
                     if ($storage_type === 'object') {
-                        $this->regulator->filterObject($value, $schema_candidate);
+                        // $value will be an associative array
+                        $value = $this->regulator->filterObject($value, $schema_candidate);
                     } elseif ($storage_type === 'array') {
-                        $this->regulator->filterArray($value, $schema_candidate);
-                    } else {
-                        // already done in preFiltering
+                        // $value will be an array
+                        $value = $this->regulator->filterArray($value, $schema_candidate);
                     }
 
                     return $value;

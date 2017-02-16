@@ -41,7 +41,7 @@ class AnyOfValidatorTest extends TestCase
     /**
      * @expectedException \Dto\Exceptions\InvalidAnyOfException
      */
-    public function testExceptionIsThrown()
+    public function testExceptionIsThrownWhenValueDoesntMatchAnyOfSchemas()
     {
         $v = $this->getInstance();
 
@@ -58,5 +58,89 @@ class AnyOfValidatorTest extends TestCase
 
         // Uh oh... we don't want to do any type-casting for this...
         $result = $v->validate(false, $schema);
+    }
+
+    /**
+     * @expectedException \Dto\Exceptions\InvalidAnyOfException
+     */
+    public function testNoMatchingObjectSchemaFound()
+    {
+        $v = $this->getInstance();
+
+        $schema = [
+            'anyOf' => [
+                [
+                    'type' => 'object',
+                    'minProperties' => 2,
+                    'maxProperties' => 2,
+
+                ],
+                [
+                    'type' => 'object',
+                    'minProperties' => 4,
+                    'maxProperties' => 4,
+                ]
+            ]
+        ];
+
+        $result = $v->validate(['a' => 'apple', 'b' => 'boy', 'c' => 'cat'], $schema);
+    }
+
+    public function testMatchingObjectSchemaFound()
+    {
+        $v = $this->getInstance();
+
+        $schema = [
+            'anyOf' => [
+                [
+                    'type' => 'object',
+                    'minProperties' => 2,
+                    'maxProperties' => 2,
+
+                ],
+                [
+                    'type' => 'object',
+                    'minProperties' => 4,
+                    'maxProperties' => 4,
+                ]
+            ]
+        ];
+
+        $result = $v->validate(['a' => 'apple', 'b' => 'boy'], $schema);
+
+        $this->assertEquals(['a' => 'apple', 'b' => 'boy'], $result);
+
+        $result = $v->validate(['a' => 'apple', 'b' => 'boy', 'c' => 'cat', 'd' => 'dog'], $schema);
+
+        $this->assertEquals(['a' => 'apple', 'b' => 'boy', 'c' => 'cat', 'd' => 'dog'], $result);
+    }
+
+    public function testMatchingArraySchemaFound()
+    {
+        $v = $this->getInstance();
+
+        $schema = [
+            'anyOf' => [
+                [
+                    'type' => 'array',
+                    'minItems' => 2,
+                    'maxItems' => 2,
+
+                ],
+                [
+                    'type' => 'array',
+                    'minItems' => 4,
+                    'maxItems' => 4,
+                ]
+            ]
+        ];
+
+        $result = $v->validate(['a', 'b'], $schema);
+
+        $this->assertEquals(['a', 'b'], $result);
+
+        $result = $v->validate(['a', 'b', 'c', 'd'], $schema);
+
+        $this->assertEquals(['a', 'b', 'c', 'd'], $result);
     }
 }

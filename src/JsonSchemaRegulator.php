@@ -48,23 +48,12 @@ class JsonSchemaRegulator implements RegulatorInterface
         // detect primary validator (enum, oneOf, allOf, type
         $validators = $this->container[ValidatorSelectorInterface::class]->selectValidators($schema);
 
-        // print count($validators);
-
         // can we do any filtering?
 
         // throws Exceptions on errors
         foreach ($validators as $v) {
-            //print get_class($v); exit;
             $value = $v->validate($value, $schema, $do_typecasting);
         }
-
-
-        // filter -- is any filtering required before storage?
-
-        // TODO: set storage type: isObject, isArray, isScalar
-//        patternProperties
-//        $this->setStorageType($value, $schema);
-        //var_dump($this->setStorageType($value, $schema)); exit;
 
         return $value;
     }
@@ -289,11 +278,21 @@ class JsonSchemaRegulator implements RegulatorInterface
         return new Dto($value, $this->getSchemaAtKey($key, $schema), $this);
     }
 
+    /**
+     * @param $value
+     * @param $schema
+     * @return mixed array
+     */
     public function filterArray($value, $schema)
     {
         return $this->container['arrayValidator']->validate($value, $schema);
     }
 
+    /**
+     * @param $value
+     * @param $schema
+     * @return mixed associative array
+     */
     public function filterObject($value, $schema)
     {
         return $this->container['objectValidator']->validate($value, $schema);
