@@ -12,8 +12,8 @@ class AnyOfValidator extends AbstractValidator implements ValidatorInterface
 
     public function validate($value, array $schema)
     {
-        $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
-        $this->regulator = $this->container[RegulatorInterface::class];
+        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->load($schema);
+        $this->regulator = $this->container->make(RegulatorInterface::class);
 
         if ($anyOf = $this->schemaAccessor->getAnyOf()) {
 

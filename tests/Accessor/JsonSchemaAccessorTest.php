@@ -4,19 +4,20 @@ namespace DtoTest;
 
 use Dto\JsonSchemaAccessor;
 use Dto\JsonSchemaAccessorInterface;
+use Dto\ServiceContainer;
 
 class JsonSchemaAccessorTest extends TestCase
 {
     protected function getInstance($schema = null)
     {
-        $container = include dirname(dirname(__DIR__)).'/src/container.php';
+        $container = new ServiceContainer();
 
         // return new JsonSchemaAccessor($container, $schema);
         if (!is_null($schema)) {
-            $container[JsonSchemaAccessorInterface::class]->load($schema);
+            return $container->make(JsonSchemaAccessorInterface::class)->load($schema);
         }
 
-        return $container[JsonSchemaAccessorInterface::class];
+        return $container->make(JsonSchemaAccessorInterface::class);
     }
 
     public function testInstantiation()
@@ -55,14 +56,12 @@ class JsonSchemaAccessorTest extends TestCase
      */
     public function testInstantiationThrowExceptionWhenNonArrayPassedAsSchema()
     {
-        $container = include dirname(dirname(__DIR__)).'/src/container.php';
-        $a = new JsonSchemaAccessor($container, 'this is not an array');
+        $a = new JsonSchemaAccessor('this is not an array');
     }
 
     public function testInstantiationWorksNormallyWhenPassedAnArraySchema()
     {
-        $container = include dirname(dirname(__DIR__)).'/src/container.php';
-        $a = new JsonSchemaAccessor($container, []);
+        $a = new JsonSchemaAccessor([]);
         $this->assertEquals([], $a->getSchema());
     }
 

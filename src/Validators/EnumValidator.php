@@ -8,7 +8,7 @@ class EnumValidator extends AbstractValidator implements ValidatorInterface
 {
     public function validate($value, array $schema)
     {
-        $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
+        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->load($schema);
 
         $enum = $this->schemaAccessor->getEnum();
 

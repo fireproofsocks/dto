@@ -17,10 +17,10 @@ class ValidatorSelector implements ValidatorSelectorInterface
 
     protected $schemaAccessor;
 
-    public function __construct(\ArrayAccess $container)
+    public function __construct(ServiceContainerInterface $container)
     {
         $this->container = $container;
-        $this->schemaAccessor = $container[JsonSchemaAccessorInterface::class];
+        $this->schemaAccessor = $container->make(JsonSchemaAccessorInterface::class);
     }
 
     public function selectValidators(array $schema)
@@ -32,21 +32,21 @@ class ValidatorSelector implements ValidatorSelectorInterface
 
         $enum = $this->schemaAccessor->getEnum();
         if ($enum !== false) {
-            $validators[] = $this->container[EnumValidator::class];
+            $validators[] = $this->container->make(EnumValidator::class);
         }
 
         // TODO: oneOf, not
 
         $anyOf = $this->schemaAccessor->getAnyOf();
         if ($anyOf !== false) {
-            $validators[] = $this->container[AnyOfValidator::class];
+            $validators[] = $this->container->make(AnyOfValidator::class);
         }
 
         $type = $this->schemaAccessor->getType();
 
 
         if ($type !== false) {
-            $validators[] = $this->container[TypeValidator::class];
+            $validators[] = $this->container->make(TypeValidator::class);
         }
 
         return $validators;

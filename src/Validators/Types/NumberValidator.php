@@ -22,7 +22,7 @@ class NumberValidator extends AbstractValidator implements ValidatorInterface
      */
     public function validate($number, array $schema)
     {
-        $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
+        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->load($schema);
 
         $this->checkDataType($number);
         $this->checkMultipleOf($number);
@@ -34,7 +34,7 @@ class NumberValidator extends AbstractValidator implements ValidatorInterface
 
     protected function checkDataType($number)
     {
-        if (!$this->container[TypeDetectorInterface::class]->isNumber($number)) {
+        if (!$this->container->make(TypeDetectorInterface::class)->isNumber($number)) {
             throw new InvalidDataTypeException('Value is not numeric.');
         }
     }

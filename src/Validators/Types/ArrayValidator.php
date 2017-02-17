@@ -19,7 +19,7 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
      */
     public function validate($value, array $schema)
     {
-        $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
+        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->load($schema);
 
         $this->checkDataType($value);
         $this->checkMaxItems($value);
@@ -32,7 +32,7 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
 
     protected function checkDataType($value)
     {
-        if (!$this->container[TypeDetectorInterface::class]->isArray($value)) {
+        if (!$this->container->make(TypeDetectorInterface::class)->isArray($value)) {
             throw new InvalidDataTypeException('Value is not a true array.');
         }
     }
@@ -69,7 +69,7 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
     protected function validateItems($array, $schema)
     {
         foreach ($array as $index => $v) {
-            $array[$index] = $this->container[RegulatorInterface::class]->getFilteredValueForIndex($v, $index, $schema);
+            $array[$index] = $this->container->make(RegulatorInterface::class)->getFilteredValueForIndex($v, $index, $schema);
         }
 
         return $array;

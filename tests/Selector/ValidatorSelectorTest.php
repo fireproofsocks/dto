@@ -1,6 +1,7 @@
 <?php
 namespace DtoTest\Selector;
 
+use Dto\ServiceContainer;
 use Dto\Validators\ValidatorInterface;
 use Dto\ValidatorSelector;
 use Dto\ValidatorSelectorInterface;
@@ -11,8 +12,7 @@ class ValidatorSelectorTest extends TestCase
 
     protected function getInstance()
     {
-        $container = include __DIR__ . '/../../src/container.php';
-        return new ValidatorSelector($container);
+        return new ValidatorSelector(new ServiceContainer());
     }
 
     public function testInstantation()

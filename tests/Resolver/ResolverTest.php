@@ -6,6 +6,7 @@ use Dto\Dto;
 use Dto\RegulatorInterface;
 use Dto\Resolver;
 use Dto\ResolverInterface;
+use Dto\ServiceContainer;
 use DtoTest\TestCase;
 
 class ResolverTest extends TestCase
@@ -13,7 +14,7 @@ class ResolverTest extends TestCase
 
     protected function getInstance()
     {
-        $container = include __DIR__. '/../../src/container.php';
+        $container = new ServiceContainer();
         return new Resolver($container);
     }
 

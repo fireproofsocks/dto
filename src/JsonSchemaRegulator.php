@@ -25,12 +25,12 @@ class JsonSchemaRegulator implements RegulatorInterface
     protected $isScalar;
 
 
-    public function __construct(\ArrayAccess $container)
+    public function __construct(ServiceContainerInterface $container)
     {
         $this->container = $container;
 
         // TODO DI
-        $this->schemaAccessor = $container[JsonSchemaAccessorInterface::class];
+        $this->schemaAccessor = $container->make(JsonSchemaAccessorInterface::class);
     }
 
     /**
@@ -46,7 +46,7 @@ class JsonSchemaRegulator implements RegulatorInterface
         $value = $this->unwrapValue($value);
 
         // detect primary validator (enum, oneOf, allOf, type
-        $validators = $this->container[ValidatorSelectorInterface::class]->selectValidators($schema);
+        $validators = $this->container->make(ValidatorSelectorInterface::class)->selectValidators($schema);
 
         // can we do any filtering?
 
@@ -105,11 +105,11 @@ class JsonSchemaRegulator implements RegulatorInterface
         }
 
         // Empty arrays are the rub: they are considered arrays by DTO
-        if ($this->container[TypeDetectorInterface::class]->isArray($value)) {
+        if ($this->container->make(TypeDetectorInterface::class)->isArray($value)) {
             $this->isArray = true;
             return 'array';
         }
-        elseif ($this->container[TypeDetectorInterface::class]->isObject($value)) {
+        elseif ($this->container->make(TypeDetectorInterface::class)->isObject($value)) {
             $this->isObject = true;
             return 'object';
         }
@@ -171,12 +171,12 @@ class JsonSchemaRegulator implements RegulatorInterface
         $items = $accessor->getItems();
 
         // Is it a regular schema?  Each item must validate against this schema.
-        if ($this->container[TypeDetectorInterface::class]->isObject($items)) {
+        if ($this->container->make(TypeDetectorInterface::class)->isObject($items)) {
             return $items;
         }
 
         // Is a tuple (an array of schemas)?
-        if ($this->container[TypeDetectorInterface::class]->isArray($items)) {
+        if ($this->container->make(TypeDetectorInterface::class)->isArray($items)) {
             if (isset($items[$index])) {
                 return $items[$index];
             }
@@ -184,10 +184,10 @@ class JsonSchemaRegulator implements RegulatorInterface
 
         // We have exceeded the number of schemas defining the tuple...
         $additionalItems = $accessor->getAdditionalItems();
-        if ($this->container[TypeDetectorInterface::class]->isBoolean($additionalItems)) {
+        if ($this->container->make(TypeDetectorInterface::class)->isBoolean($additionalItems)) {
             return [];
         }
-        if ($this->container[TypeDetectorInterface::class]->isObject($additionalItems)) {
+        if ($this->container->make(TypeDetectorInterface::class)->isObject($additionalItems)) {
             return $additionalItems;
         }
 
@@ -264,7 +264,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function compileSchema($schema = null)
     {
-        $this->schema = $this->container[ResolverInterface::class]->resolveSchema($schema);
+        $this->schema = $this->container->make(ResolverInterface::class)->resolveSchema($schema);
         return $this->schema;
     }
 
@@ -285,7 +285,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function filterArray($value, $schema)
     {
-        return $this->container['arrayValidator']->validate($value, $schema);
+        return $this->container->make('arrayValidator')->validate($value, $schema);
     }
 
     /**
@@ -295,6 +295,6 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function filterObject($value, $schema)
     {
-        return $this->container['objectValidator']->validate($value, $schema);
+        return $this->container->make('objectValidator')->validate($value, $schema);
     }
 }

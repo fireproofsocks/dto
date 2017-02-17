@@ -12,10 +12,8 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 
     protected $schema;
 
-    public function __construct(\ArrayAccess $serviceContainer, $schema = null)
+    public function __construct($schema = null)
     {
-        $this->serviceContainer = $serviceContainer;
-
         if (!is_null($schema)) {
 
             if (!is_array($schema)) {

@@ -12,7 +12,7 @@ class StringValidator extends AbstractValidator implements ValidatorInterface
 {
     public function validate($string, array $schema)
     {
-        $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
+        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->load($schema);
 
         $this->checkDataType($string);
         $this->checkMaxLength($string);
@@ -26,7 +26,7 @@ class StringValidator extends AbstractValidator implements ValidatorInterface
 
     protected function checkDataType($value)
     {
-        if (!$this->container[TypeDetectorInterface::class]->isString($value)) {
+        if (!$this->container->make(TypeDetectorInterface::class)->isString($value)) {
             throw new InvalidDataTypeException('Value is not a string.');
         }
     }

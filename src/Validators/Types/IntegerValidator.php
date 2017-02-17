@@ -10,7 +10,7 @@ class IntegerValidator extends NumberValidator implements ValidatorInterface
 {
     protected function checkDataType($number)
     {
-        if (!$this->container[TypeDetectorInterface::class]->isInteger($number)) {
+        if (!$this->container->make(TypeDetectorInterface::class)->isInteger($number)) {
             throw new InvalidDataTypeException('Value is not an integer.');
         }
     }

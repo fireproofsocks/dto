@@ -1,6 +1,7 @@
 <?php
 namespace DtoTest\Validators\Types;
 
+use Dto\ServiceContainer;
 use Dto\Validators\Types\StringValidator;
 use Dto\Validators\ValidatorInterface;
 use DtoTest\TestCase;
@@ -9,8 +10,7 @@ class StringValidatorTest extends TestCase
 {
     protected function getInstance()
     {
-        $container = include __DIR__ . '/../../../src/container.php';
-        return new StringValidator($container);
+        return new StringValidator(new ServiceContainer());
     }
 
     public function testInstantiation()

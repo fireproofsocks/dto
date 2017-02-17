@@ -9,14 +9,14 @@ use Dto\RegulatorInterface;
 use Dto\Resolver;
 use Dto\ResolverInterface;
 use DtoTest\TestCase;
-use Pimple\Container;
 
 class CompileSchemaTest extends TestCase
 {
     protected function getMockContainer($schema = [])
     {
-        $container = new Container();
-        $container[JsonSchemaAccessorInterface::class] = function ($c) {
+        $container = new MockContainer();
+
+        $container->bind(JsonSchemaAccessorInterface::class, function ($c) {
             return \Mockery::mock(JsonSchemaAccessor::class)
                 ->shouldReceive('load')
                 ->andReturn(null)
@@ -25,13 +25,14 @@ class CompileSchemaTest extends TestCase
                 ->shouldReceive('set')
                 ->andReturn(null)
                 ->getMock();
-        };
-        $container[ResolverInterface::class] = function ($c) use ($schema) {
+        });
+
+        $container->bind(ResolverInterface::class, function ($c) use ($schema) {
             return \Mockery::mock(Resolver::class)
                 ->shouldReceive('resolveSchema')
                 ->andReturn($schema)
                 ->getMock();
-        };
+        });
 
         return $container;
     }

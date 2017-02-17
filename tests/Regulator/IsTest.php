@@ -7,19 +7,18 @@ use Dto\JsonSchemaAccessorInterface;
 use Dto\JsonSchemaRegulator;
 use Dto\RegulatorInterface;
 use DtoTest\TestCase;
-use Pimple\Container;
 
 class IsTest extends TestCase
 {
     protected function getMockContainer()
     {
-        $container = new Container();
-        $container[JsonSchemaAccessorInterface::class] = function ($c) {
+        $container = new MockContainer();
+        $container->bind(JsonSchemaAccessorInterface::class, function ($c) {
             return \Mockery::mock(JsonSchemaAccessor::class)
                 ->shouldReceive('getDefault')
                 ->andReturn(null)
                 ->getMock();
-        };
+        });
 
         return $container;
     }

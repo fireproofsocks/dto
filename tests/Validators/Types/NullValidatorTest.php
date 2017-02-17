@@ -1,6 +1,7 @@
 <?php
 namespace DtoTest\Validators\Types;
 
+use Dto\ServiceContainer;
 use Dto\Validators\Types\NullValidator;
 use Dto\Validators\ValidatorInterface;
 use DtoTest\TestCase;
@@ -9,8 +10,7 @@ class NullValidatorTest extends TestCase
 {
     protected function getInstance()
     {
-        $container = include __DIR__ . '/../../../src/container.php';
-        return new NullValidator($container);
+        return new NullValidator(new ServiceContainer());
     }
 
     public function testInstantiation()

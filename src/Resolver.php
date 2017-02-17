@@ -20,11 +20,11 @@ class Resolver implements ResolverInterface
      */
     protected $rel_path;
 
-    public function __construct(\ArrayAccess $serviceContainer)
+    public function __construct(ServiceContainerInterface $serviceContainer)
     {
         $this->serviceContainer = $serviceContainer;
 
-        $this->schemaAccessor = $serviceContainer[JsonSchemaAccessorInterface::class];
+        $this->schemaAccessor = $serviceContainer->make(JsonSchemaAccessorInterface::class);
 
     }
 
@@ -106,7 +106,7 @@ class Resolver implements ResolverInterface
     }
     protected function getRemoteSchema($ref)
     {
-        return $this->serviceContainer[JsonDecoderInterface::class]->decodeFile($ref);
+        return $this->serviceContainer->make(JsonDecoderInterface::class)->decodeFile($ref);
     }
 
     protected function getPhpSchema($ref)

@@ -1,6 +1,7 @@
 <?php
 namespace DtoTest\Validators;
 
+use Dto\ServiceContainer;
 use Dto\Validators\AnyOfValidator;
 use Dto\Validators\ValidatorInterface;
 use DtoTest\TestCase;
@@ -9,8 +10,7 @@ class AnyOfValidatorTest extends TestCase
 {
     protected function getInstance()
     {
-        $container = include __DIR__ . '/../../src/container.php';
-        return new AnyOfValidator($container);
+        return new AnyOfValidator(new ServiceContainer());
     }
 
     public function testInstantiation()

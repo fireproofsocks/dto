@@ -11,7 +11,7 @@ class BooleanValidator extends AbstractValidator implements ValidatorInterface
 {
     public function validate($value, array $schema)
     {
-        if (!$this->container[TypeDetectorInterface::class]->isBoolean($value)) {
+        if (!$this->container->make(TypeDetectorInterface::class)->isBoolean($value)) {
             throw new InvalidDataTypeException('Value is not a boolean.');
         }
 

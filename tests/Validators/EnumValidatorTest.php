@@ -1,6 +1,7 @@
 <?php
 namespace DtoTest\Validators;
 
+use Dto\ServiceContainer;
 use Dto\Validators\EnumValidator;
 use DtoTest\TestCase;
 
@@ -8,8 +9,7 @@ class EnumValidatorTest extends TestCase
 {
     protected function getInstance()
     {
-        $container = include __DIR__ . '/../../src/container.php';
-        return new EnumValidator($container);
+        return new EnumValidator(new ServiceContainer());
     }
     
     public function testListedValuesValidate()

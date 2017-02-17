@@ -19,7 +19,7 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
      */
     public function validate($value, array $schema)
     {
-        $this->schemaAccessor = $this->container[JsonSchemaAccessorInterface::class]->load($schema);
+        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->load($schema);
 
         $this->checkDataType($value);
         $this->checkMaxProperties($value);
@@ -31,7 +31,7 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
 
     protected function checkDataType($value)
     {
-        if (!$this->container[TypeDetectorInterface::class]->isObject($value)) {
+        if (!$this->container->make(TypeDetectorInterface::class)->isObject($value)) {
             throw new InvalidDataTypeException('Value is not an object.');
         }
     }
@@ -69,7 +69,7 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
     protected function validateProperties($object, $schema)
     {
         foreach ($object as $k => $v) {
-            $object[$k] = $this->container[RegulatorInterface::class]->getFilteredValueForKey($v, $k, $schema);
+            $object[$k] = $this->container->make(RegulatorInterface::class)->getFilteredValueForKey($v, $k, $schema);
         }
 
         return $object;
