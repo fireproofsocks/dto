@@ -7,7 +7,7 @@ use Dto\Exceptions\InvalidScalarValueException;
 use Dto\JsonSchemaAccessorInterface;
 use Dto\TypeDetectorInterface;
 use Dto\Validators\AbstractValidator;
-use Dto\Validators\Types\String\FormatterInterface;
+use Dto\Validators\Types\String\FormatValidatorInterface;
 use Dto\Validators\ValidatorInterface;
 
 class StringValidator extends AbstractValidator implements ValidatorInterface
@@ -20,8 +20,7 @@ class StringValidator extends AbstractValidator implements ValidatorInterface
         $this->checkMaxLength($string);
         $this->checkMinLength($string);
         $this->checkPattern($string);
-
-        // TODO: check formats!
+        $this->checkFormat($string);
 
         return $string;
     }
@@ -81,7 +80,7 @@ class StringValidator extends AbstractValidator implements ValidatorInterface
     protected function checkFormat($string)
     {
         if ($format = $this->schemaAccessor->getFormat()) {
-            if ($this->container->make(FormatterInterface::class)->check($format, $string) === false) {
+            if ($this->container->make(FormatValidatorInterface::class)->check($format, $string) === false) {
                 throw new InvalidFormatException('Value did not match format "'.$format.'"');
             }
         }

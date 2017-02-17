@@ -8,8 +8,8 @@ use Dto\Validators\Types\IntegerValidator;
 use Dto\Validators\Types\NullValidator;
 use Dto\Validators\Types\NumberValidator;
 use Dto\Validators\Types\ObjectValidator;
-use Dto\Validators\Types\String\Formatter;
-use Dto\Validators\Types\String\FormatterInterface;
+use Dto\Validators\Types\String\FormatValidator;
+use Dto\Validators\Types\String\FormatValidatorInterface;
 use Dto\Validators\Types\StringValidator;
 use Dto\Validators\TypeValidator;
 use Pimple\Container;
@@ -78,8 +78,8 @@ class ServiceContainer implements ServiceContainerInterface
             return new TypeConverter();
         };
 
-        $this->container[FormatterInterface::class] = function ($c) {
-            return new Formatter();
+        $this->container[FormatValidatorInterface::class] = function ($c) {
+            return new FormatValidator();
         };
 
         // Specific type-validators: {$typename} . 'Validator'

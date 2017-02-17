@@ -1,21 +1,21 @@
 <?php
-namespace DtoTest\Formatter;
+namespace DtoTest\Format;
 
-use Dto\Validators\Types\String\Formatter;
-use Dto\Validators\Types\String\FormatterInterface;
+use Dto\Validators\Types\String\FormatValidator;
+use Dto\Validators\Types\String\FormatValidatorInterface;
 use DtoTest\TestCase;
 
-class FormatterTest extends TestCase
+class FormatValidatorTest extends TestCase
 {
     protected function getInstance()
     {
-        return new Formatter();
+        return new FormatValidator();
     }
 
     public function testInstantiation()
     {
         $f = $this->getInstance();
-        $this->assertInstanceOf(FormatterInterface::class, $f);
+        $this->assertInstanceOf(FormatValidatorInterface::class, $f);
     }
 
     /**
@@ -49,6 +49,14 @@ class FormatterTest extends TestCase
         $input = '2005-08-15T15:52:01+00:00';
         $result = $f->asDateTime($input);
         $this->assertEquals($input, $result);
+    }
+
+    public function testAsDateTimeReturnsFalseWhenInputIsNotScalar()
+    {
+        $f = $this->getInstance();
+        $input = ['a', 'b', 'c'];
+        $result = $f->asDateTime($input);
+        $this->assertFalse($result);
     }
 
     public function testAsDateTimeReturnsFalseWhenDateTimeIsNotInRFC3339Format()

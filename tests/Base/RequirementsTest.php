@@ -7,7 +7,8 @@ use DtoTest\TestCase;
 class RequirementsTest extends TestCase
 {
     protected $required_classes = [
-        '\Webmozart\Json\JsonDecoder'
+        '\Webmozart\Json\JsonDecoder',
+        '\DateTime'
     ];
 
     public function testClasses()

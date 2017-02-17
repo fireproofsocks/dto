@@ -9,7 +9,7 @@ use Dto\Exceptions\InvalidFormatException;
  * See http://json-schema.org/latest/json-schema-validation.html#rfc.section.7.3
  * @package Dto
  */
-class Formatter implements FormatterInterface
+class FormatValidator implements FormatValidatorInterface
 {
     /**
      * Allowed formats mapped to internal function names

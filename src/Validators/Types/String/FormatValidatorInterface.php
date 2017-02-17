@@ -2,7 +2,7 @@
 
 namespace Dto\Validators\Types\String;
 
-interface FormatterInterface
+interface FormatValidatorInterface
 {
     /**
      * @link http://json-schema.org/latest/json-schema-validation.html#rfc.section.7.3.1
