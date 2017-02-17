@@ -1,26 +1,16 @@
 <?php
 namespace DtoTest\Regulator;
 
-use Dto\ServiceContainerInterface;
+use Dto\ServiceContainer;
 use Pimple\Container;
 
-class MockContainer implements ServiceContainerInterface
+class MockContainer extends ServiceContainer
 {
     protected $container;
 
     public function __construct()
     {
+        // Override the init() stuff in parent
         $this->container = new Container();
     }
-
-    public function make($service)
-    {
-        return $this->container[$service];
-    }
-
-    public function bind($service, \Closure $closure)
-    {
-        $this->container[$service] = $closure;
-    }
-
 }

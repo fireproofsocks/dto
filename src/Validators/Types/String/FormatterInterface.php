@@ -1,6 +1,6 @@
 <?php
 
-namespace Dto;
+namespace Dto\Validators\Types\String;
 
 interface FormatterInterface
 {

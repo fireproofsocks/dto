@@ -85,7 +85,7 @@ class SimpleTest extends TestCase
     }
 
 
-    public function testX()
+    public function testSimpleArray()
     {
         $schema = [
             'type' => 'array',

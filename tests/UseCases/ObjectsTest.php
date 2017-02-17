@@ -113,4 +113,21 @@ class ObjectsTest extends TestCase
         $dto = new Dto(null, $schema);
         $dto['a'] = 123;
     }
+
+    public function testNullValidatorOnProperty()
+    {
+        $schema = [
+            'type' => 'object',
+            'properties' => [
+                'a' => ['type' => 'string'],
+                'b' => ['type' => 'null'],
+            ]
+        ];
+        $dto = new Dto(null, $schema);
+
+        $dto->a = 'my string';
+        $dto->b = 'null me up';
+
+        $this->assertEquals(['a' => 'my string', 'b' => null], $dto->toArray());
+    }
 }

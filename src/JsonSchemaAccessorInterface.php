@@ -57,6 +57,8 @@ interface JsonSchemaAccessorInterface
 
     public function getDefault();
 
+    public function getFormat();
+
     public function getEnum();
 
     public function getRef();

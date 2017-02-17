@@ -171,6 +171,11 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
         return (isset($this->schema['enum'])) ? $this->schema['enum'] : false;
     }
 
+    public function getFormat()
+    {
+        return (isset($this->schema['format'])) ? $this->schema['format'] : false;
+    }
+
     public function getRef()
     {
         $ref = (isset($this->schema['$ref'])) ? $this->schema['$ref'] : false;

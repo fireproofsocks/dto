@@ -2,10 +2,12 @@
 namespace Dto\Validators\Types;
 
 use Dto\Exceptions\InvalidDataTypeException;
+use Dto\Exceptions\InvalidFormatException;
 use Dto\Exceptions\InvalidScalarValueException;
 use Dto\JsonSchemaAccessorInterface;
 use Dto\TypeDetectorInterface;
 use Dto\Validators\AbstractValidator;
+use Dto\Validators\Types\String\FormatterInterface;
 use Dto\Validators\ValidatorInterface;
 
 class StringValidator extends AbstractValidator implements ValidatorInterface
@@ -70,6 +72,18 @@ class StringValidator extends AbstractValidator implements ValidatorInterface
                 throw new InvalidScalarValueException('Validation of string failed regular expression in "pattern".');
             }
         }
+    }
 
+    /**
+     * @param $string
+     * @throws InvalidFormatException
+     */
+    protected function checkFormat($string)
+    {
+        if ($format = $this->schemaAccessor->getFormat()) {
+            if ($this->container->make(FormatterInterface::class)->check($format, $string) === false) {
+                throw new InvalidFormatException('Value did not match format "'.$format.'"');
+            }
+        }
     }
 }
