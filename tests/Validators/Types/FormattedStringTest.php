@@ -19,12 +19,23 @@ class FormattedStringTest extends TestCase
         $this->assertInstanceOf(ValidatorInterface::class, $v);
     }
 
-    public function testFormat()
+    public function testFormatPassesThruToFormatValidator()
     {
         $v = $this->getInstance();
         $result = $v->validate('abc@mail.com', [
             'format' => 'email'
         ]);
         $this->assertEquals($result, 'abc@mail.com');
+    }
+
+    /**
+     * @expectedException \Dto\Exceptions\InvalidFormatException
+     */
+    public function testExceptionThrownWhenFormatIsNotSupported()
+    {
+        $v = $this->getInstance();
+        $v->validate('something', [
+            'format' => 'not-valid'
+        ]);
     }
 }
