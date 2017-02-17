@@ -31,6 +31,18 @@ class FormattedStringTest extends TestCase
     /**
      * @expectedException \Dto\Exceptions\InvalidFormatException
      */
+    public function testExceptionThrownWhenFormatValidatorFails()
+    {
+        $v = $this->getInstance();
+        $v->validate('not an email', [
+            'format' => 'email'
+        ]);
+    }
+
+
+    /**
+     * @expectedException \Dto\Exceptions\InvalidFormatException
+     */
     public function testExceptionThrownWhenFormatIsNotSupported()
     {
         $v = $this->getInstance();
