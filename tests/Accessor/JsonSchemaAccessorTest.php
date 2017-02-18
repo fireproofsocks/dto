@@ -91,5 +91,33 @@ class JsonSchemaAccessorTest extends TestCase
         $a = $this->getInstance();
         $a->getDefinition('does-not-exist');
     }
+    
+    public function testSetId()
+    {
+        $a = $this->getInstance();
+        $a->setId('xyz');
+        $this->assertEquals('xyz', $a->getId());
+    }
+    
+    public function testSetSchema()
+    {
+        $a = $this->getInstance();
+        $a->setSchema('myschema');
+        $this->assertEquals('myschema', $a->getSchema());
+    }
+
+    public function testSetTitle()
+    {
+        $a = $this->getInstance();
+        $a->setTitle('the title');
+        $this->assertEquals('the title', $a->getTitle());
+    }
+
+    public function testSetDescription()
+    {
+        $a = $this->getInstance();
+        $a->setDescription('the desc');
+        $this->assertEquals('the desc', $a->getDescription());
+    }
 
 }

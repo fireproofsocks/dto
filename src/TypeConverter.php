@@ -4,7 +4,7 @@ namespace Dto;
 /**
  * Class TypeConverter
  *
- * When JSON Schema refers to data a certain "type", this handles the conversion of that data to what the application
+ * When JSON Schema refers to data of a certain "type", this handles the conversion of that data to what the application
  * works with internally.  E.g. an "object" is not a handled as a PHP stdClass object, but as an associative array.
  *
  * @package Dto

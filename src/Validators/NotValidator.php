@@ -2,7 +2,6 @@
 
 namespace Dto\Validators;
 
-use Dto\Exceptions\InvalidAllOfException;
 use Dto\Exceptions\InvalidNotException;
 use Dto\JsonSchemaAccessorInterface;
 use Dto\RegulatorInterface;

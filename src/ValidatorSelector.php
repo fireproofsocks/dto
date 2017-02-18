@@ -36,7 +36,6 @@ class ValidatorSelector implements ValidatorSelectorInterface
             $validators[] = $this->container->make(EnumValidator::class);
         }
 
-        // TODO: oneOf, not, allOf
         $oneOf = $this->schemaAccessor->getOneOf();
         if ($oneOf !== false) {
             $validators[] = $this->container->make(OneOfValidator::class);

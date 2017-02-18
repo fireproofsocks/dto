@@ -51,6 +51,51 @@ class ValidatorSelectorTest extends TestCase
         }
     }
 
+    public function testOneOf()
+    {
+        $s = $this->getInstance();
+
+        $validators = $s->selectValidators([
+            'oneOf' => [[], []]
+        ]);
+
+        $this->assertEquals(1, count($validators));
+
+        foreach ($validators as $v) {
+            $this->assertInstanceOf(ValidatorInterface::class, $v);
+        }
+    }
+
+    public function testAllOf()
+    {
+        $s = $this->getInstance();
+
+        $validators = $s->selectValidators([
+            'allOf' => [[], []]
+        ]);
+
+        $this->assertEquals(1, count($validators));
+
+        foreach ($validators as $v) {
+            $this->assertInstanceOf(ValidatorInterface::class, $v);
+        }
+    }
+
+    public function testNot()
+    {
+        $s = $this->getInstance();
+
+        $validators = $s->selectValidators([
+            'not' => ['title' => 'not not not']
+        ]);
+
+        $this->assertEquals(1, count($validators));
+
+        foreach ($validators as $v) {
+            $this->assertInstanceOf(ValidatorInterface::class, $v);
+        }
+    }
+
 
     public function testType()
     {

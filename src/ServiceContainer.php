@@ -1,8 +1,11 @@
 <?php
 namespace Dto;
 
+use Dto\Validators\AllOfValidator;
 use Dto\Validators\AnyOfValidator;
 use Dto\Validators\EnumValidator;
+use Dto\Validators\NotValidator;
+use Dto\Validators\OneOfValidator;
 use Dto\Validators\Types\ArrayValidator;
 use Dto\Validators\Types\IntegerValidator;
 use Dto\Validators\Types\NullValidator;
@@ -64,6 +67,18 @@ class ServiceContainer implements ServiceContainerInterface
 
         $this->container[AnyOfValidator::class] = function ($c) {
             return new AnyOfValidator($this);
+        };
+
+        $this->container[OneOfValidator::class] = function ($c) {
+            return new OneOfValidator($this);
+        };
+
+        $this->container[AllOfValidator::class] = function ($c) {
+            return new AllOfValidator($this);
+        };
+
+        $this->container[NotValidator::class] = function ($c) {
+            return new NotValidator($this);
         };
 
         $this->container[TypeValidator::class] = function ($c) {

@@ -3,7 +3,6 @@
 namespace Dto;
 
 use Dto\Exceptions\DefinitionNotFoundException;
-use Dto\Exceptions\InvalidKeyException;
 use Dto\Exceptions\InvalidReferenceException;
 
 class JsonSchemaAccessor implements JsonSchemaAccessorInterface
