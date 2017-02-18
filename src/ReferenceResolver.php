@@ -6,7 +6,7 @@ use Dto\Exceptions\InvalidReferenceException;
 use Dto\Exceptions\InvalidSchemaException;
 
 
-class Resolver implements ResolverInterface
+class ReferenceResolver implements ReferenceResolverInterface
 {
     protected $serviceContainer;
 
@@ -23,9 +23,6 @@ class Resolver implements ResolverInterface
     public function __construct(ServiceContainerInterface $serviceContainer)
     {
         $this->serviceContainer = $serviceContainer;
-
-        $this->schemaAccessor = $serviceContainer->make(JsonSchemaAccessorInterface::class);
-
     }
 
     /**
@@ -38,7 +35,7 @@ class Resolver implements ResolverInterface
     public function resolveSchema($schema = null, $path_prefix = '')
     {
         $schema = $this->convertToArray($schema);
-        $this->schemaAccessor->load($schema);
+        $this->schemaAccessor = $this->serviceContainer->make(JsonSchemaAccessorInterface::class)->factory($schema);
 
         return $this->resolveReference($schema, $path_prefix);
     }

@@ -22,7 +22,7 @@ class NumberValidator extends AbstractValidator implements ValidatorInterface
      */
     public function validate($number, array $schema)
     {
-        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->load($schema);
+        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->factory($schema);
 
         $this->checkDataType($number);
         $this->checkMultipleOf($number);

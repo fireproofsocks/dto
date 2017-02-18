@@ -2,6 +2,11 @@
 
 namespace Dto;
 
+/**
+ * Interface RegulatorInterface
+ * The regulator is the gatekeeper: it controls which data is allowed to be stored and how it is to be stored.
+ * @package Dto
+ */
 interface RegulatorInterface
 {
 

@@ -10,7 +10,7 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 {
     protected $serviceContainer;
 
-    protected $schema;
+    protected $schema = [];
 
     public function __construct($schema = null)
     {
@@ -25,20 +25,23 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
     }
 
     /**
-     * Support fluid interface for greater clarity
+     *
      * @param array $schema
      * @return $this
      */
-    public function load(array $schema)
+    public function factory(array $schema)
     {
-        $this->schema = $schema;
+        return new JsonSchemaAccessor($schema);
+    }
 
-        return $this;
+    public function getId()
+    {
+        return isset($this->schema['id']) ? $this->schema['id'] : '';
     }
 
     public function getAllOf()
     {
-        return isset($this->schema['allOf']) ? $this->schema['allOf'] : [];
+        return isset($this->schema['allOf']) ? $this->schema['allOf'] : false;
     }
 
     public function getAnyOf()
@@ -46,6 +49,17 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
         // TODO: This keyword's value MUST be an array. This array MUST have at least one element.
         return isset($this->schema['anyOf']) ? $this->schema['anyOf'] : false;
     }
+
+    public function getOneOf()
+    {
+        return isset($this->schema['oneOf']) ? $this->schema['oneOf'] : false;
+    }
+
+    public function getNot()
+    {
+        return isset($this->schema['not']) ? $this->schema['not'] : false;
+    }
+
 
     public function getAdditionalItems()
     {
@@ -192,6 +206,11 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
         return (isset($this->schema['required'])) ? $this->schema['required'] : [];
     }
 
+    public function getTitle()
+    {
+        return (isset($this->schema['title'])) ? $this->schema['title'] : '';
+    }
+
     public function getDescription()
     {
         return (isset($this->schema['description'])) ? $this->schema['description'] : '';
@@ -206,7 +225,43 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
         throw new DefinitionNotFoundException('"'.$name.'" not found in schema definitions.');
     }
 
+    public function getDefinitions()
+    {
+        return (isset($this->schema['definitions'])) ? $this->schema['definitions'] : [];
+    }
+
     public function getSchema()
+    {
+        return (isset($this->schema['$schema'])) ? $this->schema['$schema'] : '';
+    }
+
+    public function setId($id)
+    {
+        $this->schema['id'] = $id;
+    }
+
+    public function setSchema($schema)
+    {
+        $this->schema['$schema'] = $schema;
+    }
+
+    public function setTitle($title)
+    {
+        $this->schema['title'] = $title;
+    }
+
+    public function setDescription($description)
+    {
+        $this->schema['description'] = $description;
+    }
+
+    public function setDefinitions(array $definitions)
+    {
+        $this->schema['definitions'] = $definitions;
+    }
+
+
+    public function toArray()
     {
         return $this->schema;
     }

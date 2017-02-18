@@ -23,6 +23,11 @@ DTOs are a helpful counterpart to the [Data Accessor Object (DAO)](https://en.wi
 Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 
+TODO:
+
+- oneOf
+- not
+
 ------------------------------------
 
 # Version History

@@ -2,11 +2,11 @@
 
 namespace Dto\Validators;
 
-use Dto\Exceptions\InvalidAnyOfException;
+use Dto\Exceptions\InvalidOneOfException;
 use Dto\JsonSchemaAccessorInterface;
 use Dto\RegulatorInterface;
 
-class AnyOfValidator extends AbstractValidator implements ValidatorInterface
+class OneOfValidator extends AbstractValidator implements ValidatorInterface
 {
     protected $regulator;
 
@@ -15,9 +15,11 @@ class AnyOfValidator extends AbstractValidator implements ValidatorInterface
         $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->factory($schema);
         $this->regulator = $this->container->make(RegulatorInterface::class);
 
-        if ($anyOf = $this->schemaAccessor->getAnyOf()) {
+        $passed_cnt = 0;
 
-            foreach ($anyOf as $schema_candidate) {
+        if ($oneOf = $this->schemaAccessor->getOneOf()) {
+
+            foreach ($oneOf as $schema_candidate) {
                 try {
                     $schema_candidate = $this->regulator->compileSchema($schema_candidate);
 
@@ -35,15 +37,20 @@ class AnyOfValidator extends AbstractValidator implements ValidatorInterface
                         $value = $this->regulator->filterArray($value, $schema_candidate);
                     }
 
-                    return $value;
+                    $passed_cnt++;
                 }
                 catch (\Exception $e) {
                     continue;
                 }
             }
-
-            throw new InvalidAnyOfException('No matching schema found for "anyOf"', 0, $e);
         }
+
+        if ($passed_cnt !== 1) {
+            throw new InvalidOneOfException('"oneOf" validation failed. '.$passed_cnt.' schemas were considered valid.');
+        }
+
+        return $value;
+
     }
 
 }

@@ -11,11 +11,17 @@ namespace Dto;
  */
 interface JsonSchemaAccessorInterface
 {
-    public function load(array $schema);
+    public function factory(array $schema);
+
+    public function getId();
 
     public function getAllOf();
 
     public function getAnyOf();
+
+    public function getOneOf();
+
+    public function getNot();
 
     public function getAdditionalItems();
 
@@ -65,13 +71,33 @@ interface JsonSchemaAccessorInterface
 
     public function getRequired();
 
+    public function getTitle();
+
     public function getDescription();
 
     public function getDefinition($name);
 
+    public function getDefinitions();
+
     /**
-     * Get root level schema
-     * @return array
+     * The schema version, e.g. http://json-schema.org/draft-04/schema#
+     * @return string
      */
     public function getSchema();
+
+    public function setId($id);
+
+    public function setSchema($schema);
+
+    public function setTitle($title);
+
+    public function setDescription($description);
+
+    public function setDefinitions(array $definitions);
+
+    /**
+     * Returns the JSON Schema object as an array
+     * @return array
+     */
+    public function toArray();
 }

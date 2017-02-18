@@ -14,7 +14,7 @@ class StringValidator extends AbstractValidator implements ValidatorInterface
 {
     public function validate($string, array $schema)
     {
-        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->load($schema);
+        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->factory($schema);
 
         $this->checkDataType($string);
         $this->checkMaxLength($string);

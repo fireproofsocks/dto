@@ -19,7 +19,7 @@ class TypeValidator extends AbstractValidator implements ValidatorInterface
 
     public function validate($value, array $schema, $do_typecasting = true)
     {
-        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->load($schema);
+        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->factory($schema);
 
         $this->ensureValidDefinition();
 

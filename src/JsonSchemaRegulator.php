@@ -2,21 +2,19 @@
 
 namespace Dto;
 
-
 use Dto\Exceptions\InvalidIndexException;
-use Dto\Exceptions\InvalidIntegerValueException;
 use Dto\Exceptions\InvalidKeyException;
 
 class JsonSchemaRegulator implements RegulatorInterface
 {
     protected $container;
 
+    protected $schemaAccessor;
+
     /**
      * @var array
      */
     protected $schema = [];
-
-    protected $schemaAccessor;
 
     protected $isObject;
 
@@ -29,12 +27,11 @@ class JsonSchemaRegulator implements RegulatorInterface
     {
         $this->container = $container;
 
-        // TODO DI
         $this->schemaAccessor = $container->make(JsonSchemaAccessorInterface::class);
     }
 
     /**
-     * What is this function doing really?  It's doing high-level validation and filtering to determine a storage type.
+     * Do validation on the root-level schema and determine a storage type.
      * @inheritDoc
      */
     public function preFilter($value, array $schema = [], $do_typecasting = true)
@@ -83,8 +80,8 @@ class JsonSchemaRegulator implements RegulatorInterface
         $this->isScalar = true;
         $this->isArray = true;
 
-        $this->schemaAccessor->load($schema);
-        $type = $this->schemaAccessor->getType();
+        $accessor = $this->schemaAccessor->factory($schema);
+        $type = $accessor->getType();
 
         if ($type && !is_array($type)) {
             if ($type === 'object') {
@@ -129,7 +126,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function getDefault($input = null, array $schema = [])
     {
-        $default = $this->schemaAccessor->load($schema)->getDefault();
+        $default = $this->schemaAccessor->factory($schema)->getDefault();
 
         $input = $this->unwrapValue($input);
 
@@ -160,9 +157,9 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     protected function getSchemaAtIndex($index, $schema)
     {
-        $accessor = $this->schemaAccessor->load($schema);
+        $accessor = $this->schemaAccessor->factory($schema);
 
-        if ($maxItems = $this->schemaAccessor->getMaxItems()) {
+        if ($maxItems = $accessor->getMaxItems()) {
             if (($index + 1) > $maxItems) {
                 throw new InvalidIndexException('Arrays with more than '.$maxItems.' items disallowed by "maxItems".');
             }
@@ -203,7 +200,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     protected function getSchemaAtKey($key, $schema)
     {
-        $accessor = $this->schemaAccessor->load($schema);
+        $accessor = $this->schemaAccessor->factory($schema);
 
         $properties = $accessor->getProperties();
 
@@ -256,7 +253,7 @@ class JsonSchemaRegulator implements RegulatorInterface
     }
 
     /**
-     * Let the resolver class handle how the Schema is resolved.  This
+     * Let the ReferenceResolver class handle how the Schema is resolved.  This
      * is set when the DTO is instantiated because the DTO contains the schema.
      *
      * @param $schema mixed
@@ -264,18 +261,61 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function compileSchema($schema = null)
     {
-        $this->schema = $this->container->make(ResolverInterface::class)->resolveSchema($schema);
+        $this->schema = $this->container->make(ReferenceResolverInterface::class)->resolveSchema($schema);
         return $this->schema;
     }
 
     public function getFilteredValueForIndex($value, $index, array $schema)
     {
-        return new Dto($value, $this->getSchemaAtIndex($index, $schema), $this);
+        return new Dto($value, $this->mergeMetaData($schema, $this->getSchemaAtIndex($index, $schema)), $this);
     }
 
     public function getFilteredValueForKey($value, $key, array $schema)
     {
-        return new Dto($value, $this->getSchemaAtKey($key, $schema), $this);
+        return new Dto($value, $this->mergeMetaData($schema, $this->getSchemaAtKey($key, $schema)), $this);
+    }
+
+    /**
+     * Metadata here is loosely defined: importantly the "definitions" need to be available to children if the children
+     * do not declare their own id.
+     *
+     * @link http://json-schema.org/latest/json-schema-validation.html#rfc.section.6
+     * @link https://groups.google.com/forum/#!topic/json-schema/lDNj2kBD_uA
+     *
+     * @param $parent_schema array
+     * @param $child_schema array
+     * @return array
+     */
+    protected function mergeMetaData($parent_schema, $child_schema)
+    {
+        $parent = $this->schemaAccessor->factory($parent_schema);
+        $child = $this->schemaAccessor->factory($child_schema);
+
+        if (!$child->getId()) {
+            if ($parent->getId()) {
+                $child->setId($parent->getId());
+            }
+            if ($parent->getSchema()) {
+                $child->setSchema($parent->getSchema());
+            }
+            if ($parent->getDefinitions()) {
+                $child->setDefinitions($parent->getDefinitions());
+            }
+        }
+
+        if (!$child->getTitle()) {
+            if ($parent->getTitle()) {
+                $child->setTitle($parent->getTitle());
+            }
+        }
+
+        if (!$child->getDescription()) {
+            if ($parent->getDescription()) {
+                $child->setDescription($parent->getDescription());
+            }
+        }
+
+        return $child->toArray();
     }
 
     /**

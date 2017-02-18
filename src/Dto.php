@@ -6,7 +6,6 @@ use Dto\Exceptions\InvalidArrayOperationException;
 use Dto\Exceptions\InvalidDataTypeException;
 use Dto\Exceptions\InvalidIndexException;
 use Dto\Exceptions\InvalidObjectValueException;
-use Dto\Exceptions\InvalidPropertyException;
 use Dto\Exceptions\UnstorableValueException;
 
 /**

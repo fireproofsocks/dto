@@ -16,7 +16,7 @@ class GetDefaultTest extends TestCase
         $container = new MockContainer();
         $container->bind(JsonSchemaAccessorInterface::class, function ($c) use ($default) {
             return \Mockery::mock(JsonSchemaAccessor::class)
-                ->shouldReceive('load')
+                ->shouldReceive('factory')
                 ->andReturnSelf()
                 ->shouldReceive('getDefault')
                 ->andReturn($default)

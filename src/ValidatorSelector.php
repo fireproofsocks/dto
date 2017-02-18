@@ -2,13 +2,16 @@
 
 namespace Dto;
 
+use Dto\Validators\AllOfValidator;
 use Dto\Validators\AnyOfValidator;
 use Dto\Validators\EnumValidator;
+use Dto\Validators\NotValidator;
+use Dto\Validators\OneOfValidator;
 use Dto\Validators\TypeValidator;
 
 /**
  * Class ValidatorSelector
- * Finds/collects any top-level validators.
+ * Finds/collects any "top-level" validators.
  * @package Dto
  */
 class ValidatorSelector implements ValidatorSelectorInterface
@@ -20,13 +23,11 @@ class ValidatorSelector implements ValidatorSelectorInterface
     public function __construct(ServiceContainerInterface $container)
     {
         $this->container = $container;
-        $this->schemaAccessor = $container->make(JsonSchemaAccessorInterface::class);
     }
 
     public function selectValidators(array $schema)
     {
-
-        $this->schemaAccessor = $this->schemaAccessor->load($schema);
+        $this->schemaAccessor = $this->container->make(JsonSchemaAccessorInterface::class)->factory($schema);
 
         $validators = [];
 
@@ -35,7 +36,21 @@ class ValidatorSelector implements ValidatorSelectorInterface
             $validators[] = $this->container->make(EnumValidator::class);
         }
 
-        // TODO: oneOf, not
+        // TODO: oneOf, not, allOf
+        $oneOf = $this->schemaAccessor->getOneOf();
+        if ($oneOf !== false) {
+            $validators[] = $this->container->make(OneOfValidator::class);
+        }
+
+        $not = $this->schemaAccessor->getNot();
+        if ($not !== false) {
+            $validators[] = $this->container->make(NotValidator::class);
+        }
+
+        $allOf = $this->schemaAccessor->getAllOf();
+        if ($allOf !== false) {
+            $validators[] = $this->container->make(AllOfValidator::class);
+        }
 
         $anyOf = $this->schemaAccessor->getAnyOf();
         if ($anyOf !== false) {

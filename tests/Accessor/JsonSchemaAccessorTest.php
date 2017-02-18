@@ -14,7 +14,7 @@ class JsonSchemaAccessorTest extends TestCase
 
         // return new JsonSchemaAccessor($container, $schema);
         if (!is_null($schema)) {
-            return $container->make(JsonSchemaAccessorInterface::class)->load($schema);
+            return $container->make(JsonSchemaAccessorInterface::class)->factory($schema);
         }
 
         return $container->make(JsonSchemaAccessorInterface::class);
@@ -62,13 +62,13 @@ class JsonSchemaAccessorTest extends TestCase
     public function testInstantiationWorksNormallyWhenPassedAnArraySchema()
     {
         $a = new JsonSchemaAccessor([]);
-        $this->assertEquals([], $a->getSchema());
+        $this->assertEquals([], $a->toArray());
     }
 
     public function testGetAllOf()
     {
         $a = $this->getInstance();
-        $this->assertEquals([], $a->getAllOf());
+        $this->assertEquals(false, $a->getAllOf());
     }
 
     public function testGetAdditionalItems()

@@ -4,7 +4,7 @@ namespace Dto;
 
 /**
  * Interface JsonDecoderInterface
- * Wrapper for whatever Decoder Package we want to use.
+ * One job: decode JSON strings or files.  This is a wrapper for whatever Json Decoder Package we want to use.
  * @package Dto
  */
 interface JsonDecoderInterface

@@ -8,7 +8,8 @@ class RequirementsTest extends TestCase
 {
     protected $required_classes = [
         '\Webmozart\Json\JsonDecoder',
-        '\DateTime'
+        '\DateTime',
+        '\ReflectionClass'
     ];
 
     public function testClasses()

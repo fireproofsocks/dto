@@ -1,6 +1,6 @@
 <?php
 
-namespace DtoTest\Resolver\data;
+namespace DtoTest\ReferenceResolver\data;
 
 use Dto\Dto;
 

@@ -6,8 +6,8 @@ use Dto\JsonSchemaAccessor;
 use Dto\JsonSchemaAccessorInterface;
 use Dto\JsonSchemaRegulator;
 use Dto\RegulatorInterface;
-use Dto\Resolver;
-use Dto\ResolverInterface;
+use Dto\ReferenceResolver;
+use Dto\ReferenceResolverInterface;
 use DtoTest\TestCase;
 
 class CompileSchemaTest extends TestCase
@@ -27,8 +27,8 @@ class CompileSchemaTest extends TestCase
                 ->getMock();
         });
 
-        $container->bind(ResolverInterface::class, function ($c) use ($schema) {
-            return \Mockery::mock(Resolver::class)
+        $container->bind(ReferenceResolverInterface::class, function ($c) use ($schema) {
+            return \Mockery::mock(ReferenceResolver::class)
                 ->shouldReceive('resolveSchema')
                 ->andReturn($schema)
                 ->getMock();
@@ -51,7 +51,7 @@ class CompileSchemaTest extends TestCase
     public function testPassthru()
     {
         $r = $this->getInstance(['my' => 'schema']);
-        $schema = $r->compileSchema('ignored -- see ResolverInterface');
+        $schema = $r->compileSchema('ignored -- see ReferenceResolverInterface');
         $this->assertEquals(['my' => 'schema'], $schema);
     }
 }

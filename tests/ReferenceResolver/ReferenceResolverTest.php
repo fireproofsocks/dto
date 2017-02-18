@@ -1,27 +1,27 @@
 <?php
 
-namespace DtoTest\Resolver;
+namespace DtoTest\ReferenceResolver;
 
 use Dto\Dto;
 use Dto\RegulatorInterface;
-use Dto\Resolver;
-use Dto\ResolverInterface;
+use Dto\ReferenceResolver;
+use Dto\ReferenceResolverInterface;
 use Dto\ServiceContainer;
 use DtoTest\TestCase;
 
-class ResolverTest extends TestCase
+class ReferenceResolverTest extends TestCase
 {
 
     protected function getInstance()
     {
         $container = new ServiceContainer();
-        return new Resolver($container);
+        return new ReferenceResolver($container);
     }
 
     public function testInstantiation()
     {
         $d = $this->getInstance();
-        $this->assertInstanceOf(ResolverInterface::class, $d);
+        $this->assertInstanceOf(ReferenceResolverInterface::class, $d);
     }
 
     public function testNullSchemaReturnsDefaultSchema()
@@ -90,7 +90,7 @@ class ResolverTest extends TestCase
     {
         $d = $this->getInstance();
 
-        $schema = $d->resolveSchema(['$ref' => '\\DtoTest\\Resolver\\data\\SampleDto']);
+        $schema = $d->resolveSchema(['$ref' => '\\DtoTest\\ReferenceResolver\\data\\SampleDto']);
 
         $this->assertEquals(['title' => 'Testy test'], $schema);
     }
@@ -102,7 +102,7 @@ class ResolverTest extends TestCase
     {
         $d = $this->getInstance();
 
-        $d->resolveSchema(['$ref' => '\\DtoTest\\Resolver\\data\\BadSchema']);
+        $d->resolveSchema(['$ref' => '\\DtoTest\\ReferenceResolver\\data\\BadSchema']);
     }
 
     public function testJsonReferencesPhpClassname()

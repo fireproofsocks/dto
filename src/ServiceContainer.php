@@ -50,8 +50,8 @@ class ServiceContainer implements ServiceContainerInterface
             return new JsonDecoder($decoder);
         };
 
-        $this->container[ResolverInterface::class] = function ($c) {
-            return new Resolver($this);
+        $this->container[ReferenceResolverInterface::class] = function ($c) {
+            return new ReferenceResolver($this);
         };
 
         $this->container[ValidatorSelectorInterface::class] = function ($c) {
