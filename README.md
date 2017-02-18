@@ -23,17 +23,17 @@ DTOs are a helpful counterpart to the [Data Accessor Object (DAO)](https://en.wi
 Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 
-TODO:
+## TODO:
 
 - property dependencies https://spacetelescope.github.io/understanding-json-schema/reference/object.html
 - schema dependencies (extend the schema)
-- room for version 5 of the schema
+- room for other versions JSON Schema (v5 is coming!)
 
 ------------------------------------
 
 # Version History
 
-## 2.0.0
+## 3.0.0
 
 - Integration of the JSON Schema 4 specification to drive all structure and type definitions.
 

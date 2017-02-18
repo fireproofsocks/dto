@@ -1,6 +1,6 @@
 {
   "name": "dto/dto",
-  "description": "Data Transfer Object: define object structures using the JSON Schema spec to hold structured data",
+  "description": "Use the JSON Schema spec to define Data Transfer Objects (DTOs)",
   "type": "project",
   "license": "MIT",
   "minimum-stability": "stable",
@@ -10,7 +10,6 @@
     "webmozart/json": "^1.2"
   },
   "require-dev": {
-    "phpspec/phpspec": "^3.2",
     "phpunit/phpunit": "5.7.8",
     "mockery/mockery": "^0.9.7"
   },
