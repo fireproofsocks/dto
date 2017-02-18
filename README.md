@@ -14,19 +14,20 @@ DTOs are a helpful counterpart to the [Data Accessor Object (DAO)](https://en.wi
 
 ## Possible Uses
 
-- In APIs: Consume a JSON Schema API that publishes its data formats.
+- In APIs: Consume a JSON Schema API at runtime without needing to parse data formats.
 - In Views: Instead of passing your view layer just any array, you can define a DTO and use type-hinting to ensure that your views will always have the data attributes they need. 
 - For Caching: Instead of relying on your own haphazard convention, you can store and retrieve a specific DTO class from cache without having to guess which attributes or array keys are available. 
 - Service Classes: when your service class expects to operate on a specific type of data.
-- Result Sets: instead of returning an array of stdClass objects or associative arrays from a database lookup, a DTO can describe the result set (as well as the individual records).    
+- Result Sets: instead of returning an array of stdClass objects or associative arrays from a database lookup, a DTO can describe the result set as well as the individual records.    
 
 Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 
 TODO:
 
-- oneOf
-- not
+- property dependencies https://spacetelescope.github.io/understanding-json-schema/reference/object.html
+- schema dependencies (extend the schema)
+- room for version 5 of the schema
 
 ------------------------------------
 
@@ -34,7 +35,7 @@ TODO:
 
 ## 2.0.0
 
-- Integration of the JSON Schema specification to drive all structure and type definitions.
+- Integration of the JSON Schema 4 specification to drive all structure and type definitions.
 
 ## 1.0.8
 

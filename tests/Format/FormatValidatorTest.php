@@ -51,14 +51,6 @@ class FormatValidatorTest extends TestCase
         $this->assertEquals($input, $result);
     }
 
-    public function testAsDateTimeReturnsFalseWhenInputIsNotScalar()
-    {
-        $f = $this->getInstance();
-        $input = ['a', 'b', 'c'];
-        $result = $f->asDateTime($input);
-        $this->assertFalse($result);
-    }
-
     public function testAsDateTimeReturnsFalseWhenDateTimeIsNotInRFC3339Format()
     {
         $f = $this->getInstance();

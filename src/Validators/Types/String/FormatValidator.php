@@ -53,14 +53,9 @@ class FormatValidator implements FormatValidatorInterface
      */
     public function asDateTime($value)
     {
-        try {
-            $datetime = new \DateTime($value);
+        $datetime = new \DateTime($value);
 
-            return ($value == $datetime->format(DATE_ATOM)) ? $value : false;
-
-        } catch (\Exception $e) {
-            return false;
-        }
+        return ($value == $datetime->format(DATE_ATOM)) ? $value : false;
     }
 
     /**
