@@ -6,7 +6,7 @@ use DtoTest\TestCase;
 
 class MetaDataTest extends TestCase
 {
-    public function test()
+    public function testDefinitions()
     {
         $dto = new Dto(null, [
             'type' => 'object',
@@ -50,5 +50,26 @@ class MetaDataTest extends TestCase
             'type' => 'integer',
             'description' => 'Root Definition'
         ], $dto->y->z->getSchema());
+    }
+
+    public function testMetaInheritance()
+    {
+        $dto = new Dto(null, [
+            'title' => 'xyz',
+            'description' => 'abc',
+            'type' => 'object',
+            'properties' => [
+                'x' => [
+                    'type' => 'string'
+                ]
+            ]
+        ]);
+
+        $dto->x = 'hello';
+
+        $this->assertEquals([
+            'title' => 'xyz',
+            'description' => 'abc',
+            'type' => 'string'], $dto->x->getSchema());
     }
 }
