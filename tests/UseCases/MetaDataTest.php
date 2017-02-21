@@ -55,6 +55,8 @@ class MetaDataTest extends TestCase
     public function testMetaInheritance()
     {
         $dto = new Dto(null, [
+            'id' => 'mr_parent',
+            '$schema' => 'http://json-schema.org/draft-04/schema#',
             'title' => 'xyz',
             'description' => 'abc',
             'type' => 'object',
@@ -68,6 +70,8 @@ class MetaDataTest extends TestCase
         $dto->x = 'hello';
 
         $this->assertEquals([
+            'id' => 'mr_parent',
+            '$schema' => 'http://json-schema.org/draft-04/schema#',
             'title' => 'xyz',
             'description' => 'abc',
             'type' => 'string'], $dto->x->getSchema());
