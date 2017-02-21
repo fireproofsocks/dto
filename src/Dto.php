@@ -112,6 +112,10 @@ class Dto extends \ArrayObject implements DtoInterface
             throw new InvalidDataTypeException('The set() method cannot be used on scalar objects.  Use hydrate() instead.');
         }
 
+        if ($this->regulator->isArray()) {
+            throw new InvalidDataTypeException('Properties cannot be set on arrays.');
+        }
+
         if (parent::offsetExists($key)) {
             parent::offsetGet($key)->hydrate($value);
         }
@@ -239,21 +243,11 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     final public function offsetGet($index)
     {
-        // TODO
-//        // Already has property
-//        // this might get weird for "dual" types, e.g. we set it to a string, then try to use it as an object.
-//        //if (array_key_exists($index, $this)) {
         if (parent::offsetExists($index)) {
             return parent::offsetGet($index);
         }
 
         throw new InvalidIndexException('Index "'.$index.'" not found in array.');
-//
-//        // We only want to deepen the structure if the data type is an object
-//        $schema = $this->regulator->getPropertySchemaAsArray($index);
-//
-//        $this->deepenStructure($index, $schema);
-//        return parent::offsetGet($index);
     }
 
 

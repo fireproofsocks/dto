@@ -7,6 +7,7 @@ use Dto\Validators\EnumValidator;
 use Dto\Validators\NotValidator;
 use Dto\Validators\OneOfValidator;
 use Dto\Validators\Types\ArrayValidator;
+use Dto\Validators\Types\BooleanValidator;
 use Dto\Validators\Types\IntegerValidator;
 use Dto\Validators\Types\NullValidator;
 use Dto\Validators\Types\NumberValidator;
@@ -106,6 +107,9 @@ class ServiceContainer implements ServiceContainerInterface
         };
         $this->container['stringValidator'] = function ($c) {
             return new StringValidator($this);
+        };
+        $this->container['booleanValidator'] = function ($c) {
+            return new BooleanValidator($this);
         };
         $this->container['integerValidator'] = function ($c) {
             return new IntegerValidator($this);

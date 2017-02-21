@@ -36,16 +36,10 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function preFilter($value, array $schema = [], $do_typecasting = true)
     {
-
-        // TODO: Implement validate() method.
-        // de-reference root schema (done already in compileSchema)
-
         $value = $this->unwrapValue($value);
 
         // detect primary validator (enum, oneOf, allOf, type
         $validators = $this->container->make(ValidatorSelectorInterface::class)->selectValidators($schema);
-
-        // can we do any filtering?
 
         // throws Exceptions on errors
         foreach ($validators as $v) {
@@ -182,9 +176,11 @@ class JsonSchemaRegulator implements RegulatorInterface
         // We have exceeded the number of schemas defining the tuple...
         $additionalItems = $accessor->getAdditionalItems();
         if ($this->container->make(TypeDetectorInterface::class)->isBoolean($additionalItems)) {
-            return [];
+            if ($additionalItems === true) {
+                return [];
+            }
         }
-        if ($this->container->make(TypeDetectorInterface::class)->isObject($additionalItems)) {
+        elseif ($this->container->make(TypeDetectorInterface::class)->isObject($additionalItems)) {
             return $additionalItems;
         }
 

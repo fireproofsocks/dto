@@ -97,4 +97,27 @@ class SimpleTest extends TestCase
 
         $this->assertEquals(['amazing'], $dto->toArray());
     }
+
+    public function testNonNullableStringsGetSetToEmptyString()
+    {
+        $dto = new X();
+
+        $dto->name = 'Lars';
+        $dto->email = 'some@email.com';
+        $dto->email = null;
+
+        //var_dump($dto->email->toScalar()); exit;
+        $this->assertEquals('', $dto->email->toScalar());
+    }
+}
+
+class X extends Dto
+{
+    protected $schema = [
+        'type' => 'object',
+        'properties' => [
+            'name' => ['type' => 'string'],
+            'email' => ['type' => 'string'],
+        ]
+    ];
 }
