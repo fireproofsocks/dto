@@ -37,6 +37,12 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
         }
     }
 
+    /**
+     * NOTE: this only checks the condition of the value being added.  Some checks need to be done in preValidation to
+     * compare them against the values that have already been stored.
+     * @param $value
+     * @throws InvalidArrayValueException
+     */
     protected function checkMaxItems($value)
     {
         $max = $this->schemaAccessor->getMaxItems();
@@ -47,6 +53,12 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
         }
     }
 
+    /**
+     * NOTE: this only checks the condition of the value being added.  Some checks need to be done in preValidation to
+     * compare them against the values that have already been stored.
+     * @param $value
+     * @throws InvalidArrayValueException
+     */
     protected function checkMinItems($value)
     {
         $min = $this->schemaAccessor->getMinItems();
@@ -57,6 +69,12 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
         }
     }
 
+    /**
+     * NOTE: this only checks the condition of the value being added.  Some checks need to be done in preValidation to
+     * compare them against the values that have already been stored.
+     * @param $value
+     * @throws InvalidArrayValueException
+     */
     protected function checkUniqueItems($value)
     {
         if ($this->schemaAccessor->getUniqueItems()) {

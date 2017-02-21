@@ -36,6 +36,12 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
         }
     }
 
+    /**
+     * NOTE: this only checks the condition of the value being added.  Some checks need to be done in preValidation to
+     * compare them against the values that have already been stored.
+     * @param $value
+     * @throws InvalidObjectValueException
+     */
     protected function checkMaxProperties($value)
     {
         $max = $this->schemaAccessor->getMaxProperties();
@@ -46,6 +52,12 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
         }
     }
 
+    /**
+     * NOTE: this only checks the condition of the value being added.  Some checks need to be done in preValidation to
+     * compare them against the values that have already been stored.
+     * @param $value
+     * @throws InvalidObjectValueException
+     */
     protected function checkMinProperties($value)
     {
         $min = $this->schemaAccessor->getMinProperties();

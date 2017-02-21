@@ -38,7 +38,7 @@ class Dto extends \ArrayObject implements DtoInterface
      * Tracks which index of the array we are writing to
      * @var integer
      */
-    protected $array_index = 0;
+    protected $items_cnt = 0;
 
     /**
      * @var string
@@ -108,12 +108,8 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function set($key, $value)
     {
-        if ($this->isScalar()) {
-            throw new InvalidDataTypeException('The set() method cannot be used on scalar objects.  Use hydrate() instead.');
-        }
-
-        if ($this->regulator->isArray()) {
-            throw new InvalidDataTypeException('Properties cannot be set on arrays.');
+        if ($this->storage_type !== 'object') {
+            throw new InvalidDataTypeException('Properties can only be set on objects.');
         }
 
         if (parent::offsetExists($key)) {
@@ -121,6 +117,7 @@ class Dto extends \ArrayObject implements DtoInterface
         }
         else {
             parent::offsetSet($key, $this->regulator->getFilteredValueForKey($value, $key, $this->schema));
+            $this->regulator->postValidate($this);
         }
     }
     
@@ -142,8 +139,9 @@ class Dto extends \ArrayObject implements DtoInterface
 
         // Does the property name match the regex? etc.
         if (is_null($index)) {
-            parent::offsetSet(null, $this->regulator->getFilteredValueForIndex($value, $this->array_index, $this->schema));
-            $this->array_index = $this->array_index + 1;
+            parent::offsetSet(null, $this->regulator->getFilteredValueForIndex($value, $this->items_cnt, $this->schema));
+            $this->regulator->postValidate($this);
+            $this->items_cnt = $this->items_cnt + 1;
             return;
         }
         elseif (parent::offsetExists($index)) {
@@ -195,7 +193,7 @@ class Dto extends \ArrayObject implements DtoInterface
             throw new \InvalidArgumentException('Invalid data type for get() method. Scalar required.');
         }
 
-        if ($this->isScalar()) {
+        if ($this->storage_type === 'scalar') {
             throw new InvalidDataTypeException('The get() method cannot be used on scalar objects.  Use hydrate() instead.');
         }
 
@@ -235,7 +233,6 @@ class Dto extends \ArrayObject implements DtoInterface
 
     /**
      * Used when accessing the instance via array notation.
-     * The not-so-obvious role of this function is to trigger the dynamic deepening of the object structure.
      * @param mixed $index
      * @return mixed
      *
@@ -261,7 +258,7 @@ class Dto extends \ArrayObject implements DtoInterface
 
         $value = $this->regulator->getDefault($value, $this->schema);
 
-        $value = $this->regulator->preFilter($value, $this->schema);
+        $value = $this->regulator->rootFilter($value, $this->schema);
 
         $this->storage_type = $this->regulator->chooseDataStorageType($value, $this->schema);
 
@@ -284,7 +281,7 @@ class Dto extends \ArrayObject implements DtoInterface
     protected function hydrateArray($value)
     {
         $array = $this->regulator->filterArray($value, $this->schema);
-        $this->array_index = count($array);
+        $this->items_cnt = count($array);
         parent::exchangeArray($array);
     }
 
@@ -311,7 +308,7 @@ class Dto extends \ArrayObject implements DtoInterface
 
         $output = new \stdClass();
         foreach ($this as $k => $v) {
-            $output->{$k} = ($v->isScalar()) ? $v->toScalar() : $v->toObject();
+            $output->{$k} = ($v->getStorageType() === 'scalar') ? $v->toScalar() : $v->toObject();
         }
 
         return $output;
@@ -327,7 +324,7 @@ class Dto extends \ArrayObject implements DtoInterface
     public function toJson($pretty = false)
     {
         // JSON can represent scalars!
-        if ($this->isScalar()) {
+        if ($this->storage_type === 'scalar') {
             return json_encode(parent::offsetGet(0), JSON_PRETTY_PRINT);
         }
 
@@ -341,11 +338,7 @@ class Dto extends \ArrayObject implements DtoInterface
             return '{}';
         }
 
-        if ($pretty) {
-            return json_encode($data, JSON_PRETTY_PRINT);
-        }
-
-        return json_encode($data);
+        return ($pretty) ? json_encode($data, JSON_PRETTY_PRINT) : json_encode($data);
     }
 
 
@@ -356,13 +349,13 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function toArray()
     {
-        if ($this->isScalar()) {
+        if ($this->storage_type === 'scalar') {
             throw new InvalidDataTypeException('Array representation is not possible for scalar values.');
         }
 
         $output = [];
         foreach ($this as $k => $v) {
-            $output[$k] = ($v->isScalar()) ? $v->toScalar() : $v->toArray();
+            $output[$k] = ($v->getStorageType() === 'scalar') ? $v->toScalar() : $v->toArray();
         }
 
         return $output;
@@ -375,15 +368,15 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function toScalar()
     {
-        if (!$this->isScalar()) {
+        if ($this->storage_type !== 'scalar') {
             throw new InvalidDataTypeException('This DTO stores aggregate data and cannot be represented as a scalar value.');
         }
 
         return parent::offsetGet(0);
     }
 
-    public function isScalar()
+    public function getStorageType()
     {
-        return ($this->storage_type === 'scalar');
+        return $this->storage_type;
     }
 }

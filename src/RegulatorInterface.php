@@ -10,7 +10,20 @@ namespace Dto;
 interface RegulatorInterface
 {
 
+    /**
+     * Determines what kind of storage vessel the DTO will be: object, array, scalar
+     * @param $value
+     * @param array $schema
+     * @return mixed
+     */
     public function chooseDataStorageType($value, array $schema);
+
+    /**
+     * Required for certain validation keywords that need to compare the incoming value against what is already stored,
+     * e.g. "uniqueItems", "maxItems", "maxProperties"
+     * @param DtoInterface $dto
+     */
+    public function postValidate(DtoInterface $dto);
 
     /**
      * Validate/filter the given $value against the given $schema
@@ -19,7 +32,7 @@ interface RegulatorInterface
      * @param array $schema
      * @return mixed
      */
-    public function preFilter($value, array $schema = []);
+    public function rootFilter($value, array $schema = []);
 
     /**
      * Get the default value considering the $input value

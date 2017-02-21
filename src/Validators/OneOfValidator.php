@@ -25,7 +25,7 @@ class OneOfValidator extends AbstractValidator implements ValidatorInterface
 
                     $value = $this->regulator->getDefault($value);
 
-                    $value = $this->regulator->preFilter($value, $schema_candidate, false);
+                    $value = $this->regulator->rootFilter($value, $schema_candidate, false);
 
                     $storage_type = $this->regulator->chooseDataStorageType($value, $schema_candidate);
 

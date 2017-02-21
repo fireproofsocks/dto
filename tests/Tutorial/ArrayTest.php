@@ -141,7 +141,7 @@ class ArrayTest extends TestCase
     /**
      * @expectedException \Dto\Exceptions\InvalidArrayValueException
      */
-    public function ___testUniqueItems()
+    public function testUniqueItems()
     {
         $schema = [
             'type' => 'array',

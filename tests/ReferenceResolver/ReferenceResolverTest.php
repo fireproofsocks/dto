@@ -71,7 +71,7 @@ class ReferenceResolverTest extends TestCase
             ->andReturn(['title' => 'Testy test'])
             ->shouldReceive('getDefault')
             ->andReturn(null)
-            ->shouldReceive('preFilter')
+            ->shouldReceive('rootFilter')
             ->andReturn(null)
             ->shouldReceive('isObject')
             ->andReturn(false)

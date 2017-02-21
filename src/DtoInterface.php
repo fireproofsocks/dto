@@ -24,5 +24,5 @@ interface DtoInterface
 
     public function toScalar();
 
-    public function isScalar();
+    public function getStorageType();
 }

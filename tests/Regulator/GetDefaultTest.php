@@ -161,9 +161,9 @@ class MockDto implements DtoInterface
         return $this->value;
     }
 
-    public function isScalar()
+    public function getStorageType()
     {
-        return $this->isScalar;
+        return ($this->isScalar) ? 'scalar' : 'other';
     }
 
 }

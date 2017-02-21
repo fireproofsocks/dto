@@ -2,6 +2,7 @@
 
 namespace Dto;
 
+use Dto\Exceptions\InvalidArrayValueException;
 use Dto\Exceptions\InvalidIndexException;
 use Dto\Exceptions\InvalidKeyException;
 
@@ -30,11 +31,21 @@ class JsonSchemaRegulator implements RegulatorInterface
         $this->schemaAccessor = $container->make(JsonSchemaAccessorInterface::class);
     }
 
+    public function postValidate(DtoInterface $dto)
+    {
+        if ($dto->getStorageType() === 'object') {
+            $this->container->make('objectValidator')->validate($dto->toArray(), $dto->getSchema());
+        }
+        elseif ($dto->getStorageType() === 'array') {
+            $this->container->make('arrayValidator')->validate($dto->toArray(), $dto->getSchema());
+        }
+    }
+
     /**
      * Do validation on the root-level schema and determine a storage type.
      * @inheritDoc
      */
-    public function preFilter($value, array $schema = [], $do_typecasting = true)
+    public function rootFilter($value, array $schema = [], $do_typecasting = true)
     {
         $value = $this->unwrapValue($value);
 
@@ -57,7 +68,7 @@ class JsonSchemaRegulator implements RegulatorInterface
     protected function unwrapValue($value)
     {
         if ($value instanceof DtoInterface) {
-            $value = ($value->isScalar()) ? $value->toScalar() : $value->toArray();
+            $value = ($value->getStorageType() === 'scalar') ? $value->toScalar() : $value->toArray();
         }
         elseif (is_object($value)) {
             $value = (array) $value;
