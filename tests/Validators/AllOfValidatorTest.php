@@ -63,4 +63,48 @@ class AllOfValidatorTest extends TestCase
 
         $v->validate(11, $schema);
     }
+
+    public function testObjectValidatorsCanBeCombined()
+    {
+        $v = $this->getInstance();
+
+        $schema = [
+            'allOf' => [
+                [
+                    'type' => 'object',
+                    'minProperties' => 1
+                ],
+                [
+                    'type' => 'object',
+                    'maxProperties' => 3
+                ]
+            ]
+        ];
+
+        $result = $v->validate(['a' => 'apple', 'b' => 'boy'], $schema);
+        $this->assertEquals(['a' => 'apple', 'b' => 'boy'], $result);
+    }
+
+    /**
+     * @expectedException \Dto\Exceptions\InvalidAllOfException
+     */
+    public function testExceptionThrownWhenObjectValidationsFail()
+    {
+        $v = $this->getInstance();
+
+        $schema = [
+            'allOf' => [
+                [
+                    'type' => 'object',
+                    'minProperties' => 1
+                ],
+                [
+                    'type' => 'object',
+                    'maxProperties' => 3
+                ]
+            ]
+        ];
+
+        $result = $v->validate(['a' => 'apple', 'b' => 'boy', 'c' => 'cat', 'd' => 'dog'], $schema);
+    }
 }
