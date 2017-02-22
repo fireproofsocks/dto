@@ -59,6 +59,7 @@ class NotValidatorTest extends TestCase
         $v = $this->getInstance();
 
         $schema = [
+            'type' => 'array',
             'not' => [
                 'type' => 'array',
                 'minItems' => 1,
