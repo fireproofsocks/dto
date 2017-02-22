@@ -70,4 +70,24 @@ class NotValidatorTest extends TestCase
         $result = $v->validate(['a', 'b', 'c', 'd'], $schema);
         $this->assertEquals(['a', 'b', 'c', 'd'], $result);
     }
+
+    /**
+     * @expectedException \Dto\Exceptions\InvalidNotException
+     */
+    public function testArraySchemasThrowsException()
+    {
+        $v = $this->getInstance();
+
+        $schema = [
+            'type' => 'array',
+            'not' => [
+                'type' => 'array',
+                'minItems' => 1,
+                'maxItems' => 3
+            ]
+        ];
+
+        $result = $v->validate(['a', 'b', 'c'], $schema);
+        $this->assertEquals(['a', 'b', 'c'], $result);
+    }
 }
