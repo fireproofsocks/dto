@@ -49,6 +49,31 @@ class RecursiveTest extends TestCase
         $this->assertEquals('Mary', $person->mother->name);
         $this->assertEquals('Frank', $person->father->name);
     }
+
+    public function testCreatedWithDtos()
+    {
+        $person = new Person(['name' => 'Bob']);
+        $person->mother = new Person(['name' => 'Lily']);
+        $person->father = new Person(['name' => 'Scott']);
+
+        $this->assertEquals($person->toArray(), ['name' => 'Bob', 'mother'=> ['name' => 'Lily'], 'father' => ['name' => 'Scott']]);
+    }
+
+    public function testCreatedAsObjects()
+    {
+        $person = new Person();
+        $person->name = 'Bob';
+        $person->mother = ['name' => 'Lily'];
+        $person->father = ['name' => 'Scott'];
+
+        $this->assertEquals($person->toArray(), ['name' => 'Bob', 'mother'=> ['name' => 'Lily'], 'father' => ['name' => 'Scott']]);
+    }
+
+    public function testCreatedInOneGo()
+    {
+        $person = new Person(['name' => 'Bob', 'mother'=> ['name' => 'Lily'], 'father' => ['name' => 'Scott']]);
+        $this->assertEquals($person->toArray(), ['name' => 'Bob', 'mother'=> ['name' => 'Lily'], 'father' => ['name' => 'Scott']]);
+    }
 }
 
 class Person extends Dto

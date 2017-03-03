@@ -45,6 +45,7 @@ class TypeDetector implements TypeDetectorInterface
      *
      * Helps us work around one of PHP's warts: there are no true arrays in PHP.
      * @link http://stackoverflow.com/questions/173400/how-to-check-if-php-array-is-associative-or-sequential
+     *
      * @param $value mixed
      * @return bool
      */

@@ -2,7 +2,6 @@
 
 namespace Dto;
 
-use Dto\Exceptions\InvalidArrayValueException;
 use Dto\Exceptions\InvalidIndexException;
 use Dto\Exceptions\InvalidKeyException;
 
@@ -160,12 +159,12 @@ class JsonSchemaRegulator implements RegulatorInterface
      * For getting the sub-schema corresponding to an array index
      * @link https://spacetelescope.github.io/understanding-json-schema/reference/array.html
      * @link http://json-schema.org/latest/json-schema-validation.html#rfc.section.5.9
-     * @param $index
-     * @pararm $schema array
+     * @param $index integer
+     * @param array $schema
      * @return array
      * @throws InvalidIndexException
      */
-    protected function getSchemaAtIndex($index, $schema)
+    protected function getSchemaAtIndex($index, array $schema)
     {
         $accessor = $this->schemaAccessor->factory($schema);
 
@@ -210,7 +209,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      * @return array
      * @throws InvalidKeyException
      */
-    protected function getSchemaAtKey($key, $schema)
+    protected function getSchemaAtKey($key, array $schema)
     {
         $accessor = $this->schemaAccessor->factory($schema);
 

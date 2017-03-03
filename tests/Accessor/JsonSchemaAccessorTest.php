@@ -67,7 +67,7 @@ class JsonSchemaAccessorTest extends TestCase
      */
     public function testInstantiationThrowExceptionWhenNonArrayPassedAsSchema()
     {
-        $a = new JsonSchemaAccessor('this is not an array');
+        new JsonSchemaAccessor('this is not an array');
     }
 
     public function testInstantiationWorksNormallyWhenPassedAnArraySchema()

@@ -7,11 +7,6 @@ use Dto\Exceptions\InvalidReferenceException;
 
 class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 {
-    /**
-     * @var MetaDataMergerInterface
-     */
-    protected $metaDataMerger;
-
     protected $schema = [];
 
     public function __construct($schema = null)
@@ -222,7 +217,6 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
     {
         if (isset($this->schema['definitions'][$name])) {
             return $this->mergeMetaData($this->schema['definitions'][$name]);
-            //return $this->schema['definitions'][$name];
         }
 
         throw new DefinitionNotFoundException('"'.$name.'" not found in schema definitions.');

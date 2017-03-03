@@ -201,6 +201,7 @@ class Dto extends \ArrayObject implements DtoInterface
             return parent::offsetGet($key);
         }
 
+        // TODO: dynamically deepen object structure?
         throw new InvalidObjectValueException('The property "'.$key.'" does not exist on this object.');
 
     }
@@ -313,10 +314,17 @@ class Dto extends \ArrayObject implements DtoInterface
 
         return $output;
     }
-    
+
+    /**
+     * @return string
+     */
+    final public function serialize() {
+        return $this->toJson();
+    }
+
     /**
      * Convert the specified arrayObj to JSON.  Ultimately, this is a decorator around the toArray() method.
-     * TODO: consider overriding the serialize() method
+     *
      * @param bool $pretty
      *
      * @return string
