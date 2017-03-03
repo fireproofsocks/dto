@@ -6,6 +6,8 @@ use Dto\DtoInterface;
 use Dto\JsonSchemaAccessor;
 use Dto\JsonSchemaAccessorInterface;
 use Dto\JsonSchemaRegulator;
+use Dto\MetaDataMerger;
+use Dto\MetaDataMergerInterface;
 use Dto\RegulatorInterface;
 use DtoTest\TestCase;
 
@@ -20,6 +22,12 @@ class GetDefaultTest extends TestCase
                 ->andReturnSelf()
                 ->shouldReceive('getDefault')
                 ->andReturn($default)
+                ->getMock();
+        });
+        $container->bind(MetaDataMergerInterface::class, function ($c) {
+            return \Mockery::mock(MetaDataMerger::class)
+                ->shouldReceive('mergeMetaData')
+                ->andReturn([])
                 ->getMock();
         });
 

@@ -41,14 +41,26 @@ class MetaDataTest extends TestCase
         $this->assertEquals(123, $dto->x->toScalar());
         $this->assertEquals([
             'type' => 'integer',
-            'description' => 'Root Definition'
+            'description' => 'Root Definition',
+            'definitions' => [
+                'my_integer' => [
+                    'type' => 'integer',
+                    'description' => 'Root Definition'
+                ]
+            ]
         ], $dto->x->getSchema());
 
         $dto->y->z = '456';
         $this->assertEquals(456, $dto->y->z->toScalar());
         $this->assertEquals([
             'type' => 'integer',
-            'description' => 'Root Definition'
+            'description' => 'Root Definition',
+            'definitions' => [
+                'my_integer' => [
+                    'type' => 'integer',
+                    'description' => 'Root Definition'
+                ]
+            ]
         ], $dto->y->z->getSchema());
     }
 

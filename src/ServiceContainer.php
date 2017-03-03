@@ -40,6 +40,7 @@ class ServiceContainer implements ServiceContainerInterface
 
     protected function init()
     {
+        // --------------------- Primary Services -----------------------------------------------------
         $this->container[RegulatorInterface::class] = function ($c) {
             return new JsonSchemaRegulator($this);
         };
@@ -62,6 +63,7 @@ class ServiceContainer implements ServiceContainerInterface
             return new ValidatorSelector($this);
         };
 
+        // --------------------- Validators -----------------------------------------------------
         $this->container[EnumValidator::class] = function ($c) {
             return new EnumValidator($this);
         };
@@ -98,6 +100,7 @@ class ServiceContainer implements ServiceContainerInterface
             return new FormatValidator();
         };
 
+        // --------------------- Data-Type Validators -----------------------------------------------------
         // Specific type-validators: {$typename} . 'Validator'
         $this->container['objectValidator'] = function ($c) {
             return new ObjectValidator($this);

@@ -44,12 +44,23 @@ class JsonSchemaAccessorTest extends TestCase
     public function testGetDefinition()
     {
         $j = $this->getInstance(['definitions'=>[
-            'foo' => ['title' => 'bar']
+            'foo' => ['id' => 'subschema', 'title' => 'bar']
         ]]);
         $result = $j->getDefinition('foo');
-        $this->assertEquals($result, ['title' => 'bar']);
+        $this->assertEquals($result, ['id' => 'subschema', 'title' => 'bar']);
     }
 
+    public function testGetDefinitionMergesMetaDataWhenItDoesNotHaveAnId()
+    {
+        $j = $this->getInstance([
+            'id' => 'root',
+            'definitions'=>[
+                'foo' => ['title' => 'bar']
+            ]
+        ]);
+        $result = $j->getDefinition('foo');
+        $this->assertEquals($result, ['id' => 'root', 'title' => 'bar', 'definitions'=>['foo' => ['title' => 'bar']]]);
+    }
 
     /**
      * @expectedException \InvalidArgumentException

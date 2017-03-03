@@ -7,7 +7,10 @@ use Dto\Exceptions\InvalidReferenceException;
 
 class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 {
-    protected $serviceContainer;
+    /**
+     * @var MetaDataMergerInterface
+     */
+    protected $metaDataMerger;
 
     protected $schema = [];
 
@@ -218,7 +221,8 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
     public function getDefinition($name)
     {
         if (isset($this->schema['definitions'][$name])) {
-            return $this->schema['definitions'][$name];
+            return $this->mergeMetaData($this->schema['definitions'][$name]);
+            //return $this->schema['definitions'][$name];
         }
 
         throw new DefinitionNotFoundException('"'.$name.'" not found in schema definitions.');
@@ -263,5 +267,37 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
     public function toArray()
     {
         return $this->schema;
+    }
+
+
+    public function mergeMetaData(array $child_schema)
+    {
+        $child = $this->factory($child_schema);
+
+        if (!$child->getId()) {
+            if ($this->getId()) {
+                $child->setId($this->getId());
+            }
+            if ($this->getSchema()) {
+                $child->setSchema($this->getSchema());
+            }
+            if ($this->getDefinitions()) {
+                $child->setDefinitions($this->getDefinitions());
+            }
+        }
+
+        if (!$child->getTitle()) {
+            if ($this->getTitle()) {
+                $child->setTitle($this->getTitle());
+            }
+        }
+
+        if (!$child->getDescription()) {
+            if ($this->getDescription()) {
+                $child->setDescription($this->getDescription());
+            }
+        }
+
+        return $child->toArray();
     }
 }

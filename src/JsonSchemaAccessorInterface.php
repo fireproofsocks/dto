@@ -100,4 +100,25 @@ interface JsonSchemaAccessorInterface
      * @return array
      */
     public function toArray();
+
+
+    /**
+     * Metadata here is defined as "any data from the root schema that needs to be available to its children schemas".
+     * The key for this is whether or not a child sub-schema declares its own "id" attribute, i.e. "am I my own unique
+     * schema? Or do I fall under the umbrella of the parent root schema?"
+     *
+     * Meta data that must be available includes:
+     *
+     *  - id
+     *  - title
+     *  - description
+     *  - definitions
+     *
+     * @link http://json-schema.org/latest/json-schema-validation.html#rfc.section.6
+     * @link https://groups.google.com/forum/#!topic/json-schema/lDNj2kBD_uA
+     *
+     * @param $child_schema array
+     * @return array
+     */
+    public function mergeMetaData(array $child_schema);
 }

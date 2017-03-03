@@ -29,7 +29,7 @@ class ReferenceResolverTest extends TestCase
         $d = $this->getInstance();
         $this->assertEquals([], $d->resolveSchema(null));
     }
-    
+
     public function testResolvingInlineSchema()
     {
         $d = $this->getInstance();
@@ -37,12 +37,14 @@ class ReferenceResolverTest extends TestCase
             '$ref' => '#/definitions/foo',
             'definitions' => [
                 'foo' => [
+                    'id' => 'foo',
                     'title' => 'Bar bar'
                 ]
             ]
         ]);
 
         $this->assertEquals([
+            'id' => 'foo',
             'title' => 'Bar bar'
         ], $schema);
     }
@@ -50,19 +52,19 @@ class ReferenceResolverTest extends TestCase
     public function testResolvingRemoteSchema()
     {
         $d = $this->getInstance();
-        $file = __DIR__.'/data/ref_b.json';
+        $file = __DIR__ . '/data/ref_b.json';
         $schema = $d->resolveSchema(['$ref' => $file]);
-        $this->assertEquals(['description' => 'Schema B (final)', 'type'=>'object'], $schema);
+        $this->assertEquals(['description' => 'Schema B (final)', 'type' => 'object'], $schema);
     }
 
     public function testRecursivelyResolvingRemoteSchema()
     {
         $d = $this->getInstance();
-        $file = __DIR__.'/data/root.json';
+        $file = __DIR__ . '/data/root.json';
         $schema = $d->resolveSchema(['$ref' => $file]);
-        $this->assertEquals(['description' => 'Schema B (final)', 'type'=>'object'], $schema);
+        $this->assertEquals(['description' => 'Schema B (final)', 'type' => 'object'], $schema);
     }
-    
+
     public function testUseDtoAsSchema()
     {
         $d = $this->getInstance();
@@ -108,7 +110,7 @@ class ReferenceResolverTest extends TestCase
     public function testJsonReferencesPhpClassname()
     {
         $d = $this->getInstance();
-        $file = __DIR__.'/data/php_ref.json';
+        $file = __DIR__ . '/data/php_ref.json';
 
         $schema = $d->resolveSchema(['$ref' => $file]);
 

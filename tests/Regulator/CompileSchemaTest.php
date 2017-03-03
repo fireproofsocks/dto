@@ -5,6 +5,8 @@ namespace DtoTest\Regulator;
 use Dto\JsonSchemaAccessor;
 use Dto\JsonSchemaAccessorInterface;
 use Dto\JsonSchemaRegulator;
+use Dto\MetaDataMerger;
+use Dto\MetaDataMergerInterface;
 use Dto\RegulatorInterface;
 use Dto\ReferenceResolver;
 use Dto\ReferenceResolverInterface;
@@ -34,6 +36,12 @@ class CompileSchemaTest extends TestCase
                 ->getMock();
         });
 
+        $container->bind(MetaDataMergerInterface::class, function ($c) {
+            return \Mockery::mock(MetaDataMerger::class)
+                ->shouldReceive('mergeMetaData')
+                ->andReturn([])
+                ->getMock();
+        });
         return $container;
     }
 

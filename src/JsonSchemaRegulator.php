@@ -8,8 +8,14 @@ use Dto\Exceptions\InvalidKeyException;
 
 class JsonSchemaRegulator implements RegulatorInterface
 {
-    protected $container;
+    /**
+     * @var ServiceContainerInterface
+     */
+    protected $serviceContainer;
 
+    /**
+     * @var JsonSchemaAccessorInterface
+     */
     protected $schemaAccessor;
 
     /**
@@ -24,20 +30,19 @@ class JsonSchemaRegulator implements RegulatorInterface
     protected $isScalar;
 
 
-    public function __construct(ServiceContainerInterface $container)
+    public function __construct(ServiceContainerInterface $serviceContainer)
     {
-        $this->container = $container;
-
-        $this->schemaAccessor = $container->make(JsonSchemaAccessorInterface::class);
+        $this->serviceContainer = $serviceContainer;
+        $this->schemaAccessor = $serviceContainer->make(JsonSchemaAccessorInterface::class);
     }
 
     public function postValidate(DtoInterface $dto)
     {
         if ($dto->getStorageType() === 'object') {
-            $this->container->make('objectValidator')->validate($dto->toArray(), $dto->getSchema());
+            $this->serviceContainer->make('objectValidator')->validate($dto->toArray(), $dto->getSchema());
         }
         elseif ($dto->getStorageType() === 'array') {
-            $this->container->make('arrayValidator')->validate($dto->toArray(), $dto->getSchema());
+            $this->serviceContainer->make('arrayValidator')->validate($dto->toArray(), $dto->getSchema());
         }
     }
 
@@ -50,7 +55,7 @@ class JsonSchemaRegulator implements RegulatorInterface
         $value = $this->unwrapValue($value);
 
         // detect primary validator (enum, oneOf, allOf, type
-        $validators = $this->container->make(ValidatorSelectorInterface::class)->selectValidators($schema);
+        $validators = $this->serviceContainer->make(ValidatorSelectorInterface::class)->selectValidators($schema);
 
         // throws Exceptions on errors
         foreach ($validators as $v) {
@@ -107,11 +112,11 @@ class JsonSchemaRegulator implements RegulatorInterface
         }
 
         // Empty arrays are the rub: they are considered arrays by DTO
-        if ($this->container->make(TypeDetectorInterface::class)->isArray($value)) {
+        if ($this->serviceContainer->make(TypeDetectorInterface::class)->isArray($value)) {
             $this->isArray = true;
             return 'array';
         }
-        elseif ($this->container->make(TypeDetectorInterface::class)->isObject($value)) {
+        elseif ($this->serviceContainer->make(TypeDetectorInterface::class)->isObject($value)) {
             $this->isObject = true;
             return 'object';
         }
@@ -173,12 +178,12 @@ class JsonSchemaRegulator implements RegulatorInterface
         $items = $accessor->getItems();
 
         // Is it a regular schema?  Each item must validate against this schema.
-        if ($this->container->make(TypeDetectorInterface::class)->isObject($items)) {
+        if ($this->serviceContainer->make(TypeDetectorInterface::class)->isObject($items)) {
             return $items;
         }
 
         // Is a tuple (an array of schemas)?
-        if ($this->container->make(TypeDetectorInterface::class)->isArray($items)) {
+        if ($this->serviceContainer->make(TypeDetectorInterface::class)->isArray($items)) {
             if (isset($items[$index])) {
                 return $items[$index];
             }
@@ -186,12 +191,12 @@ class JsonSchemaRegulator implements RegulatorInterface
 
         // We have exceeded the number of schemas defining the tuple...
         $additionalItems = $accessor->getAdditionalItems();
-        if ($this->container->make(TypeDetectorInterface::class)->isBoolean($additionalItems)) {
+        if ($this->serviceContainer->make(TypeDetectorInterface::class)->isBoolean($additionalItems)) {
             if ($additionalItems === true) {
                 return [];
             }
         }
-        elseif ($this->container->make(TypeDetectorInterface::class)->isObject($additionalItems)) {
+        elseif ($this->serviceContainer->make(TypeDetectorInterface::class)->isObject($additionalItems)) {
             return $additionalItems;
         }
 
@@ -268,61 +273,20 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function compileSchema($schema = null)
     {
-        $this->schema = $this->container->make(ReferenceResolverInterface::class)->resolveSchema($schema);
+        $this->schema = $this->serviceContainer->make(ReferenceResolverInterface::class)->resolveSchema($schema);
         return $this->schema;
     }
 
     public function getFilteredValueForIndex($value, $index, array $schema)
     {
-        return new Dto($value, $this->mergeMetaData($schema, $this->getSchemaAtIndex($index, $schema)), $this);
+        $schemaAccessor = $this->schemaAccessor->factory($schema);
+        return new Dto($value, $schemaAccessor->mergeMetaData($this->getSchemaAtIndex($index, $schema)), $this);
     }
 
     public function getFilteredValueForKey($value, $key, array $schema)
     {
-        return new Dto($value, $this->mergeMetaData($schema, $this->getSchemaAtKey($key, $schema)), $this);
-    }
-
-    /**
-     * Metadata here is loosely defined: importantly the "definitions" need to be available to children if the children
-     * do not declare their own id.
-     *
-     * @link http://json-schema.org/latest/json-schema-validation.html#rfc.section.6
-     * @link https://groups.google.com/forum/#!topic/json-schema/lDNj2kBD_uA
-     *
-     * @param $parent_schema array
-     * @param $child_schema array
-     * @return array
-     */
-    protected function mergeMetaData($parent_schema, $child_schema)
-    {
-        $parent = $this->schemaAccessor->factory($parent_schema);
-        $child = $this->schemaAccessor->factory($child_schema);
-
-        if (!$child->getId()) {
-            if ($parent->getId()) {
-                $child->setId($parent->getId());
-            }
-            if ($parent->getSchema()) {
-                $child->setSchema($parent->getSchema());
-            }
-            if ($parent->getDefinitions()) {
-                $child->setDefinitions($parent->getDefinitions());
-            }
-        }
-
-        if (!$child->getTitle()) {
-            if ($parent->getTitle()) {
-                $child->setTitle($parent->getTitle());
-            }
-        }
-
-        if (!$child->getDescription()) {
-            if ($parent->getDescription()) {
-                $child->setDescription($parent->getDescription());
-            }
-        }
-
-        return $child->toArray();
+        $schemaAccessor = $this->schemaAccessor->factory($schema);
+        return new Dto($value, $schemaAccessor->mergeMetaData($this->getSchemaAtKey($key, $schema)), $this);
     }
 
     /**
@@ -332,7 +296,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function filterArray($value, $schema)
     {
-        return $this->container->make('arrayValidator')->validate($value, $schema);
+        return $this->serviceContainer->make('arrayValidator')->validate($value, $schema);
     }
 
     /**
@@ -342,6 +306,6 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function filterObject($value, $schema)
     {
-        return $this->container->make('objectValidator')->validate($value, $schema);
+        return $this->serviceContainer->make('objectValidator')->validate($value, $schema);
     }
 }
