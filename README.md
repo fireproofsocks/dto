@@ -33,9 +33,17 @@ Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 # Version History
 
+## 3.1.0
+
+- Includes proper support for in-line definitions and inheritance of them.
+
 ## 3.0.0
 
 - Integration of the JSON Schema 4 specification to drive all structure and type definitions.
+
+## 2.0.0
+
+We don't speak of version 2.
 
 ## 1.0.8
 
