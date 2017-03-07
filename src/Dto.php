@@ -5,6 +5,7 @@ namespace Dto;
 use Dto\Exceptions\InvalidArrayOperationException;
 use Dto\Exceptions\InvalidDataTypeException;
 use Dto\Exceptions\InvalidIndexException;
+use Dto\Exceptions\InvalidKeyException;
 use Dto\Exceptions\InvalidObjectValueException;
 use Dto\Exceptions\UnstorableValueException;
 
@@ -202,7 +203,7 @@ class Dto extends \ArrayObject implements DtoInterface
         }
 
         // TODO: dynamically deepen object structure?
-        throw new InvalidObjectValueException('The property "'.$key.'" does not exist on this object.');
+        throw new InvalidKeyException('The key "'.$key.'" does not exist in this DTO.');
 
     }
 

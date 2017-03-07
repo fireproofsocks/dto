@@ -48,11 +48,17 @@ class GetTest extends TestCase
     }
 
     /**
-     * @expectedException \Dto\Exceptions\InvalidObjectValueException
+     * @expectedException \Dto\Exceptions\InvalidKeyException
      */
     public function testGetThrowsExceptionForNonExistantKey()
     {
         $d = new Dto(null, ['type' => 'object']);
         $d->get('x');
+    }
+
+    public function testGetAnArray()
+    {
+        $d = new Dto(['a', 'b', 'c'], ['type'=>'array']);
+        $this->assertEquals('a', $d->get(0));
     }
 }
