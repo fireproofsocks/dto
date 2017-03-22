@@ -2,6 +2,7 @@
 
 namespace DtoTest\JsonDecoder;
 
+use Dto\Exceptions\JsonDecodingException;
 use Dto\JsonDecoder;
 use Dto\JsonDecoderInterface;
 use DtoTest\TestCase;
@@ -29,7 +30,7 @@ class JsonDecoderTest extends TestCase
     }
 
     /**
-     * @expectedException \Webmozart\Json\DecodingFailedException
+     * @expectedException \Dto\Exceptions\JsonDecodingException
      */
     public function testDecodeStringThrowsExceptionWhenStringIsInvalid()
     {
@@ -45,7 +46,7 @@ class JsonDecoderTest extends TestCase
     }
 
     /**
-     * @expectedException \Webmozart\Json\FileNotFoundException
+     * @expectedException \Dto\Exceptions\JsonDecodingException
      */
     public function testDecodeFileThrowsExceptionWhenNotFound()
     {

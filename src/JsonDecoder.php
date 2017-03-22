@@ -3,6 +3,8 @@
 namespace Dto;
 
 // TODO: throw our own Exceptions to really keep the JsonDecoder separate
+use Dto\Exceptions\JsonDecodingException;
+
 class JsonDecoder implements JsonDecoderInterface
 {
     protected $decoder;
@@ -14,12 +16,22 @@ class JsonDecoder implements JsonDecoderInterface
 
     public function decodeString($string)
     {
-        return $this->decoder->decode($string);
+        try {
+            return $this->decoder->decode($string);
+        }
+        catch (\Exception $e) {
+            throw new JsonDecodingException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     public function decodeFile($filepath)
     {
-        return $this->decoder->decodeFile($filepath);
+        try {
+            return $this->decoder->decodeFile($filepath);
+        }
+        catch (\Exception $e) {
+            throw new JsonDecodingException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
 }
