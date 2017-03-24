@@ -174,4 +174,9 @@ class MockDto implements DtoInterface
         return ($this->isScalar) ? 'scalar' : 'other';
     }
 
+    public function getBaseDir()
+    {
+        return __DIR__;
+    }
+
 }

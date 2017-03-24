@@ -6,7 +6,6 @@ use Dto\Exceptions\InvalidArrayOperationException;
 use Dto\Exceptions\InvalidDataTypeException;
 use Dto\Exceptions\InvalidIndexException;
 use Dto\Exceptions\InvalidKeyException;
-use Dto\Exceptions\InvalidObjectValueException;
 use Dto\Exceptions\UnstorableValueException;
 
 /**
@@ -30,9 +29,7 @@ class Dto extends \ArrayObject implements DtoInterface
     protected $schema;
 
 
-    /**
-     * @var RegulatorInterface
-     */
+    /** @var RegulatorInterface */
     protected $regulator;
 
     /**
@@ -41,10 +38,11 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     protected $items_cnt = 0;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $storage_type;
+
+    /** @var  string : directory used as base for relative $ref's (no trailing slash) */
+    protected $baseDir = __DIR__;
 
     /**
      * Dto constructor.
@@ -60,7 +58,7 @@ class Dto extends \ArrayObject implements DtoInterface
         $this->regulator = $this->getDefaultRegulator($regulator);
 
         // Resolve Schema references
-        $this->schema = $this->regulator->compileSchema((is_null($schema)) ? $this->schema : $schema);
+        $this->schema = $this->regulator->compileSchema((is_null($schema)) ? $this->schema : $schema, $this->getBaseDir());
 
         $this->hydrate($input);
     }
@@ -100,11 +98,12 @@ class Dto extends \ArrayObject implements DtoInterface
     {
         $this->set($name, $value);
     }
-    
+
     /**
      * This deals ONLY with objects (not arrays).
      * @param $key mixed
      * @param $value mixed
+     * @return void
      * @throws InvalidDataTypeException
      */
     public function set($key, $value)
@@ -387,5 +386,10 @@ class Dto extends \ArrayObject implements DtoInterface
     public function getStorageType()
     {
         return $this->storage_type;
+    }
+
+    public function getBaseDir()
+    {
+        return $this->baseDir;
     }
 }

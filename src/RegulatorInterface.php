@@ -63,9 +63,10 @@ interface RegulatorInterface
     /**
      * Resolve schema references and return the compiled array
      * @param mixed|null $schema
+     * @param string $base_dir
      * @return array
      */
-    public function compileSchema($schema = null);
+    public function compileSchema($schema = null, $base_dir = '');
 
     /**
      * return the $value validated/filtered for the given $index in the array

@@ -33,6 +33,11 @@ Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 # Version History
 
+## 3.2.0
+
+- Includes the `$baseDir` and `getBaseDir()` methods in order to support relative paths to JSON schemas as used by 
+the `$ref` keyword. 
+
 ## 3.1.0
 
 - Includes proper support for in-line definitions and inheritance of them.

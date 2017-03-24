@@ -26,7 +26,7 @@ class ReferenceResolver implements ReferenceResolverInterface
     }
 
     /**
-     * Take a schema (including a null schema), and resolve it to an array.
+     * Take a schema (including a null schema), and resolve it to a PHP associative array.
      * @param null $schema
      * @param string $path_prefix used when recursively fetching schemas
      * @return array
@@ -61,28 +61,55 @@ class ReferenceResolver implements ReferenceResolverInterface
         return $schema;
     }
 
+    /**
+     * $ref may be one of the following:
+     *
+     *      1. Local definition (starting with #), e.g. #/definitions/xyz
+     *      2. Fully qualified name of class implementing DtoInterface
+     *      3. "Remote" JSON file (including protocol), usually http://site.com/schema.json but also file:// etc.
+     *      4. Absolute local path, e.g. /var/www/something/schema.json
+     *      5. Relative path (relative to Dto::$baseDir), e.g.
+     *
+     * @param array $schema
+     * @param $path_prefix string
+     * @return array
+     */
     protected function resolveReference(array $schema, $path_prefix)
     {
         if (!$ref = $this->schemaAccessor->getRef()) {
             return $schema;
         }
 
-        // Get local definition
+        // 1. local definition
         if ('#' === substr($ref, 0, 1)) {
             $schema = $this->getInlineSchema($ref);
             return $this->resolveSchema($schema);
         }
+        // 2. Fully qualified classname
         elseif (class_exists($ref)) {
             $schema = $this->getPhpSchema($ref);
             return $this->resolveSchema($schema);
         }
+        // 3. "Remote" JSON file (anything with a protocol scheme)
+        elseif (parse_url($ref, PHP_URL_SCHEME)) {
+            $schema = $this->getRemoteSchema($ref);
+            return $this->resolveSchema($schema);
+        }
+        // 4. Absolute local path
+        elseif ('/' === substr($ref, 0, 1)) {
+            $fullpath = $this->getFullPath($ref);
+            $schema = $this->getRemoteSchema($fullpath);
+            return $this->resolveSchema($schema, dirname($fullpath));
+        }
+        // 5. Relative path
         else {
             $fullpath = $this->getFullPath($ref, $path_prefix);
             $schema = $this->getRemoteSchema($fullpath);
             return $this->resolveSchema($schema, dirname($fullpath));
         }
-
     }
+
+
 
     protected function getDefaultSchema()
     {
@@ -97,10 +124,11 @@ class ReferenceResolver implements ReferenceResolverInterface
         return $this->schemaAccessor->getDefinition($definition);
     }
 
-    protected function getFullPath($ref, $path_prefix)
+    protected function getFullPath($ref, $path_prefix = null)
     {
         return ($path_prefix) ? $path_prefix . '/' . $ref : $ref;
     }
+
     protected function getRemoteSchema($ref)
     {
         return $this->serviceContainer->make(JsonDecoderInterface::class)->decodeFile($ref);

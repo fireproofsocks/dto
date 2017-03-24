@@ -264,15 +264,16 @@ class JsonSchemaRegulator implements RegulatorInterface
     }
 
     /**
-     * Let the ReferenceResolver class handle how the Schema is resolved.  This
-     * is set when the DTO is instantiated because the DTO contains the schema.
+     * Let the ReferenceResolver class handle how any $ref's are resolved.  This
+     * is called when the DTO is instantiated because the DTO contains the schema.
      *
      * @param $schema mixed
+     * @param $base_dir string
      * @return array
      */
-    public function compileSchema($schema = null)
+    public function compileSchema($schema = null, $base_dir = '')
     {
-        $this->schema = $this->serviceContainer->make(ReferenceResolverInterface::class)->resolveSchema($schema);
+        $this->schema = $this->serviceContainer->make(ReferenceResolverInterface::class)->resolveSchema($schema, $base_dir);
         return $this->schema;
     }
 
