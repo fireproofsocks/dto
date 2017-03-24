@@ -33,6 +33,10 @@ Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 # Version History
 
+## 3.2.1
+
+- Tests added for `serialize` method.
+
 ## 3.2.0
 
 - Includes the `$baseDir` and `getBaseDir()` methods in order to support relative paths to JSON schemas as used by 
