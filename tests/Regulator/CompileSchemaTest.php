@@ -33,6 +33,8 @@ class CompileSchemaTest extends TestCase
             return \Mockery::mock(ReferenceResolver::class)
                 ->shouldReceive('resolveSchema')
                 ->andReturn($schema)
+                ->shouldReceive('getWorkingBaseDir')
+                ->andReturn(null)
                 ->getMock();
         });
 

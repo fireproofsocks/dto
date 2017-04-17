@@ -70,7 +70,7 @@ class Dto extends \ArrayObject implements DtoInterface
     protected function getDefaultRegulator($regulator)
     {
         if (is_null($regulator)) {
-           return new JsonSchemaRegulator(new ServiceContainer());
+           return new JsonSchemaRegulator(new ServiceContainer(), get_called_class());
         }
 
         return $regulator;

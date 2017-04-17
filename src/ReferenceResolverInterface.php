@@ -13,4 +13,10 @@ namespace Dto;
 interface ReferenceResolverInterface
 {
     public function resolveSchema($schema = null);
+
+    /**
+     * When dealing with relative paths to json schemas, we need to keep track of the working base directory.
+     * @return string
+     */
+    public function getWorkingBaseDir();
 }

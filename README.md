@@ -33,6 +33,10 @@ Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 # Version History
 
+## 3.2.2
+
+- Support for nested relative schema paths when reading JSON schemas.
+
 ## 3.2.1
 
 - Tests added for `serialize` method.

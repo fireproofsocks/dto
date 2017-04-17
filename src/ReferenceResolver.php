@@ -15,6 +15,8 @@ class ReferenceResolver implements ReferenceResolverInterface
      */
     protected $schemaAccessor;
 
+    protected $workingBaseDir = null;
+
     /**
      * @var string
      */
@@ -99,13 +101,17 @@ class ReferenceResolver implements ReferenceResolverInterface
         elseif ('/' === substr($ref, 0, 1)) {
             $fullpath = $this->getFullPath($ref);
             $schema = $this->getRemoteSchema($fullpath);
-            return $this->resolveSchema($schema, dirname($fullpath));
+            //$this->workingBaseDir = rtrim(dirname($fullpath), './');
+            $this->storeWorkingBaseDirectoryFromFullPath($fullpath);
+            return $this->resolveSchema($schema, $this->workingBaseDir);
         }
         // 5. Relative path
         else {
             $fullpath = $this->getFullPath($ref, $path_prefix);
             $schema = $this->getRemoteSchema($fullpath);
-            return $this->resolveSchema($schema, dirname($fullpath));
+            //$this->workingBaseDir = rtrim(dirname($fullpath), './');
+            $this->storeWorkingBaseDirectoryFromFullPath($fullpath);
+            return $this->resolveSchema($schema, $this->workingBaseDir);
         }
     }
 
@@ -144,5 +150,15 @@ class ReferenceResolver implements ReferenceResolverInterface
         }
 
         throw new InvalidReferenceException('Referenced classnames must implement DtoInterface');
+    }
+
+    protected function storeWorkingBaseDirectoryFromFullPath($fullpath)
+    {
+        $this->workingBaseDir = rtrim(dirname($fullpath), './');
+    }
+
+    public function getWorkingBaseDir()
+    {
+        return $this->workingBaseDir;
     }
 }

@@ -28,11 +28,13 @@ class JsonSchemaRegulator implements RegulatorInterface
 
     protected $isScalar;
 
+    public $calledClass;
 
-    public function __construct(ServiceContainerInterface $serviceContainer)
+    public function __construct(ServiceContainerInterface $serviceContainer, $calledClass = null)
     {
         $this->serviceContainer = $serviceContainer;
         $this->schemaAccessor = $serviceContainer->make(JsonSchemaAccessorInterface::class);
+        $this->calledClass = ($calledClass) ? $calledClass : Dto::class;
     }
 
     public function postValidate(DtoInterface $dto)
@@ -273,20 +275,24 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function compileSchema($schema = null, $base_dir = '')
     {
-        $this->schema = $this->serviceContainer->make(ReferenceResolverInterface::class)->resolveSchema($schema, $base_dir);
+        $resolver = $this->serviceContainer->make(ReferenceResolverInterface::class);
+        $working_base_dir = $resolver->getWorkingBaseDir();
+        // Check for base_dir override
+        $base_dir = ($working_base_dir) ? $working_base_dir : $base_dir;
+        $this->schema = $resolver->resolveSchema($schema, $base_dir);
         return $this->schema;
     }
 
     public function getFilteredValueForIndex($value, $index, array $schema)
     {
         $schemaAccessor = $this->schemaAccessor->factory($schema);
-        return new Dto($value, $schemaAccessor->mergeMetaData($this->getSchemaAtIndex($index, $schema)), $this);
+        return new $this->calledClass($value, $schemaAccessor->mergeMetaData($this->getSchemaAtIndex($index, $schema)), $this);
     }
 
     public function getFilteredValueForKey($value, $key, array $schema)
     {
         $schemaAccessor = $this->schemaAccessor->factory($schema);
-        return new Dto($value, $schemaAccessor->mergeMetaData($this->getSchemaAtKey($key, $schema)), $this);
+        return new $this->calledClass($value, $schemaAccessor->mergeMetaData($this->getSchemaAtKey($key, $schema)), $this);
     }
 
     /**

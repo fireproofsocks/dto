@@ -25,6 +25,14 @@ class RelativeReferenceTest extends TestCase
         $dto = new Dto(null, ['$ref' => $file]);
         $this->assertEquals(['type' => 'integer'], $dto->getSchema());
     }
+
+    public function testNestedBaseDirectories()
+    {
+        $dto = new RelativeReferenceTest2Dto();
+
+        $dto->i = 5;
+        $this->assertEquals(5, $dto->i->toScalar());
+    }
 }
 
 class RelativeReferenceTestDto extends Dto
@@ -33,5 +41,14 @@ class RelativeReferenceTestDto extends Dto
 
     protected $schema = [
         '$ref' => 'data/integer.json'
+    ];
+}
+
+class RelativeReferenceTest2Dto extends Dto
+{
+    protected $baseDir = __DIR__;
+
+    protected $schema = [
+        '$ref' => 'data/nested/object.json'
     ];
 }
