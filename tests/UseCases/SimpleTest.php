@@ -106,8 +106,21 @@ class SimpleTest extends TestCase
         $dto->email = 'some@email.com';
         $dto->email = null;
 
-        //var_dump($dto->email->toScalar()); exit;
         $this->assertEquals('', $dto->email->toScalar());
+        $this->assertEquals('', strval($dto->email));
+    }
+
+    public function testIntegersAreReturnedAsIntegers()
+    {
+        $dto = new Dto(null, [
+            'type' => 'object',
+            'properties' => [
+                'i' => ['type' => 'integer']
+            ]
+        ]);
+        $dto->i = 5;
+        $this->assertEquals(5, strval($dto->i));
+
     }
 }
 

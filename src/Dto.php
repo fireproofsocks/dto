@@ -168,7 +168,7 @@ class Dto extends \ArrayObject implements DtoInterface
      */
     public function __toString()
     {
-        return $this->toScalar();
+        return strval($this->toScalar());
     }
     
     /**
