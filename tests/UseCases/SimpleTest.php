@@ -122,6 +122,15 @@ class SimpleTest extends TestCase
         $this->assertEquals(5, strval($dto->i));
 
     }
+
+//    public function testX()
+//    {
+//        $data = [];
+//        $schema = null;
+//
+//        $dto = new Dto($data, $schema);
+//
+//    }
 }
 
 class X extends Dto

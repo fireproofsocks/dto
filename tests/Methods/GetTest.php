@@ -56,9 +56,17 @@ class GetTest extends TestCase
         $d->get('x');
     }
 
-    public function testGetAnArray()
+    public function testGetElementFromArrayOfStrings()
     {
         $d = new Dto(['a', 'b', 'c'], ['type'=>'array']);
         $this->assertEquals('a', $d->get(0));
+    }
+
+    public function testGetElementFromArrayOfIntegers()
+    {
+        $d = new Dto([2, 4, 6, 8], ['type'=>'array']);
+        // PHP does not have a magic __toInt() method, so for anything non-string, we have to force the value
+        // to render as a scalar.
+        $this->assertEquals(2, $d->get(0)->toScalar());
     }
 }
