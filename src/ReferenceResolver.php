@@ -17,6 +17,8 @@ class ReferenceResolver implements ReferenceResolverInterface
 
     protected $workingBaseDir = null;
 
+    protected $decodedCache = [];
+
     /**
      * @var string
      */
@@ -137,7 +139,11 @@ class ReferenceResolver implements ReferenceResolverInterface
 
     protected function getRemoteSchema($ref)
     {
-        return $this->serviceContainer->make(JsonDecoderInterface::class)->decodeFile($ref);
+        if (!isset($this->decodedCache[$ref])) {
+            $this->decodedCache[$ref] = $this->serviceContainer->make(JsonDecoderInterface::class)->decodeFile($ref);
+        }
+
+        return $this->decodedCache[$ref];
     }
 
     protected function getPhpSchema($ref)

@@ -3,11 +3,7 @@
 namespace DtoTest\Base;
 
 use DtoTest\TestCase;
-use Dto\JsonSchemaAccessor;
-use Dto\JsonSchemaAccessorInterface;
-use Dto\JsonSchemaRegulator;
 use Dto\RegulatorInterface;
-use Pimple\Container;
 
 class DtoTestCase extends TestCase
 {

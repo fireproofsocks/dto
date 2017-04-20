@@ -7,7 +7,6 @@ interface DtoInterface
     /**
      * Populate the DTO.
      * @param $value mixed
-     * @return mixed
      */
     public function hydrate($value);
 

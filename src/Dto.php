@@ -194,7 +194,7 @@ class Dto extends \ArrayObject implements DtoInterface
         }
 
         if ($this->storage_type === 'scalar') {
-            throw new InvalidDataTypeException('The get() method cannot be used on scalar objects.  Use hydrate() instead.');
+            throw new InvalidDataTypeException('The get() method cannot be used on scalar objects.  Use toScalar() instead.');
         }
 
         if (parent::offsetExists($key)) {
@@ -336,9 +336,9 @@ class Dto extends \ArrayObject implements DtoInterface
             return json_encode(parent::offsetGet(0), JSON_PRETTY_PRINT);
         }
 
-        // Disambiguate between empty arrays [] and empty objects {}
         $data = $this->toArray();
 
+        // Disambiguate between empty arrays [] and empty objects {}
         if (empty($data)) {
             if ($this->regulator->isArray()) {
                 return '[]';
@@ -351,7 +351,7 @@ class Dto extends \ArrayObject implements DtoInterface
 
 
     /**
-     * return (array) $this; // is too simplistic, unfortunately
+     * returning $this type-cast to an array is too simplistic, unfortunately
      * @return array
      * @throws InvalidDataTypeException
      */

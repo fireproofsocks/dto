@@ -8,16 +8,12 @@ use Dto\ServiceContainer;
 
 class JsonSchemaAccessorTest extends TestCase
 {
-    protected function getInstance($schema = null)
+    protected function getInstance($schema = [])
     {
         $container = new ServiceContainer();
 
-        // return new JsonSchemaAccessor($container, $schema);
-        if (!is_null($schema)) {
-            return $container->make(JsonSchemaAccessorInterface::class)->factory($schema);
-        }
+        return $container->make(JsonSchemaAccessorInterface::class)->factory($schema);
 
-        return $container->make(JsonSchemaAccessorInterface::class);
     }
 
     public function testInstantiation()
@@ -59,20 +55,12 @@ class JsonSchemaAccessorTest extends TestCase
             ]
         ]);
         $result = $j->getDefinition('foo');
-        $this->assertEquals($result, ['id' => 'root', 'title' => 'bar', 'definitions'=>['foo' => ['title' => 'bar']]]);
-    }
-
-    /**
-     * @expectedException \InvalidArgumentException
-     */
-    public function testInstantiationThrowExceptionWhenNonArrayPassedAsSchema()
-    {
-        new JsonSchemaAccessor('this is not an array');
+        $this->assertEquals(['id' => 'root', 'title' => 'bar', 'definitions'=>['foo' => ['title' => 'bar']]], $result);
     }
 
     public function testInstantiationWorksNormallyWhenPassedAnArraySchema()
     {
-        $a = new JsonSchemaAccessor([]);
+        $a = new JsonSchemaAccessor();
         $this->assertEquals([], $a->toArray());
     }
 

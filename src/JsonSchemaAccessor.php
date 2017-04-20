@@ -9,16 +9,16 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 {
     protected $schema = [];
 
-    public function __construct($schema = null)
+    public function __construct()
     {
-        if (!is_null($schema)) {
-
-            if (!is_array($schema)) {
-                throw new \InvalidArgumentException('$schema must be an array');
-            }
-
-            $this->schema = $schema;
-        }
+//        if (!is_null($schema)) {
+//
+//            if (!is_array($schema)) {
+//                throw new \InvalidArgumentException('$schema must be an array');
+//            }
+//
+//            $this->schema = $schema;
+//        }
     }
 
     /**
@@ -28,7 +28,9 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
      */
     public function factory(array $schema)
     {
-        return new JsonSchemaAccessor($schema);
+        //return new JsonSchemaAccessor($schema);
+        $this->schema = $schema;
+        return $this;
     }
 
     public function getId()
@@ -266,7 +268,7 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 
     public function mergeMetaData(array $child_schema)
     {
-        $child = $this->factory($child_schema);
+        $child = (new JsonSchemaAccessor())->factory($child_schema);
 
         if (!$child->getId()) {
             if ($this->getId()) {

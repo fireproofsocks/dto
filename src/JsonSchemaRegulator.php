@@ -30,6 +30,8 @@ class JsonSchemaRegulator implements RegulatorInterface
 
     public $calledClass;
 
+    protected $compiled = [];
+
     public function __construct(ServiceContainerInterface $serviceContainer, $calledClass = null)
     {
         $this->serviceContainer = $serviceContainer;
@@ -275,11 +277,19 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function compileSchema($schema = null, $base_dir = '')
     {
-        $resolver = $this->serviceContainer->make(ReferenceResolverInterface::class);
-        $working_base_dir = $resolver->getWorkingBaseDir();
-        // Check for base_dir override
-        $base_dir = ($working_base_dir) ? $working_base_dir : $base_dir;
-        $this->schema = $resolver->resolveSchema($schema, $base_dir);
+        $key = md5(json_encode($schema));
+        if (!isset($this->compiled[$key])) {
+            $resolver = $this->serviceContainer->make(ReferenceResolverInterface::class);
+            $working_base_dir = $resolver->getWorkingBaseDir();
+            // Check for base_dir override
+            $base_dir = ($working_base_dir) ? $working_base_dir : $base_dir;
+            $this->schema = $resolver->resolveSchema($schema, $base_dir);
+            $this->compiled[$key] = $this->schema;
+        }
+        else {
+            $this->schema = $this->compiled[$key];
+        }
+
         return $this->schema;
     }
 
