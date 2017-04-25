@@ -103,7 +103,6 @@ class ReferenceResolver implements ReferenceResolverInterface
         elseif ('/' === substr($ref, 0, 1)) {
             $fullpath = $this->getFullPath($ref);
             $schema = $this->getRemoteSchema($fullpath);
-            //$this->workingBaseDir = rtrim(dirname($fullpath), './');
             $this->storeWorkingBaseDirectoryFromFullPath($fullpath);
             return $this->resolveSchema($schema, $this->workingBaseDir);
         }
@@ -111,7 +110,6 @@ class ReferenceResolver implements ReferenceResolverInterface
         else {
             $fullpath = $this->getFullPath($ref, $path_prefix);
             $schema = $this->getRemoteSchema($fullpath);
-            //$this->workingBaseDir = rtrim(dirname($fullpath), './');
             $this->storeWorkingBaseDirectoryFromFullPath($fullpath);
             return $this->resolveSchema($schema, $this->workingBaseDir);
         }

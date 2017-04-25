@@ -9,18 +9,6 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
 {
     protected $schema = [];
 
-    public function __construct()
-    {
-//        if (!is_null($schema)) {
-//
-//            if (!is_array($schema)) {
-//                throw new \InvalidArgumentException('$schema must be an array');
-//            }
-//
-//            $this->schema = $schema;
-//        }
-    }
-
     /**
      *
      * @param array $schema
@@ -28,13 +16,14 @@ class JsonSchemaAccessor implements JsonSchemaAccessorInterface
      */
     public function factory(array $schema)
     {
-        //return new JsonSchemaAccessor($schema);
         $this->schema = $schema;
         return $this;
     }
 
     public function getId()
     {
+        // TODO: MUST represent a valid URI-reference [RFC3986]
+        // SHOULD NOT be an empty fragment <#> or an empty string <>
         return isset($this->schema['id']) ? $this->schema['id'] : '';
     }
 

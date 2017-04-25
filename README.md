@@ -33,6 +33,10 @@ Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 # Version History
 
+## 3.2.4
+
+- Performance boost by eliminating redundant validation.
+
 ## 3.2.3
 
 - `strval()` conversion inside `__toString()` method: makes for easier UX when checking object properties.
