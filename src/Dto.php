@@ -276,12 +276,19 @@ class Dto extends \ArrayObject implements DtoInterface
 
     protected function hydrateObject($value)
     {
-        parent::exchangeArray($this->regulator->filterObject($value, $this->schema));
+        foreach ($value as $k => $v) {
+            $value[$k] = $this->regulator->getFilteredValueForKey($v, $k, $this->schema);
+        }
+
+        parent::exchangeArray($value);
     }
 
-    protected function hydrateArray($value)
+    protected function hydrateArray($array)
     {
-        $array = $this->regulator->filterArray($value, $this->schema);
+        foreach ($array as $index => $v) {
+            $array[$index] = $this->regulator->getFilteredValueForIndex($v, $index, $this->schema);
+        }
+
         $this->items_cnt = count($array);
         parent::exchangeArray($array);
     }

@@ -123,14 +123,19 @@ class SimpleTest extends TestCase
 
     }
 
-//    public function testX()
-//    {
-//        $data = [];
-//        $schema = null;
-//
-//        $dto = new Dto($data, $schema);
-//
-//    }
+    public function testX()
+    {
+        $data = [
+            'x' => 'xray'
+        ];
+        $schema = null;
+        $schema = [
+            'type' => 'object'
+        ];
+
+        $dto = new Dto($data, $schema);
+
+    }
 }
 
 class X extends Dto

@@ -50,7 +50,7 @@ class JsonSchemaRegulator implements RegulatorInterface
     }
 
     /**
-     * Do validation on the root-level schema and determine a storage type.
+     * Do validation on the root-level schema (including combining schemas)
      * @inheritDoc
      */
     public function rootFilter($value, array $schema = [], $do_typecasting = true)
@@ -277,6 +277,7 @@ class JsonSchemaRegulator implements RegulatorInterface
      */
     public function compileSchema($schema = null, $base_dir = '')
     {
+        // Non-cryptographic fingerprinting to help redundant schema compiling
         $key = md5(json_encode($schema));
         if (!isset($this->compiled[$key])) {
             $resolver = $this->serviceContainer->make(ReferenceResolverInterface::class);

@@ -4,7 +4,6 @@ namespace Dto\Validators\Types;
 use Dto\Exceptions\InvalidDataTypeException;
 use Dto\Exceptions\InvalidObjectValueException;
 use Dto\JsonSchemaAccessorInterface;
-use Dto\RegulatorInterface;
 use Dto\TypeDetectorInterface;
 use Dto\Validators\AbstractValidator;
 use Dto\Validators\ValidatorInterface;
@@ -26,7 +25,7 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
         $this->checkMinProperties($value);
         $this->checkRequired($value);
 
-        return $this->validateProperties($value, $schema);
+        return $value;
     }
 
     protected function checkDataType($value)
@@ -76,14 +75,5 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
                 throw new InvalidObjectValueException('Object is missing required value: '. $r);
             }
         }
-    }
-
-    protected function validateProperties($object, $schema)
-    {
-        foreach ($object as $k => $v) {
-            $object[$k] = $this->container->make(RegulatorInterface::class)->getFilteredValueForKey($v, $k, $schema);
-        }
-
-        return $object;
     }
 }
