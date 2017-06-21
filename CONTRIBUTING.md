@@ -8,7 +8,7 @@ Contributions are accepted via Pull Requests on [Github](https://github.com/fire
 
 Thank you for taking the time to file a bug report!  Every bug report needs to provide the exact steps to replicate a 
 problem AND it needs to clarify what was the _expected_ result compared to what was the _expected_ result.  Please include
-your sample code and err on the side of being too verbose.
+your sample code and err on the side of being too verbose.  Thanks!
 
 ## Features
 

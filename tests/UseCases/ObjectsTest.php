@@ -15,7 +15,6 @@ class ObjectsTest extends TestCase
                 'b' => ['type' => 'string']
             ],
             'additionalProperties' => false
-
         ];
 
         $dto = new Dto(['a' => 'apple', 'b' => 'banjo'], $schema);

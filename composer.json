@@ -1,7 +1,7 @@
 {
   "name": "dto/dto",
   "description": "Use the JSON Schema spec to define Data Transfer Objects (DTOs)",
-  "type": "project",
+  "type": "library",
   "license": "MIT",
   "minimum-stability": "stable",
   "require": {

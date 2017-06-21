@@ -12,6 +12,38 @@ concept to Martin Fowler's [Transfer Objects](http://martinfowler.com/eaaCatalog
 DTOs are a helpful counterpart to the [Data Accessor Object (DAO)](https://en.wikipedia.org/wiki/Data_access_object) or [Repository](https://bosnadev.com/2015/03/07/using-repository-pattern-in-laravel-5/) patterns.
 
 
+## Example
+
+Define a PHP object using JSON Schema syntax:
+
+```php
+<?php
+class ExampleObject extends Dto\Dto
+{
+    protected $schema = [
+        'type' => 'object',
+        'properties' => [
+            'a' => ['type' => 'string'],
+            'b' => ['type' => 'string']
+        ],
+        'additionalProperties' => false
+    ];
+}
+```
+
+Or reference a JSON Schema directly:
+
+```php
+<?php
+class ExampleObject extends Dto\Dto
+{
+    protected $schema = [
+        '$ref' => 'http://example.com/some/schema.json'
+    ];
+}
+```
+
+
 ## Possible Uses
 
 - In APIs: Consume a JSON Schema API at runtime without needing to parse data formats.
@@ -32,6 +64,10 @@ Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 ------------------------------------
 
 # Version History
+
+## 3.2.5
+
+- Removed unused dependency on `webmozart/json`
 
 ## 3.2.4
 
