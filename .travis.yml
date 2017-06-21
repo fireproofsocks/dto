@@ -1,10 +1,24 @@
+# https://docs.travis-ci.com/user/languages/php/
 language: php
-
+sudo: required
+dist: trusty
+group: edge
 php:
   - '5.6'
   - '7.0'
   - '7.1'
-  - hhvm
+  - hhvm-3.3
+  - hhvm-3.6
+  - hhvm-3.9
+  - hhvm-3.12
+  - hhvm-3.15
+  - hhvm-3.18
+  
+#php:
+#  - '5.6'
+#  - '7.0'
+#  - '7.1'
+#  - hhvm
 #  - nightly
 
 before_script:
