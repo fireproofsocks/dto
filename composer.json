@@ -6,8 +6,7 @@
   "minimum-stability": "stable",
   "require": {
     "php": ">=5.5.9",
-    "pimple/pimple": "^3.0",
-    "webmozart/json": "^1.2"
+    "pimple/pimple": "^3.0"
   },
   "require-dev": {
     "phpunit/phpunit": "5.7.8",

@@ -65,7 +65,7 @@ Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 
 # Version History
 
-## 3.2.5
+## 3.2.6
 
 - Removed unused dependency on `webmozart/json`
 

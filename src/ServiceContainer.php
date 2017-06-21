@@ -50,9 +50,7 @@ class ServiceContainer implements ServiceContainerInterface
         };
 
         $this->container[JsonDecoderInterface::class] = function () {
-            $decoder = new \Webmozart\Json\JsonDecoder();
-            $decoder->setObjectDecoding(1); // associative array
-            return new JsonDecoder($decoder);
+            return new JsonDecoder();
         };
 
         $this->container[ReferenceResolverInterface::class] = function () {

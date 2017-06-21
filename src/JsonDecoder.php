@@ -7,31 +7,41 @@ use Dto\Exceptions\JsonDecodingException;
 
 class JsonDecoder implements JsonDecoderInterface
 {
-    protected $decoder;
-
-    public function __construct(\Webmozart\Json\JsonDecoder $decoder)
-    {
-        $this->decoder = $decoder;
-    }
-
+    /**
+     * @inheritdoc
+     */
     public function decodeString($string)
     {
-        try {
-            return $this->decoder->decode($string);
+
+        $result = json_decode($string, true);
+
+        $last_error_code = json_last_error();
+
+        if ($last_error_code != JSON_ERROR_NONE) {
+            throw new JsonDecodingException(json_last_error_msg(), $last_error_code);
         }
-        catch (\Exception $e) {
-            throw new JsonDecodingException($e->getMessage(), $e->getCode(), $e);
-        }
+
+        return $result;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function decodeFile($filepath)
     {
-        try {
-            return $this->decoder->decodeFile($filepath);
-        }
-        catch (\Exception $e) {
-            throw new JsonDecodingException($e->getMessage(), $e->getCode(), $e);
-        }
+        // https://stackoverflow.com/questions/272361/how-can-i-handle-the-warning-of-file-get-contents-function-in-php
+        set_error_handler(
+            create_function(
+                '$severity, $message, $file, $line',
+                'throw new \Dto\Exceptions\JsonDecodingException($message, $severity);'
+            )
+        );
+
+        $content = file_get_contents($filepath);
+
+        restore_error_handler();
+
+        return $this->decodeString($content);
     }
 
 }

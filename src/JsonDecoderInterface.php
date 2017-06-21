@@ -9,7 +9,15 @@ namespace Dto;
  */
 interface JsonDecoderInterface
 {
+    /**
+     * @param $string string
+     * @return array
+     */
     public function decodeString($string);
 
+    /**
+     * @param $filepath string
+     * @return array
+     */
     public function decodeFile($filepath);
 }

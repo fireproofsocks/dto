@@ -11,9 +11,7 @@ class JsonDecoderTest extends TestCase
 {
     protected function getInstance()
     {
-        $decoder = new \Webmozart\Json\JsonDecoder();
-        $decoder->setObjectDecoding(1);
-        return new JsonDecoder($decoder);
+        return new JsonDecoder();
     }
 
     public function testInstantiation()
