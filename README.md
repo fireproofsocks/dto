@@ -11,6 +11,8 @@ concept to Martin Fowler's [Transfer Objects](http://martinfowler.com/eaaCatalog
 
 DTOs are a helpful counterpart to the [Data Accessor Object (DAO)](https://en.wikipedia.org/wiki/Data_access_object) or [Repository](https://bosnadev.com/2015/03/07/using-repository-pattern-in-laravel-5/) patterns.
 
+The functionality is similar to what is offered by the [shape](https://packagist.org/packages/leocavalcante/shape) 
+package.
 
 ## Example
 
@@ -24,11 +26,22 @@ class ExampleObject extends Dto\Dto
         'type' => 'object',
         'properties' => [
             'a' => ['type' => 'string'],
-            'b' => ['type' => 'string']
+            'b' => ['type' => 'integer']
         ],
         'additionalProperties' => false
     ];
 }
+```
+
+Now you can instantiate and use your object:
+
+```php
+<?php
+// Assume you have included vendor/autoload.php and the above ExampleObject class
+$obj = new ExampleObject();
+$obj->a = "Some String";
+$obj->b = 123; // this is defined as an integer, so values WILL be type-cast to integer!
+$obj->c = 'Whoops, this will throw an Exception because additionalProperties are not allowed';
 ```
 
 Or reference a JSON Schema directly:
