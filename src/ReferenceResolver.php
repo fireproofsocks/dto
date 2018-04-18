@@ -146,11 +146,12 @@ class ReferenceResolver implements ReferenceResolverInterface
 
     protected function getPhpSchema($ref)
     {
-        // TODO: can we sniff this without instantiation?
-        $dto = new $ref();
+        // Instantiating the object would allow us to use the getSchema() method, but it also triggers validation
+        $reflectionClass = new \ReflectionClass($ref);
 
-        if ($dto instanceof DtoInterface) {
-            return $dto->getSchema();
+        if ($reflectionClass->isSubclassOf(Dto::class)) {
+            $properties = $reflectionClass->getDefaultProperties();
+            return (array_key_exists('schema', $properties)) ? $properties['schema'] : [];
         }
 
         throw new InvalidReferenceException('Referenced classnames must implement DtoInterface');

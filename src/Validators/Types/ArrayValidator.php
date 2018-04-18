@@ -14,7 +14,7 @@ class ArrayValidator extends AbstractValidator implements ValidatorInterface
      * maxItems, minItems, uniqueItems
      * @param $value mixed
      * @param $schema array
-     * @return boolean
+     * @return mixed
      */
     public function validate($value, array $schema)
     {

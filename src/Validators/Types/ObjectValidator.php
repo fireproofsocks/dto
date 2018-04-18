@@ -14,7 +14,7 @@ class ObjectValidator extends AbstractValidator implements ValidatorInterface
      * maxProperties, minProperties
      * @param $value
      * @param $schema array
-     * @return boolean
+     * @return mixed
      */
     public function validate($value, array $schema)
     {
