@@ -19,4 +19,38 @@ class ReferenceTest extends TestCase
         $dto->i = '42asdf4';
         $this->assertEquals(42, $dto->i->toScalar());
     }
+    
+    public function testResolvePhpClassnamesAsReferencesWithRequiredValidation()
+    {
+        $myArray = new MyArray();
+        $myItem = new MyItem(['address1' => '123 Main st.']);
+
+        $myArray->append($myItem);
+
+        $this->assertEquals([['address1' => '123 Main st.']], $myArray->toArray());
+
+    }
+}
+
+class MyArray extends Dto
+{
+    protected $schema = [
+        'type' => 'array',
+        'items' => [
+            '$ref' => MyItem::class
+        ]
+    ];
+}
+
+class MyItem extends Dto
+{
+    protected $schema = [
+        'type' => 'object',
+        'properties' => [
+            'address1' => [
+                'type' => 'string',
+            ]
+        ],
+        'required' => ['address1']
+    ];
 }
