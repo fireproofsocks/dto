@@ -6,8 +6,8 @@ This package provides a quick way to define structured objects (DTOs) using the 
 standard.  
 
 A Data Transfer Object (DTO) is an object used to pass typed data between layers in your application, similiar in 
-concept to Martin Fowler's [Transfer Objects](http://martinfowler.com/eaaCatalog/dataTransferObject.html) or 
-[Value Objects](https://en.wikipedia.org/wiki/Value_object).  
+concept to [Structs](https://en.wikipedia.org/wiki/Struct_(C_programming_language)) in C, Martin Fowler's [Transfer
+ Objects](http://martinfowler.com/eaaCatalog/dataTransferObject.html), or [Value Objects](https://en.wikipedia.org/wiki/Value_object).  
 
 DTOs are a helpful counterpart to the [Data Accessor Object (DAO)](https://en.wikipedia.org/wiki/Data_access_object) or [Repository](https://bosnadev.com/2015/03/07/using-repository-pattern-in-laravel-5/) patterns.
 
@@ -77,6 +77,10 @@ Read more in the [DTO Wiki](https://github.com/fireproofsocks/dto/wiki)
 ------------------------------------
 
 # Version History
+
+## 3.2.7
+
+- Fixed validation issue when PHP classes were referenced in schemas using the `$ref` keyword. 
 
 ## 3.2.6
 
